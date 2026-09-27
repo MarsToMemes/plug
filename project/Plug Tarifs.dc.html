@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#efe4f1;font-family:Manrope,system-ui,sans-serif;color:#26143a;-webkit-font-smoothing:antialiased}
+a{color:#5b2fb8;text-decoration:none}a:hover{color:#26143a}
+*{box-sizing:border-box}
+</style>
+</helmet>
+<div style="min-height:100vh;padding:14px;display:flex;flex-direction:column;gap:14px">
+
+<header data-screen-label="Hero tarifs" style="border-radius:36px;padding:28px clamp(20px,5vw,72px) 64px;background:radial-gradient(60% 60% at 25% 10%,#b27cc9,rgba(178,124,201,0) 70%),radial-gradient(50% 60% at 85% 40%,#f0a9cf,rgba(240,169,207,0) 70%),linear-gradient(180deg,#a978c2,#d9a3c9);display:flex;flex-direction:column;gap:clamp(48px,7vw,90px)">
+  <nav style="display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap">
+    <a href="Plug%20Accueil.dc.html" style="display:flex;align-items:center;gap:10px;color:#fff;font-family:Poppins;font-weight:700;font-size:24px;letter-spacing:-.02em"><span style="width:34px;height:34px;border-radius:11px;background:#fff;display:grid;place-items:center"><span style="width:14px;height:14px;border-radius:50%;background:linear-gradient(135deg,#7c4dff,#ff6fb0)"></span></span>plug</a>
+    <div style="display:flex;gap:clamp(14px,3vw,44px);flex-wrap:wrap;font-size:15px;font-weight:600">
+      <a href="Plug%20Editeur.dc.html" style="color:#fff">Éditeur</a><a href="Plug%20Accueil.dc.html#fonctionnement" style="color:#fff">Fonctionnement</a><a href="Plug%20Tarifs.dc.html" style="color:#fff;border-bottom:2px solid #fff;padding-bottom:2px">Tarifs</a><a href="#packs" style="color:#fff">Packs</a>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <a href="Plug%20Inscription.dc.html?mode=login" style="color:#fff;font-weight:600;font-size:15px;padding:12px 18px;border-radius:999px;border:1.5px solid rgba(255,255,255,.6)">Connexion</a>
+      <a href="Plug%20Inscription.dc.html" style="background:#26143a;color:#fff;font-weight:700;font-size:15px;padding:13px 20px;border-radius:999px" style-hover="color:#fff;background:#3b2059">Essai gratuit</a>
+    </div>
+  </nav>
+  <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:22px">
+    <h1 style="margin:0;font-family:Poppins;font-weight:800;color:#fff;font-size:clamp(44px,7.6vw,120px);line-height:.92;letter-spacing:-.045em;text-transform:uppercase;text-wrap:balance">Payez pour le montage, pas pour la complexité</h1>
+    <p style="margin:0;color:#fff;font-size:clamp(16px,1.5vw,20px);font-weight:600;max-width:600px;line-height:1.5">Chaque plan inclut un volume d’heures de rushes traitées par l’IA. L’éditeur, lui, est illimité.</p>
+    <div style="display:flex;padding:5px;border-radius:999px;background:rgba(255,255,255,.3);border:1px solid rgba(255,255,255,.6);backdrop-filter:blur(12px)">
+      <button onClick="{{ setMonthly }}" style="border:0;cursor:pointer;padding:11px 20px;border-radius:999px;font-weight:800;font-size:14px;font-family:Manrope;background:{{ mBg }};color:#26143a">Mensuel</button>
+      <button onClick="{{ setYearly }}" style="border:0;cursor:pointer;padding:11px 20px;border-radius:999px;font-weight:800;font-size:14px;font-family:Manrope;background:{{ yBg }};color:#26143a;display:flex;gap:8px;align-items:center">Annuel <span style="font-size:11px;padding:3px 8px;border-radius:999px;background:#26143a;color:#fff">−20 %</span></button>
+    </div>
+  </div>
+</header>
+
+<main style="background:#faf6fb;border-radius:36px;padding:clamp(40px,6vw,90px) clamp(20px,5vw,72px);display:flex;flex-direction:column;gap:clamp(72px,9vw,120px)">
+  <section data-screen-label="Plans" style="display:flex;flex-direction:column;gap:22px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:16px">
+      <sc-for list="{{ plans }}" as="p" hint-placeholder-count="4">
+        <div style="border-radius:28px;padding:30px;display:flex;flex-direction:column;gap:18px;background:{{ p.bg }};color:{{ p.fg }};border:1px solid {{ p.border }}">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span style="font-family:Poppins;font-weight:700;font-size:22px">{{ p.name }}</span><sc-if value="{{ p.badge }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:800;padding:5px 10px;border-radius:999px;background:#ff9ec8;color:#26143a">{{ p.badge }}</span></sc-if></div>
+          <div style="font-size:15px;font-weight:600;line-height:1.45;min-height:44px">{{ p.tag }}</div>
+          <div style="display:flex;align-items:baseline;gap:6px"><span style="font-family:Poppins;font-weight:800;font-size:54px;letter-spacing:-.045em;line-height:1">{{ p.price }}</span><span style="font-size:15px;font-weight:600;opacity:.8">€/mois</span></div>
+          <div style="font-size:13px;font-weight:600;opacity:.75;min-height:18px">{{ p.billing }}</div>
+          <a href="{{ p.href }}" style="text-align:center;font-weight:800;font-size:15px;padding:15px;border-radius:999px;background:{{ p.ctaBg }};color:{{ p.ctaFg }}">{{ p.cta }}</a>
+          <div style="height:1px;background:{{ p.border }};opacity:.8"></div>
+          <div style="display:flex;flex-direction:column;gap:11px;font-size:15px;line-height:1.4">
+            <sc-for list="{{ p.items }}" as="it" hint-placeholder-count="4"><div style="display:flex;gap:10px"><span style="color:{{ p.check }};font-weight:800">✓</span><span>{{ it }}</span></div></sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display:flex;justify-content:center;gap:28px;flex-wrap:wrap;font-size:15px;font-weight:600;color:#4b3561"><span>Sans carte bancaire pour Free</span><span>·</span><span>Résiliable en 1 clic</span><span>·</span><span>TVA incluse</span></div>
+  </section>
+
+  <section data-screen-label="Comparatif" style="display:flex;flex-direction:column;gap:28px">
+    <h2 style="margin:0;font-family:Poppins;font-weight:700;font-size:clamp(30px,3.6vw,48px);letter-spacing:-.035em">Comparer en détail</h2>
+    <div style="overflow-x:auto;border-radius:24px;border:1px solid #eee2f2;background:#fff">
+      <div style="min-width:760px">
+        <div style="display:grid;grid-template-columns:1.6fr repeat(4,1fr);padding:18px 24px;font-family:Poppins;font-weight:700;font-size:16px;border-bottom:1px solid #eee2f2">
+          <span></span><span>Free</span><span style="color:#7c4dff">Creator</span><span>Pro</span><span>Studio</span>
+        </div>
+        <sc-for list="{{ rows }}" as="r" hint-placeholder-count="8">
+          <div style="display:grid;grid-template-columns:1.6fr repeat(4,1fr);padding:15px 24px;font-size:15px;border-bottom:1px solid #f4ecf6">
+            <span style="font-weight:700">{{ r.label }}</span>
+            <sc-for list="{{ r.vals }}" as="v" hint-placeholder-count="4"><span style="color:#4b3561;font-weight:600">{{ v }}</span></sc-for>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section id="packs" data-screen-label="Packs" style="border-radius:36px;background:#140a22;color:#fff;padding:clamp(32px,5vw,64px);display:flex;flex-direction:column;gap:32px">
+    <div style="display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;align-items:flex-end">
+      <div style="display:flex;flex-direction:column;gap:12px;max-width:620px">
+        <span style="font-family:'JetBrains Mono';font-size:13px;color:#c9a8ff;letter-spacing:.08em">PACKS MOTION &amp; STYLE</span>
+        <h2 style="margin:0;font-family:Poppins;font-weight:700;font-size:clamp(30px,3.6vw,48px);letter-spacing:-.035em;line-height:1.05">Une identité visuelle en un clic.</h2>
+        <p style="margin:0;font-size:16px;line-height:1.6;color:#d9cbe8">Achat unique, utilisable sur toutes vos vidéos. Compatible avec tous les plans, y compris Free.</p>
+      </div>
+      <span style="font-family:Poppins;font-weight:700;font-size:20px">19 à 49 € l’unité</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:14px">
+      <sc-for list="{{ packs }}" as="k" hint-placeholder-count="4">
+        <div style="border-radius:22px;background:#1e1230;border:1px solid #2f2046;overflow:hidden;display:flex;flex-direction:column">
+          <img src="{{ k.img }}" alt="" style="width:100%;aspect-ratio:16/10;object-fit:cover;display:block;background:{{ k.bg }}">
+          <div style="padding:18px;display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;justify-content:space-between;gap:10px"><span style="font-family:Poppins;font-weight:700;font-size:17px">{{ k.name }}</span><span style="font-family:Poppins;font-weight:700;font-size:17px">{{ k.price }} €</span></div>
+            <span style="font-size:14px;color:#d9cbe8">{{ k.desc }}</span>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section data-screen-label="FAQ" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:40px">
+    <h2 style="margin:0;font-family:Poppins;font-weight:700;font-size:clamp(30px,3.6vw,48px);letter-spacing:-.035em;line-height:1.05">Questions fréquentes</h2>
+    <div style="display:flex;flex-direction:column">
+      <sc-for list="{{ faq }}" as="q" hint-placeholder-count="5">
+        <div onClick="{{ q.toggle }}" style="border-bottom:1px solid #eadcf0;padding:22px 0;cursor:pointer;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;justify-content:space-between;gap:16px;font-weight:800;font-size:17px"><span>{{ q.q }}</span><span style="color:#7c4dff;font-size:20px;line-height:1">{{ q.sign }}</span></div>
+          <sc-if value="{{ q.open }}" hint-placeholder-val="{{ false }}"><div style="font-size:15px;line-height:1.6;color:#4b3561">{{ q.a }}</div></sc-if>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+</main>
+
+<section style="border-radius:36px;padding:clamp(48px,7vw,100px) clamp(20px,5vw,72px);text-align:center;background:radial-gradient(50% 60% at 20% 30%,#b27cc9,rgba(178,124,201,0)),radial-gradient(50% 60% at 80% 70%,#f0a9cf,rgba(240,169,207,0)),linear-gradient(180deg,#a978c2,#d79fc8);display:flex;flex-direction:column;align-items:center;gap:24px">
+  <h2 style="margin:0;font-family:Poppins;font-weight:800;color:#fff;font-size:clamp(36px,5.4vw,80px);line-height:.95;letter-spacing:-.045em;text-transform:uppercase;text-wrap:balance">30 minutes offertes pour essayer</h2>
+  <a href="Plug%20Inscription.dc.html" style="background:#fff;color:#26143a;font-weight:800;font-size:17px;padding:18px 30px;border-radius:999px">Créer mon compte gratuit →</a>
+</section>
+<footer style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;padding:18px 28px 28px;font-size:14px;color:#4b3561;font-weight:600"><span>© 2026 Plug</span><div style="display:flex;gap:24px"><a href="Plug%20Accueil.dc.html">Accueil</a><a href="Plug%20Editeur.dc.html">Éditeur</a><a href="#">CGU</a></div></footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;defaultYearly&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  state = { yearly: this.props.defaultYearly ?? false, open: 0 };
+  renderVals() {
+    const y = this.state.yearly;
+    const P = [
+      ['Free', 0, 'Pour tester Plug sur vos vraies vidéos.', ['30 min de rushes traités / mois', 'Export 1080p avec filigrane', '3 projets actifs', '5 Go de stockage'], 'Commencer', 'free', ''],
+      ['Creator', 29, 'Pour les créateurs qui publient chaque semaine.', ['5 h de rushes traités / mois', 'Export 1080p sans filigrane', 'Tous les styles de montage', 'Projets illimités', '100 Go de stockage'], 'Choisir Creator', 'creator', 'Recommandé'],
+      ['Pro', 59, 'Pour les chaînes à fort volume.', ['15 h de rushes traités / mois', 'Export 4K', 'Rendu prioritaire', 'Marque personnalisée', '500 Go de stockage'], 'Choisir Pro', 'pro', ''],
+      ['Studio', 149, 'Pour les agences et les équipes marketing.', ['50 h de rushes traités / mois', '5 sièges inclus', 'Espace équipe et validation', 'Support dédié', '2 To de stockage'], 'Choisir Studio', 'studio', '']
+    ];
+    const rows = [['Rushes traités par l’IA / mois', ['30 min', '5 h', '15 h', '50 h']], ['Heures supplémentaires', ['—', '6 € / h', '5 € / h', '4 € / h']], ['Résolution d’export', ['1080p', '1080p', '4K', '4K']], ['Filigrane', ['Oui', 'Non', 'Non', 'Non']], ['Styles de montage IA', ['3', 'Tous', 'Tous', 'Tous']], ['File de rendu', ['Standard', 'Standard', 'Prioritaire', 'Prioritaire']], ['Sièges', ['1', '1', '1', '5']], ['Stockage', ['5 Go', '100 Go', '500 Go', '2 To']]];
+    const faq = [['Que compte une « heure de rushes traitée » ?', 'La durée des fichiers bruts que l’IA analyse et monte. Une vidéo finale de 15 min issue de 1 h de rushes consomme 1 h. Les retouches manuelles dans l’éditeur ne consomment rien.'], ['Que se passe-t-il si je dépasse mon quota ?', 'Plug vous prévient à 80 %. Vous pouvez acheter des heures à l’unité ou passer au plan supérieur, sans perdre votre travail.'], ['Puis-je changer de plan à tout moment ?', 'Oui. Le passage à un plan supérieur est immédiat et calculé au prorata. La résiliation prend effet à la fin de la période.'], ['Mes vidéos servent-elles à entraîner l’IA ?', 'Non. Vos fichiers restent privés et ne sont jamais utilisés pour entraîner des modèles.'], ['Les packs sont-ils inclus dans les abonnements ?', 'Non, ce sont des achats uniques. Une fois achetés, ils restent à vous, même si vous changez de plan.']];
+    return {
+      mBg: y ? 'transparent' : '#fff', yBg: y ? '#fff' : 'transparent',
+      setMonthly: () => this.setState({ yearly: false }), setYearly: () => this.setState({ yearly: true }),
+      plans: P.map(([name, m, tag, items, cta, id, badge]) => {
+        const hot = id === 'creator', price = y ? Math.round(m * 0.8) : m;
+        return { name, tag, items, cta, badge, price: String(price), billing: m === 0 ? 'Gratuit pour toujours' : y ? 'soit ' + price * 12 + ' € facturés par an' : 'facturé chaque mois', href: 'Plug%20Inscription.dc.html?plan=' + id, bg: hot ? 'linear-gradient(165deg,#2c1745,#1a0d2b)' : '#fff', fg: hot ? '#fff' : '#26143a', border: hot ? '#3a2458' : '#eee2f2', check: hot ? '#ff9ec8' : '#7c4dff', ctaBg: hot ? 'linear-gradient(135deg,#8a5cff,#ff6fb0)' : id === 'free' ? '#f1e8f6' : '#26143a', ctaFg: id === 'free' ? '#26143a' : '#fff' };
+      }),
+      rows: rows.map(([label, vals]) => ({ label, vals })),
+      packs: [['Neon Pulse', 29, 'Titres néon et transitions rythmées pour le gaming.', 'linear-gradient(135deg,#2a1540,#ff6fb0)'], ['Docu Press', 39, 'Cartons, surlignages et chiffres clés façon enquête.', 'linear-gradient(135deg,#1a1a1a,#FFC72C)'], ['Soft Vlog', 19, 'Étalonnage doux et sous-titres arrondis.', 'linear-gradient(135deg,#f0a9cf,#ffd29a)'], ['Tech Clean', 49, 'Callouts, zooms écran et habillage produit.', 'linear-gradient(135deg,#0f3340,#8a5cff)']].map(([name, price, desc, bg], i) => ({ name, price, desc, bg, img: 'https://images.unsplash.com/photo-' + ['1470225620780-dba8ba36b745', '1478720568477-152d9b164e26', '1492691527719-9d1e07e534b4', '1574717024653-61fd2cf4d44d'][i] + '?w=600&q=70&auto=format&fit=crop' })),
+      faq: faq.map(([q, a], i) => ({ q, a, open: this.state.open === i, sign: this.state.open === i ? '−' : '+', toggle: () => this.setState({ open: this.state.open === i ? -1 : i }) }))
+    };
+  }
+}
+</script>
+</body>
+</html>

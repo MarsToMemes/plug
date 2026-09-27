@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#e7e2ec;font-family:Poppins,system-ui,sans-serif;color:#f4f0f8;-webkit-font-smoothing:antialiased}
+a{color:#c9a8ff;text-decoration:none}a:hover{color:#fff}
+*{box-sizing:border-box}
+textarea,input,button{font-family:inherit}
+input[type=range]{-webkit-appearance:none;appearance:none;background:transparent}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#fff;border:4px solid #a06bff;margin-top:-6px;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:6px;background:transparent}
+</style>
+</helmet>
+<div style="height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center">
+<div data-screen-label="Éditeur" style="flex:none;width:1440px;height:900px;transform:scale({{ scale }});transform-origin:center center;border-radius:40px;background:#111013;padding:28px;display:grid;grid-template-columns:72px 340px minmax(0,1fr) minmax(300px,0.78fr);grid-template-rows:48px minmax(0,1fr);column-gap:28px;row-gap:24px;box-shadow:0 40px 90px -40px rgba(40,10,60,.55)">
+
+  <a href="Plug%20Accueil.dc.html" style="display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:22px;letter-spacing:-.03em">
+    <span style="width:44px;height:44px;border-radius:14px;background:#fff;display:grid;place-items:center"><span style="width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,#7c4dff,#ff6fb0)"></span></span>
+  </a>
+  <div style="display:flex;gap:10px;align-items:center">
+    <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+      <button onClick="{{ t.on }}" style="white-space:nowrap;height:46px;padding:0 18px;border-radius:14px;border:1px solid {{ t.bd }};background:{{ t.bg }};color:#fff;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px" style-hover="border-color:#5a5260">{{ t.label }}</button>
+    </sc-for>
+  </div>
+  <div style="grid-column:3 / 5;display:flex;align-items:center;justify-content:flex-end;gap:12px">
+    <span style="font-size:13px;color:#b9b0c2">Montage IA restant</span>
+    <span style="font-family:'JetBrains Mono';font-size:13px;color:#fff">3h06</span>
+    <a href="Plug%20Tarifs.dc.html" style="height:40px;padding:0 16px;border-radius:12px;border:1px solid #2e2a33;color:#fff;font-size:13px;display:flex;align-items:center" style-hover="border-color:#5a5260;color:#fff">Passer Pro</a>
+    <button onClick="{{ doExport }}" style="height:40px;padding:0 18px;border-radius:12px;border:0;background:#fff;color:#111013;font-size:13px;font-weight:600;cursor:pointer">Exporter</button>
+    <span style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#ffb36b,#ff6fb0);display:grid;place-items:center;font-size:14px;font-weight:600;color:#111013">SN</span>
+  </div>
+
+  <nav style="display:flex;flex-direction:column;align-items:center;gap:16px;padding-top:28px">
+    <sc-for list="{{ rail }}" as="r" hint-placeholder-count="5">
+      <button onClick="{{ r.on }}" title="{{ r.label }}" style="width:66px;height:66px;border-radius:50%;border:1px solid {{ r.bd }};background:{{ r.bg }};color:{{ r.fg }};display:grid;place-items:center;cursor:pointer;transition:all .15s" style-hover="border-color:#5a5260">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="{{ r.d }}"></path></svg>
+      </button>
+    </sc-for>
+  </nav>
+
+  <section data-screen-label="Réglages" style="display:{{ setDisp }};flex-direction:column;gap:12px;min-height:0;overflow:auto;scrollbar-width:none;padding-top:14px">
+    <sc-if value="{{ pShorts }}" hint-placeholder-val="{{ false }}">
+      <h1 style="margin:0 0 6px;font-size:32px;font-weight:500;letter-spacing:-.02em;line-height:1.1">Créer des Shorts</h1>
+      <div style="border-radius:18px;background:#1c1a1f;padding:16px 18px;display:flex;flex-direction:column;gap:12px;flex:none">
+        <span style="font-size:15px">Durée</span>
+        <div style="display:flex;gap:8px"><sc-for list="{{ shDur }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.on }}" style="flex:1;height:38px;border-radius:10px;border:1px solid {{ o.bd }};background:{{ o.bg }};color:#fff;font-size:13px;cursor:pointer">{{ o.label }}</button></sc-for></div>
+      </div>
+      <div style="font-size:13px;color:#8f8797;padding:4px 4px 0">Moments forts détectés</div>
+      <sc-for list="{{ moments }}" as="m" hint-placeholder-count="4">
+        <button onClick="{{ m.on }}" style="flex:none;display:flex;align-items:center;gap:12px;padding:10px;border-radius:16px;border:1px solid {{ m.bd }};background:#1c1a1f;color:#fff;cursor:pointer;text-align:left">
+          <img src="{{ m.img }}" alt="" style="width:44px;height:72px;border-radius:9px;object-fit:cover;flex:none">
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px"><span style="font-size:14px">{{ m.label }}</span><span style="font-family:'JetBrains Mono';font-size:12px;color:#8f8797">{{ m.tc }}</span></div>
+          <span style="width:22px;height:22px;border-radius:50%;border:1px solid {{ m.bd }};background:{{ m.dot }};flex:none"></span>
+        </button>
+      </sc-for>
+      <div style="flex:1;min-height:8px"></div>
+      <button onClick="{{ makeShorts }}" style="flex:none;height:60px;border-radius:18px;border:0;background:linear-gradient(135deg,#8a5cff,#ff6fb0);color:#fff;font-size:18px;font-weight:500;cursor:pointer">{{ shortsCta }}</button>
+    </sc-if>
+    <sc-if value="{{ pTexte }}" hint-placeholder-val="{{ false }}">
+      <h1 style="margin:0 0 6px;font-size:32px;font-weight:500;letter-spacing:-.02em;line-height:1.1">Titres &amp; sous-titres</h1>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;flex:none">
+        <sc-for list="{{ subStyles }}" as="o" hint-placeholder-count="4">
+          <button onClick="{{ o.on }}" style="height:96px;border-radius:16px;border:1px solid {{ o.bd }};background:#1c1a1f;color:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px">
+            <span style="font-family:{{ o.font }};font-weight:800;font-size:18px;color:{{ o.c }};text-transform:{{ o.tt }}">Bonjour Tokyo</span>
+            <span style="font-size:12px;color:#8f8797">{{ o.label }}</span>
+          </button>
+        </sc-for>
+      </div>
+      <div style="border-radius:18px;background:#1c1a1f;padding:16px 18px;display:flex;flex-direction:column;gap:12px;flex:none">
+        <span style="font-size:15px">Position</span>
+        <div style="display:flex;gap:8px"><sc-for list="{{ subPos }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.on }}" style="flex:1;height:38px;border-radius:10px;border:1px solid {{ o.bd }};background:{{ o.bg }};color:#fff;font-size:13px;cursor:pointer">{{ o.label }}</button></sc-for></div>
+      </div>
+      <div style="border-radius:18px;background:#1c1a1f;padding:16px 18px;display:flex;align-items:center;gap:12px;flex:none">
+        <span style="font-size:15px;flex:1">Mots-clés en couleur</span>
+        <button onClick="{{ toggleKw }}" style="width:38px;height:22px;border-radius:22px;border:0;background:{{ kwTrack }};position:relative;cursor:pointer;padding:0"><span style="position:absolute;top:3px;left:{{ kwKnob }};width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s"></span></button>
+      </div>
+      <div style="flex:1;min-height:8px"></div>
+      <button onClick="{{ applySubs }}" style="flex:none;height:60px;border-radius:18px;border:0;background:linear-gradient(135deg,#8a5cff,#ff6fb0);color:#fff;font-size:18px;font-weight:500;cursor:pointer">Appliquer aux sous-titres</button>
+    </sc-if>
+    <sc-if value="{{ pPacks }}" hint-placeholder-val="{{ false }}">
+      <h1 style="margin:0 0 6px;font-size:32px;font-weight:500;letter-spacing:-.02em;line-height:1.1">Packs</h1>
+      <sc-for list="{{ packs }}" as="k" hint-placeholder-count="4">
+        <button onClick="{{ k.on }}" style="flex:none;display:flex;align-items:center;gap:14px;padding:10px;border-radius:18px;border:1px solid {{ k.bd }};background:#1c1a1f;color:#fff;cursor:pointer;text-align:left">
+          <img src="{{ k.img }}" alt="" style="width:72px;height:56px;border-radius:12px;object-fit:cover;flex:none">
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px"><span style="font-size:15px">{{ k.name }}</span><span style="font-size:12px;color:#8f8797">{{ k.desc }}</span></div>
+          <span style="font-size:12px;color:#b9b0c2;padding-right:6px">{{ k.state }}</span>
+        </button>
+      </sc-for>
+      <a href="Plug%20Tarifs.dc.html" style="flex:none;font-size:13px;color:#b9b0c2;padding:4px">Voir tous les packs →</a>
+      <div style="flex:1;min-height:8px"></div>
+      <button onClick="{{ applyPack }}" style="flex:none;height:60px;border-radius:18px;border:0;background:linear-gradient(135deg,#8a5cff,#ff6fb0);color:#fff;font-size:18px;font-weight:500;cursor:pointer">Appliquer le pack</button>
+    </sc-if>
+    <sc-if value="{{ pOutils }}" hint-placeholder-val="{{ false }}">
+      <h1 style="margin:0 0 6px;font-size:32px;font-weight:500;letter-spacing:-.02em;line-height:1.1">Outils IA</h1>
+      <sc-for list="{{ tools }}" as="o" hint-placeholder-count="5">
+        <div style="flex:none;display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:18px;background:#1c1a1f">
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px"><span style="font-size:15px">{{ o.label }}</span><span style="font-size:12px;color:#8f8797">{{ o.desc }}</span></div>
+          <button onClick="{{ o.on }}" style="flex:none;width:38px;height:22px;border-radius:22px;border:0;background:{{ o.track }};position:relative;cursor:pointer;padding:0"><span style="position:absolute;top:3px;left:{{ o.knob }};width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s"></span></button>
+        </div>
+      </sc-for>
+      <div style="flex:1;min-height:8px"></div>
+      <button onClick="{{ runTools }}" style="flex:none;height:60px;border-radius:18px;border:0;background:linear-gradient(135deg,#8a5cff,#ff6fb0);color:#fff;font-size:18px;font-weight:500;cursor:pointer">{{ toolsCta }}</button>
+    </sc-if>
+    <sc-if value="{{ pMontage }}" hint-placeholder-val="{{ true }}">
+    <h1 style="margin:0 0 6px;font-size:32px;font-weight:500;letter-spacing:-.02em;line-height:1.1">Monter la vidéo</h1>
+    <div style="border-radius:24px;background:#1c1a1f;padding:18px 20px;display:flex;flex-direction:column;gap:14px;flex:none">
+      <div style="display:flex;align-items:center;gap:12px">
+        <img src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=160&q=70&auto=format&fit=crop" alt="" style="width:46px;height:34px;border-radius:9px;object-fit:cover;flex:none">
+        <div style="flex:1;min-width:0"><div style="font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ fileName }}</div><div style="font-size:12px;color:#8f8797;font-family:'JetBrains Mono'">rush · 42:18</div></div>
+        <a href="Plug%20Accueil.dc.html#upload" style="font-size:12px;color:#b9b0c2">Changer</a>
+      </div>
+      <div style="height:1px;background:#2a272e"></div>
+      <textarea value="{{ prompt }}" onChange="{{ onPrompt }}" rows="5" style="resize:none;border:0;outline:none;background:transparent;color:#fff;font-size:15px;line-height:1.65;padding:0" placeholder="Décrivez le montage souhaité"></textarea>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button onClick="{{ toggleAi }}" style="width:38px;height:22px;border-radius:22px;border:0;background:{{ aiTrack }};position:relative;cursor:pointer;padding:0"><span style="position:absolute;top:3px;left:{{ aiKnob }};width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s"></span></button>
+        <span style="font-size:13px;flex:1">Suggestions IA</span>
+        <button onClick="{{ enhance }}" title="Améliorer la consigne" style="border:0;background:transparent;color:#b9b0c2;cursor:pointer;font-size:16px" style-hover="color:#fff">✦</button>
+      </div>
+    </div>
+
+    <sc-for list="{{ rows }}" as="w" hint-placeholder-count="3">
+      <div style="border-radius:18px;background:#1c1a1f;flex:none;overflow:hidden">
+        <button onClick="{{ w.toggle }}" style="width:100%;height:56px;border:0;background:transparent;color:#fff;display:flex;align-items:center;gap:12px;padding:0 18px;cursor:pointer;font-size:15px;text-align:left">
+          <span style="width:30px;height:30px;border-radius:9px;background:{{ w.sw }};flex:none"></span>
+          <span style="flex:1">{{ w.label }}</span>
+          <span style="color:#b9b0c2;font-size:13px">{{ w.value }}</span>
+          <span style="color:#b9b0c2;font-size:18px;transform:rotate({{ w.rot }});transition:transform .15s">›</span>
+        </button>
+        <sc-if value="{{ w.open }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-wrap:wrap;gap:8px;padding:0 18px 16px">
+            <sc-for list="{{ w.opts }}" as="o" hint-placeholder-count="4">
+              <button onClick="{{ o.on }}" style="height:34px;padding:0 14px;border-radius:10px;border:1px solid {{ o.bd }};background:{{ o.bg }};color:#fff;font-size:13px;cursor:pointer">{{ o.label }}</button>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+    </sc-for>
+
+    <div style="border-radius:18px;background:#1c1a1f;padding:16px 18px;display:flex;flex-direction:column;gap:12px;flex:none">
+      <div style="display:flex;justify-content:space-between;font-size:15px"><span>Rythme des coupes</span><span style="font-family:'JetBrains Mono';font-size:13px;color:#b9b0c2">{{ rythmeVal }}</span></div>
+      <div style="position:relative;height:18px;display:flex;align-items:center">
+        <div style="position:absolute;left:0;right:0;height:6px;border-radius:6px;background:#2e2a33"></div>
+        <div style="position:absolute;left:0;width:{{ rythmePct }};height:6px;border-radius:6px;background:linear-gradient(90deg,#7c4dff,#ff6fb0)"></div>
+        <input type="range" min="0" max="100" value="{{ rythme }}" onChange="{{ onRythme }}" style="position:relative;width:100%;margin:0">
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;color:#8f8797"><span>Posé</span><span>Équilibré</span><span>Nerveux</span></div>
+    </div>
+
+    <div style="flex:1;min-height:8px"></div>
+    <button onClick="{{ generate }}" style="flex:none;height:60px;border-radius:18px;border:0;background:linear-gradient(135deg,#8a5cff,#ff6fb0);color:#fff;font-size:18px;font-weight:500;cursor:pointer;box-shadow:0 16px 40px -16px rgba(255,111,176,.7)" style-hover="filter:brightness(1.08)">{{ ctaLabel }}</button>
+    </sc-if>
+  </section>
+
+  <section data-screen-label="Aperçu" style="display:{{ prevDisp }};position:relative;border-radius:30px;overflow:hidden;background:{{ cur.bg }};min-height:0;transition:background .4s">
+    <img src="{{ cur.img }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+    <sc-if value="{{ cur.vid }}" hint-placeholder-val="{{ false }}"><video ref="{{ vidRef }}" src="{{ cur.vid }}" poster="{{ cur.img }}" muted="{{ true }}" loop="{{ true }}" playsInline="{{ true }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video></sc-if>
+    <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.25) 0%,rgba(0,0,0,.1) 40%,rgba(0,0,0,.7))"></div>
+    <div style="position:absolute;left:24px;top:22px;right:24px;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:13px;padding:8px 14px;border-radius:12px;background:rgba(0,0,0,.28);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.18)">{{ cur.name }}</span>
+      <span style="font-family:'JetBrains Mono';font-size:13px;padding:8px 12px;border-radius:12px;background:rgba(0,0,0,.28);backdrop-filter:blur(10px)">{{ tcNow }} / {{ cur.dur }}</span>
+    </div>
+    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:10%">
+      <div style="font-weight:700;text-transform:uppercase;text-align:center;font-size:clamp(28px,3.4vw,58px);line-height:1;letter-spacing:-.02em;text-shadow:0 6px 30px rgba(0,0,0,.35);text-wrap:balance">
+        <sc-for list="{{ cur.segs }}" as="sg" hint-placeholder-count="2"><span style="color:{{ sg.c }}">{{ sg.t }}</span></sc-for>
+      </div>
+    </div>
+    <button onClick="{{ togglePlay }}" style="position:absolute;left:50%;top:50%;margin:62px 0 0 -34px;width:68px;height:68px;border-radius:50%;border:1px solid rgba(255,255,255,.55);background:rgba(255,255,255,.2);backdrop-filter:blur(14px);color:#fff;font-size:18px;cursor:pointer" style-hover="background:rgba(255,255,255,.32)">{{ playIcon }}</button>
+    <div style="position:absolute;left:24px;right:24px;bottom:22px;display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <sc-for list="{{ chips }}" as="c" hint-placeholder-count="3"><span style="white-space:nowrap;font-size:13px;padding:7px 14px;border-radius:11px;border:1px solid rgba(255,255,255,.4);background:rgba(255,255,255,.1);backdrop-filter:blur(8px)">{{ c }}</span></sc-for>
+      </div>
+      <div style="font-size:15px;line-height:1.45;max-width:640px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ promptShort }}</div>
+      <div onClick="{{ seek }}" style="position:relative;height:30px;display:flex;gap:3px;align-items:center;cursor:pointer">
+        <sc-for list="{{ clips }}" as="k" hint-placeholder-count="18"><div style="flex:{{ k.f }} 1 0;height:{{ k.h }};border-radius:4px;background:{{ k.c }}"></div></sc-for>
+        <div style="position:absolute;top:-4px;bottom:-4px;left:{{ playPct }};width:2px;border-radius:2px;background:#fff;box-shadow:0 0 10px #fff;pointer-events:none"></div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="Médiathèque" style="grid-column:2 / 4;grid-row:2;min-height:0;display:{{ libDisp }}">
+    <dc-import name="Mediatheque" on-add="{{ onLibAdd }}" hint-size="100%,100%" style="width:100%;height:100%"></dc-import>
+  </section>
+
+  <section data-screen-label="Versions" style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:minmax(0,1fr) minmax(0,1fr) minmax(220px,0.9fr);gap:14px;min-height:0">
+    <button onClick="{{ generate }}" style="border-radius:26px;border:0;background:#1c1a1f;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;cursor:pointer;padding:16px" style-hover="background:#232027">
+      <sc-if value="{{ isGen }}" hint-placeholder-val="{{ false }}">
+        <span style="font-size:34px;font-weight:600;letter-spacing:-.03em;background:linear-gradient(135deg,#a06bff,#ff8fb9);-webkit-background-clip:text;background-clip:text;color:transparent">{{ genPct }}</span>
+        <span style="font-size:14px">{{ genStep }}</span>
+      </sc-if>
+      <sc-if value="{{ notGen }}" hint-placeholder-val="{{ true }}">
+        <svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"><path d="M12 3.5l2.5 5.2 5.6.8-4 4 1 5.6-5.1-2.7-5.1 2.7 1-5.6-4-4 5.6-.8z"></path><path d="M4 3v3M2.5 4.5h3M20 2v3M18.5 3.5h3" stroke-linecap="round"></path></svg>
+        <span style="font-size:14px">Nouvelle version</span>
+      </sc-if>
+    </button>
+    <sc-for list="{{ versions }}" as="v" hint-placeholder-count="3">
+      <button onClick="{{ v.pick }}" style="position:relative;border-radius:26px;border:0;outline:2px solid {{ v.ol }};outline-offset:-2px;background:{{ v.bg }};color:#fff;cursor:pointer;overflow:hidden;padding:0;text-align:left" style-hover="filter:brightness(1.08)">
+        <img src="{{ v.img }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+        <sc-if value="{{ v.vid }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;right:14px;top:12px;font-size:11px;font-weight:600;padding:5px 9px;border-radius:9px;background:rgba(0,0,0,.35);backdrop-filter:blur(8px)">VIDÉO</span></sc-if>
+        <span style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 40%,rgba(0,0,0,.65))"></span>
+        <span style="position:absolute;left:14px;top:12px;font-size:12px;padding:5px 10px;border-radius:9px;background:rgba(0,0,0,.28);backdrop-filter:blur(8px)">{{ v.dur }}</span>
+        <span style="position:absolute;left:16px;right:16px;bottom:14px;display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:500">{{ v.name }}</span><span style="font-size:12px;color:#e8e0ee">{{ v.desc }}</span></span>
+      </button>
+    </sc-for>
+    <a href="Plug%20Tarifs.dc.html#packs" style="grid-column:1 / 3;position:relative;border-radius:28px;background:linear-gradient(160deg,#f6e6ef,#ead9f3 60%,#f3d9e4);color:#1b1320;padding:22px 24px;overflow:hidden;display:block;margin-top:14px" style-hover="color:#1b1320">
+      <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:16px;font-weight:500">Packs Motion &amp; Style</span><span style="width:48px;height:48px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:18px">→</span></div>
+      <div style="position:absolute;left:50%;bottom:18px;transform:translateX(-50%);width:220px;height:130px">
+        <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300&q=70&auto=format&fit=crop" alt="" style="position:absolute;left:0;top:26px;width:100px;height:96px;border-radius:24px;object-fit:cover;transform:rotate(-8deg)">
+        <img src="https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=300&q=70&auto=format&fit=crop" alt="" style="position:absolute;right:0;top:0;width:100px;height:110px;border-radius:24px;object-fit:cover;transform:rotate(12deg)">
+        <span style="position:absolute;left:62px;top:26px;width:96px;height:96px;border-radius:50%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 10px 30px -10px rgba(60,20,80,.4)"><span style="font-size:24px;font-weight:600;line-height:1">40</span><span style="font-size:13px">presets</span></span>
+      </div>
+    </a>
+  </section>
+
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;left:50%;bottom:40px;transform:translateX(-50%);z-index:50;padding:12px 20px;border-radius:14px;background:#fff;color:#111013;font-weight:500;font-size:14px;box-shadow:0 20px 40px -12px rgba(0,0,0,.5)">{{ toast }}</div>
+  </sc-if>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const BGS = [
+  'radial-gradient(70% 60% at 30% 25%,#ff9ec8 0%,rgba(255,158,200,0) 60%),radial-gradient(60% 60% at 80% 80%,#7c4dff 0%,rgba(124,77,255,0) 70%),linear-gradient(160deg,#5b2fb8,#c04c8a)',
+  'radial-gradient(60% 60% at 70% 30%,#ffd29a 0%,rgba(255,210,154,0) 60%),linear-gradient(160deg,#b0356f,#4d1636)',
+  'radial-gradient(60% 60% at 30% 70%,#8fb6ff 0%,rgba(143,182,255,0) 60%),linear-gradient(160deg,#2a1540,#6b4fa8)',
+  'radial-gradient(60% 60% at 60% 40%,#ff8f8f 0%,rgba(255,143,143,0) 60%),linear-gradient(160deg,#3b1a5c,#ff6fb0)',
+  'radial-gradient(60% 60% at 40% 30%,#c9f0ff 0%,rgba(201,240,255,0) 55%),linear-gradient(160deg,#0f3340,#8a5cff)'
+];
+const U = id => 'https://images.unsplash.com/photo-' + id + '?w=1400&q=75&auto=format&fit=crop';
+const MK = id => 'https://assets.mixkit.co/videos/' + id + '/' + id + '-720.mp4';
+const NEW_IMGS = [U('1542051841857-5f90071e7989'), U('1554797589-7241bb691973'), U('1480796927426-f609979314bd'), U('1492571350019-22de08371fd3'), U('1536098561742-ca998e48cbcc')];
+const TITLES = ['[48 HEURES] À TOKYO', 'LE [VRAI] PRIX DU RAMEN', 'CE QUE [PERSONNE] NE MONTRE', '[3 QUARTIERS] EN UNE NUIT', 'LA [FIN] DU VOYAGE'];
+const STYLES = ['Vlog', 'Tuto', 'Podcast', 'Gaming', 'Documentaire'];
+const FORMATS = ['16:9 YouTube', '9:16 Shorts', '1:1'];
+const MUSIC = ['Lo-fi', 'Cinématique', 'Électro', 'Sans musique'];
+const ICONS = {
+  montage: 'M4 5h16v14H4z M4 9h16 M9 5v4 M15 5v4 M10 13l4 2-4 2z',
+  shorts: 'M8 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z M11 10l3 2-3 2z',
+  texte: 'M4 20h4L19 9l-4-4L4 16z M14 6l4 4',
+  medias: 'M7 7h13v13H7z M4 17V4h13 M10 16l3-3 2 2 2-2 3 3',
+  packs: 'M12 3.5l2.5 5.2 5.6.8-4 4 1 5.6-5.1-2.7-5.1 2.7 1-5.6-4-4 5.6-.8z'
+};
+const segs = t => t.split(/(\[[^\]]*\])/).filter(Boolean).map(p => p[0] === '[' ? { t: p.slice(1, -1), c: '#FFD35C' } : { t: p, c: '#fff' });
+
+class Component extends DCLogic {
+  state = {
+    tab: 'video', railSel: 'montage', ai: true, open: null, style: 0, format: 0, music: 0, rythme: 62,
+    prompt: 'Vlog de voyage dynamique. Garde les réactions spontanées, coupe les silences et les hésitations, accroche forte dans les 5 premières secondes, sous-titres animés.',
+    versions: [
+      { name: 'Version C', desc: 'Nerveux · 38 coupes', dur: '09:12', bg: BGS[1], title: TITLES[1], img: 'https://assets.mixkit.co/videos/4231/4231-thumb-720-0.jpg', vid: MK(4231) },
+      { name: 'Version B', desc: 'Équilibré · 31 coupes', dur: '10:04', bg: BGS[2], title: TITLES[3], img: U('1513407030348-c983a97b98d8'), vid: MK(4383) },
+      { name: 'Version A', desc: 'Posé · 24 coupes', dur: '11:47', bg: BGS[0], title: TITLES[0], img: U('1540959733332-eab4deabeeaf'), vid: MK(4308) }
+    ],
+    sel: 0, gen: null, playing: false, t: 0.18, toast: '',
+    shDur: 1, moms: [0, 2], subSt: 0, subPos: 1, kw: true, med: [0], pack: 0, tools: [0, 2]
+  };
+  fit = () => this.setState({ scale: Math.min(1, (window.innerWidth - 24) / 1440, (window.innerHeight - 24) / 900) });
+  componentDidMount() {
+    this.fit(); window.addEventListener('resize', this.fit);
+    try { const up = JSON.parse(localStorage.getItem('plug_upload') || 'null'); if (up && up.name) { this.setState(up.count > 1 ? { file: up.name, railSel: 'medias' } : { file: up.name }); this.flash('Import terminé · 3 versions proposées'); } } catch (e) {}
+  }
+  componentWillUnmount() { window.removeEventListener('resize', this.fit); clearInterval(this.iv); clearInterval(this.giv); clearTimeout(this.tt); }
+  flash(m) { clearTimeout(this.tt); this.setState({ toast: m }); this.tt = setTimeout(() => this.setState({ toast: '' }), 2400); }
+  vidRef = React.createRef();
+  componentDidUpdate(pp, ps) {
+    const v = this.vidRef.current; if (!v) return;
+    if (this.state.playing && v.paused) v.play().catch(() => {});
+    if (!this.state.playing && !v.paused) v.pause();
+  }
+  togglePlay() {
+    if (this.state.playing) { clearInterval(this.iv); return this.setState({ playing: false }); }
+    this.setState({ playing: true });
+    this.iv = setInterval(() => this.setState(s => { const t = s.t + 0.002; if (t >= 1) { clearInterval(this.iv); return { t: 1, playing: false }; } return { t }; }), 60);
+  }
+  generate() {
+    if (this.state.gen !== null) return;
+    this.setState({ gen: 0 });
+    this.giv = setInterval(() => this.setState(s => {
+      const g = s.gen + 1.5 + Math.random() * 3;
+      if (g < 100) return { gen: g };
+      clearInterval(this.giv);
+      const n = s.versions.length, r = s.rythme, cuts = Math.round(18 + r * 0.3);
+      const v = { name: 'Version ' + String.fromCharCode(65 + n), desc: STYLES[s.style] + ' · ' + cuts + ' coupes', dur: String(Math.round(13 - r / 14)).padStart(2, '0') + ':' + String(10 + (n * 17) % 49).padStart(2, '0'), bg: BGS[n % 5], title: TITLES[n % 5], img: NEW_IMGS[(n - 3) % NEW_IMGS.length] };
+      setTimeout(() => this.flash(v.name + ' prête'), 0);
+      return { gen: null, versions: [v, ...s.versions], sel: 0, t: 0 };
+    }), 110);
+  }
+  renderVals() {
+    const s = this.state, cur = s.versions[s.sel], g = s.gen;
+    const pick = (key, list) => list.map((label, i) => ({ label, bg: s[key] === i ? '#2e2a33' : 'transparent', bd: s[key] === i ? '#a06bff' : '#2e2a33', on: () => this.setState({ [key]: i, open: null }) }));
+    const row = (id, label, key, list, sw) => ({ label, value: list[s[id === 'style' ? 'style' : key]], sw, open: s.open === id, rot: s.open === id ? '90deg' : '0deg', opts: pick(key, list), toggle: () => this.setState({ open: s.open === id ? null : id }) });
+    const rv = s.rythme < 34 ? 'Posé' : s.rythme < 67 ? 'Équilibré' : 'Nerveux';
+    const [mm, ss] = cur.dur.split(':').map(Number), tot = mm * 60 + ss, now = Math.round(tot * s.t);
+    let seed = s.sel * 7 + 3;
+    const clips = Array.from({ length: 22 }, (_, i) => { seed = (seed * 9301 + 49297) % 233280; const f = 1 + (seed % 5); return { f, h: (14 + (seed % 16)) + 'px', c: i / 22 < s.t ? 'rgba(255,255,255,.95)' : 'rgba(255,255,255,.35)' }; });
+    const steps = ['Analyse des rushes…', 'Détection des temps morts…', 'Choix des meilleures prises…', 'Montage et rythme…', 'Sous-titres…'];
+    const seg = (key, list) => list.map((label, i) => ({ label, bg: s[key] === i ? '#2e2a33' : 'transparent', bd: s[key] === i ? '#a06bff' : '#2e2a33', on: () => this.setState({ [key]: i }) }));
+    const tog = (key, i) => this.setState(st => ({ [key]: st[key].includes(i) ? st[key].filter(x => x !== i) : [...st[key], i] }));
+    const u = (id, w) => 'https://images.unsplash.com/photo-' + id + '?w=' + (w || 300) + '&q=70&auto=format&fit=crop';
+    const MOM = [['Arrivée à Shibuya', '02:14 – 02:44', '1542051841857-5f90071e7989'], ['Ramen à Shinjuku', '11:05 – 11:35', '1554797589-7241bb691973'], ['Vue depuis la tour', '24:40 – 25:10', '1540959733332-eab4deabeeaf'], ['Temple Senso-ji', '33:02 – 33:32', '1528164344705-47542687000d']];
+    const SUB = [['Karaoké', 'Poppins', '#FFD35C', 'uppercase'], ['Minimal', 'DM Sans', '#fff', 'none'], ['Néon', 'Poppins', '#ff8fb9', 'uppercase'], ['Classique', 'Georgia', '#fff', 'none']];
+    const MED = [['1540959733332-eab4deabeeaf', '42:18'], ['1503899036084-c55cdd92da26', '08:32'], ['1542051841857-5f90071e7989', '05:10'], ['1554797589-7241bb691973', '03:47'], ['1480796927426-f609979314bd', '12:05'], ['1528164344705-47542687000d', '06:21']];
+    const PK = [['Motion Pop', 'Transitions et zooms punchy', '1470225620780-dba8ba36b745'], ['Cinéma', 'Étalonnage et barres cinéma', '1478720568477-152d9b164e26'], ['Vlog Voyage', 'Cartes, titres et lower thirds', '1492691527719-9d1e07e534b4'], ['Néon Night', 'Glow et textes lumineux', '1574717024653-61fd2cf4d44d']];
+    const rs = s.railSel;
+    return {
+      pOutils: rs === 'outils',
+      tools: [['Suppression des silences', 'Coupe les blancs et hésitations'], ['Recadrage automatique', 'Suit le visage en 9:16'], ['Amélioration audio', 'Réduit le bruit, égalise la voix'], ['Traduction des sous-titres', 'Anglais, espagnol, allemand'], ['Miniature IA', '3 propositions de miniatures']].map(([label, desc], i) => { const on = s.tools.includes(i); return { label, desc, track: on ? 'linear-gradient(135deg,#8a5cff,#ff6fb0)' : '#3a363f', knob: on ? '19px' : '3px', on: () => tog('tools', i) }; }),
+      toolsCta: 'Lancer ' + s.tools.length + ' outil' + (s.tools.length > 1 ? 's' : ''),
+      runTools: () => this.flash(s.tools.length ? s.tools.length + ' outil(s) IA en cours' : 'Activez au moins un outil'),
+      pMontage: rs === 'montage', pShorts: rs === 'shorts', pTexte: rs === 'texte', pMedias: rs === 'medias', setDisp: rs === 'medias' ? 'none' : 'flex', prevDisp: rs === 'medias' ? 'none' : 'block', libDisp: rs === 'medias' ? 'block' : 'none',
+      onLibAdd: items => { const t = {}; items.forEach(i => { t[i.type] = (t[i.type] || 0) + 1; }); try { localStorage.setItem('plug_timeline_media', JSON.stringify(items.map(i => ({ id: i.id, name: i.name, type: i.type, duration: i.duration })))); } catch (e) {} this.setState(st => ({ libAdded: (st.libAdded || 0) + items.length })); }, pPacks: rs === 'packs',
+      shDur: seg('shDur', ['15 s', '30 s', '60 s']),
+      moments: MOM.map(([label, tc, id], i) => { const on = s.moms.includes(i); return { label, tc, img: u(id, 160), bd: on ? '#a06bff' : '#2e2a33', dot: on ? '#a06bff' : 'transparent', on: () => tog('moms', i) }; }),
+      shortsCta: 'Générer ' + s.moms.length + ' Short' + (s.moms.length > 1 ? 's' : ''),
+      makeShorts: () => this.flash(s.moms.length ? s.moms.length + ' Shorts en préparation' : 'Sélectionnez au moins un moment'),
+      subStyles: SUB.map(([label, font, c, tt], i) => ({ label, font, c, tt, bd: s.subSt === i ? '#a06bff' : '#2e2a33', on: () => this.setState({ subSt: i }) })),
+      subPos: seg('subPos', ['Haut', 'Centre', 'Bas']),
+      kwTrack: s.kw ? 'linear-gradient(135deg,#8a5cff,#ff6fb0)' : '#3a363f', kwKnob: s.kw ? '19px' : '3px', toggleKw: () => this.setState({ kw: !s.kw }),
+      applySubs: () => this.flash('Sous-titres « ' + SUB[s.subSt][0] + ' » appliqués'),
+      medias: MED.map(([id, dur], i) => ({ img: u(id), dur, ol: s.med.includes(i) ? '#ffffff' : 'transparent', on: () => tog('med', i) })),
+      mediaCta: 'Ajouter ' + s.med.length + ' média' + (s.med.length > 1 ? 's' : '') + ' au montage',
+      addMedia: () => this.flash(s.med.length + ' média(s) ajouté(s) au montage'),
+      packs: PK.map(([name, desc, id], i) => ({ name, desc, img: u(id, 200), bd: s.pack === i ? '#a06bff' : '#2e2a33', state: s.pack === i ? 'Sélectionné' : '', on: () => this.setState({ pack: i }) })),
+      applyPack: () => this.flash('Pack ' + PK[s.pack][0] + ' appliqué'),
+      tabs: [['video', 'Montage vidéo'], ['shorts', 'Shorts'], ['tools', 'Outils IA']].map(([id, label]) => ({ label, bg: s.tab === id ? 'linear-gradient(135deg,#8a5cff,#ff6fb0)' : 'transparent', bd: s.tab === id ? 'transparent' : '#3a363f', on: () => this.setState({ tab: id, railSel: { video: 'montage', shorts: 'shorts', tools: 'outils' }[id] }) })),
+      rail: [['montage', 'Montage'], ['shorts', 'Shorts'], ['texte', 'Titres & sous-titres'], ['medias', 'Médias'], ['packs', 'Packs']].map(([id, label]) => ({ label, d: ICONS[id], bg: s.railSel === id ? '#fff' : 'transparent', fg: s.railSel === id ? '#111013' : '#fff', bd: s.railSel === id ? '#fff' : '#2e2a33', on: () => this.setState({ railSel: id, tab: id === 'shorts' ? 'shorts' : 'video' }) })),
+      fileName: s.file || 'tokyo_vlog_rush.mp4',
+      prompt: s.prompt, onPrompt: e => this.setState({ prompt: e.target.value }),
+      aiTrack: s.ai ? 'linear-gradient(135deg,#8a5cff,#ff6fb0)' : '#3a363f', aiKnob: s.ai ? '19px' : '3px',
+      toggleAi: () => this.setState({ ai: !s.ai }),
+      enhance: () => { this.setState({ prompt: s.prompt.replace(/\s*$/, '') + ' Ajoute des zooms punchy sur les moments forts et une fin avec appel à s’abonner.' }); this.flash('Consigne enrichie par l’IA'); },
+      rows: [row('style', 'Style de montage', 'style', STYLES, 'linear-gradient(135deg,#ff9ec8,#7c4dff)'), row('format', 'Format', 'format', FORMATS, 'linear-gradient(135deg,#8fb6ff,#5b2fb8)'), row('music', 'Musique', 'music', MUSIC, 'linear-gradient(135deg,#ffd29a,#f07aa8)')],
+      rythme: s.rythme, rythmePct: s.rythme + '%', rythmeVal: rv, onRythme: e => this.setState({ rythme: +e.target.value }),
+      generate: () => this.generate(),
+      ctaLabel: g !== null ? 'Montage en cours… ' + Math.round(g) + '%' : 'Lancer le montage IA',
+      isGen: g !== null, notGen: g === null, genPct: Math.round(g || 0) + '%', genStep: steps[Math.min(4, Math.floor((g || 0) / 20))],
+      versions: s.versions.slice(0, 3).map((v, i) => ({ ...v, ol: i === s.sel ? '#ffffff' : 'transparent', pick: () => this.setState({ sel: i, t: 0 }) })),
+      cur: { ...cur, segs: segs(cur.title) },
+      chips: [FORMATS[s.format].split(' ')[0], STYLES[s.style], '1080p'],
+      promptShort: s.prompt,
+      playIcon: s.playing ? '❚❚' : '▶', togglePlay: () => this.togglePlay(),
+      tcNow: String(Math.floor(now / 60)).padStart(2, '0') + ':' + String(now % 60).padStart(2, '0'),
+      clips, playPct: (s.t * 100).toFixed(2) + '%',
+      seek: e => { const r = e.currentTarget.getBoundingClientRect(); this.setState({ t: Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) }); },
+      doExport: () => this.flash('Export 1080p lancé · ' + cur.name),
+      toast: s.toast, scale: s.scale || 1, vidRef: this.vidRef
+    };
+  }
+}
+</script>
+</body>
+</html>

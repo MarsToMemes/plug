@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#efe4f1;font-family:Manrope,system-ui,sans-serif;color:#26143a;-webkit-font-smoothing:antialiased}
+a{color:#5b2fb8;text-decoration:none}a:hover{color:#26143a}
+*{box-sizing:border-box}
+@keyframes plugFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-18px)}}
+@keyframes plugPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,255,255,.5)}50%{box-shadow:0 0 0 14px rgba(255,255,255,0)}}
+</style>
+<script src="plug-media.js"></script>
+</helmet>
+<div style="min-height:100vh;padding:14px;display:flex;flex-direction:column;gap:14px">
+
+<header data-screen-label="Hero" style="position:relative;overflow:hidden;border-radius:36px;padding:28px clamp(20px,5vw,72px) 56px;background:radial-gradient(60% 45% at 30% 12%, #b27cc9 0%, rgba(178,124,201,0) 70%),radial-gradient(50% 40% at 85% 30%, #f0a9cf 0%, rgba(240,169,207,0) 70%),radial-gradient(70% 40% at 50% 62%, #f7d6dc 0%, rgba(247,214,220,0) 75%),linear-gradient(180deg,#a978c2 0%,#cf97c8 38%,#e7b7cf 58%,#b88ccb 82%,#9f76bd 100%);box-shadow:0 30px 80px -30px rgba(80,30,110,.45)">
+  <nav style="position:relative;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap">
+    <a href="Plug%20Accueil.dc.html" style="display:flex;align-items:center;gap:10px;color:#fff;font-family:Poppins;font-weight:700;font-size:24px;letter-spacing:-.02em">
+      <span style="width:34px;height:34px;border-radius:11px;background:#fff;display:grid;place-items:center"><span style="width:14px;height:14px;border-radius:50%;background:linear-gradient(135deg,#7c4dff,#ff6fb0)"></span></span>plug
+    </a>
+    <div style="display:flex;gap:clamp(14px,3vw,44px);flex-wrap:wrap;font-size:15px;font-weight:600">
+      <a href="Plug%20Editeur.dc.html" style="color:#fff">Éditeur</a>
+      <a href="#fonctionnement" style="color:#fff">Fonctionnement</a>
+      <a href="Plug%20Tarifs.dc.html" style="color:#fff">Tarifs</a>
+      <a href="Plug%20Tarifs.dc.html#packs" style="color:#fff">Packs</a>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <a href="Plug%20Inscription.dc.html?mode=login" style="color:#fff;font-weight:600;font-size:15px;padding:12px 18px;border-radius:999px;border:1.5px solid rgba(255,255,255,.6)" style-hover="background:rgba(255,255,255,.15)">Connexion</a>
+      <a href="Plug%20Inscription.dc.html" style="background:#26143a;color:#fff;font-weight:700;font-size:15px;padding:13px 20px;border-radius:999px" style-hover="background:#3b2059;color:#fff">Essai gratuit</a>
+    </div>
+  </nav>
+
+  <div style="position:relative;z-index:2;margin-top:clamp(56px,10vw,120px);max-width:1180px">
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:7px 14px 7px 8px;border-radius:999px;background:rgba(255,255,255,.28);border:1px solid rgba(255,255,255,.5);backdrop-filter:blur(10px);color:#fff;font-size:13px;font-weight:600">
+      <span style="background:#fff;color:#6a36c9;border-radius:999px;padding:3px 9px;font-size:11px;font-weight:800;letter-spacing:.04em">NOUVEAU</span>Montage IA automatique pour YouTube
+    </div>
+    <h1 style="margin:22px 0 0;font-family:Poppins;font-weight:800;color:#fff;font-size:clamp(48px,9.4vw,148px);line-height:.9;letter-spacing:-.045em;text-transform:uppercase;text-shadow:0 6px 40px rgba(90,30,120,.25);text-wrap:balance">Vos rushes,<br>montés par l’IA</h1>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,350px),1fr));gap:clamp(24px,4vw,64px);align-items:center;margin-top:26px">
+    <div>
+    <p style="margin:0;max-width:560px;color:#fff;font-size:clamp(17px,1.6vw,21px);line-height:1.5;font-weight:600;text-shadow:0 2px 16px rgba(70,20,100,.35)">Déposez vos fichiers bruts. Plug coupe, rythme et assemble une vidéo prête à publier. Vous gardez la main sur chaque plan.</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:30px;align-items:center">
+      <a href="Plug%20Inscription.dc.html" style="display:inline-flex;align-items:center;gap:10px;background:#fff;color:#26143a;font-weight:800;font-size:16px;padding:17px 26px;border-radius:999px;box-shadow:0 12px 30px -10px rgba(60,20,90,.5)" style-hover="transform:translateY(-2px);color:#26143a">Commencer gratuitement <span style="font-size:18px">→</span></a>
+      <a href="Plug%20Tarifs.dc.html" style="color:#fff;font-weight:700;font-size:16px;padding:16px 24px;border-radius:999px;border:1.5px solid rgba(255,255,255,.7)" style-hover="background:rgba(255,255,255,.15);color:#fff">Voir les tarifs</a>
+    </div>
+    <div style="display:flex;gap:22px;flex-wrap:wrap;margin-top:22px;color:#fff;font-size:14px;font-weight:600">
+      <span>✓ Sans carte bancaire</span><span>✓ 30 min de montage IA offertes</span><span>✓ Sans engagement</span>
+    </div>
+    </div>
+
+    <div ref="{{ heroRef }}" data-screen-label="Hero demo" style="position:relative;padding:clamp(34px,4vw,52px) clamp(14px,3vw,44px);min-width:0">
+      <div data-h="card" data-m="1" style="position:absolute;left:-4%;top:0;width:30%;z-index:1;will-change:transform">
+        <div data-h="cin" style="position:relative;aspect-ratio:16/9;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.4);box-shadow:0 18px 40px -20px rgba(40,10,70,.55);transform:rotate(-4deg) scale(.95);background:#3a2352">
+          <img src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=360&amp;q=72&amp;auto=format&amp;fit=crop" data-rush="tokyo" data-rf="thumb" alt="" style="width:100%;height:100%;object-fit:cover;display:block">
+          <span data-h="cscan" style="position:absolute;top:0;bottom:0;left:0;width:30%;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.45),rgba(255,255,255,0));opacity:0"></span>
+          <span data-h="cbadge" style="position:absolute;right:6px;top:6px;font-family:'JetBrains Mono';font-size:8px;letter-spacing:.06em;color:#26143a;background:#fff;padding:2px 5px;border-radius:4px;opacity:0">{{ rush.tokyo.score }}</span>
+          <div style="position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:5px;padding:14px 7px 5px;background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.55));font-family:'JetBrains Mono';font-size:8px;letter-spacing:.08em;color:#fff"><span style="width:0;height:0;border-left:5px solid #fff;border-top:3px solid transparent;border-bottom:3px solid transparent"></span><span style="flex:1">{{ rush.tokyo.label }}</span><span style="opacity:.8">{{ rush.tokyo.dur }}</span></div>
+        </div>
+      </div>
+      <div data-h="card" data-m="1" style="position:absolute;right:-3%;top:8%;width:28%;z-index:3;will-change:transform">
+        <div data-h="cin" style="position:relative;aspect-ratio:16/9;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.4);box-shadow:0 18px 40px -20px rgba(40,10,70,.55);transform:rotate(3deg) scale(1.05);background:#3a2352">
+          <img src="https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=360&amp;q=72&amp;auto=format&amp;fit=crop" data-rush="walk" data-rf="thumb" alt="" style="width:100%;height:100%;object-fit:cover;display:block">
+          <span data-h="cscan" style="position:absolute;top:0;bottom:0;left:0;width:30%;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.45),rgba(255,255,255,0));opacity:0"></span>
+          <span data-h="cbadge" style="position:absolute;right:6px;top:6px;font-family:'JetBrains Mono';font-size:8px;letter-spacing:.06em;color:#26143a;background:#fff;padding:2px 5px;border-radius:4px;opacity:0">{{ rush.walk.score }}</span>
+          <div style="position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:5px;padding:14px 7px 5px;background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.55));font-family:'JetBrains Mono';font-size:8px;letter-spacing:.08em;color:#fff"><span style="width:0;height:0;border-left:5px solid #fff;border-top:3px solid transparent;border-bottom:3px solid transparent"></span><span style="flex:1">{{ rush.walk.label }}</span><span style="opacity:.8">{{ rush.walk.dur }}</span></div>
+        </div>
+      </div>
+      <div data-h="card" data-m="0" style="position:absolute;right:-4%;bottom:30%;width:24%;z-index:1;will-change:transform">
+        <div data-h="cin" style="position:relative;aspect-ratio:16/9;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.4);box-shadow:0 18px 40px -20px rgba(40,10,70,.55);transform:rotate(-2deg) scale(.85);background:#3a2352">
+          <img src="https://images.unsplash.com/photo-1554797589-7241bb691973?w=360&amp;q=72&amp;auto=format&amp;fit=crop" data-rush="food" data-rf="thumb" alt="" style="width:100%;height:100%;object-fit:cover;display:block">
+          <span data-h="cscan" style="position:absolute;top:0;bottom:0;left:0;width:30%;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.45),rgba(255,255,255,0));opacity:0"></span>
+          <span data-h="cbadge" style="position:absolute;right:6px;top:6px;font-family:'JetBrains Mono';font-size:8px;letter-spacing:.06em;color:#26143a;background:#fff;padding:2px 5px;border-radius:4px;opacity:0">{{ rush.food.score }}</span>
+          <div style="position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:5px;padding:14px 7px 5px;background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.55));font-family:'JetBrains Mono';font-size:8px;letter-spacing:.08em;color:#fff"><span style="width:0;height:0;border-left:5px solid #fff;border-top:3px solid transparent;border-bottom:3px solid transparent"></span><span style="flex:1">{{ rush.food.label }}</span><span style="opacity:.8">{{ rush.food.dur }}</span></div>
+        </div>
+      </div>
+      <div data-h="card" data-m="1" style="position:absolute;left:-7%;bottom:12%;width:26%;z-index:3;will-change:transform">
+        <div data-h="cin" style="position:relative;aspect-ratio:16/9;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.4);box-shadow:0 18px 40px -20px rgba(40,10,70,.55);transform:rotate(5deg) scale(.9);background:#3a2352">
+          <img src="https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=360&amp;q=72&amp;auto=format&amp;fit=crop" data-rush="city" data-rf="thumb" alt="" style="width:100%;height:100%;object-fit:cover;display:block">
+          <span data-h="cscan" style="position:absolute;top:0;bottom:0;left:0;width:30%;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.45),rgba(255,255,255,0));opacity:0"></span>
+          <span data-h="cbadge" style="position:absolute;right:6px;top:6px;font-family:'JetBrains Mono';font-size:8px;letter-spacing:.06em;color:#26143a;background:#fff;padding:2px 5px;border-radius:4px;opacity:0">{{ rush.city.score }}</span>
+          <div style="position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:5px;padding:14px 7px 5px;background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.55));font-family:'JetBrains Mono';font-size:8px;letter-spacing:.08em;color:#fff"><span style="width:0;height:0;border-left:5px solid #fff;border-top:3px solid transparent;border-bottom:3px solid transparent"></span><span style="flex:1">{{ rush.city.label }}</span><span style="opacity:.8">{{ rush.city.dur }}</span></div>
+        </div>
+      </div>
+      <div data-h="card" data-m="0" style="position:absolute;right:9%;bottom:0;width:20%;z-index:1;will-change:transform">
+        <div data-h="cin" style="position:relative;aspect-ratio:16/9;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.4);box-shadow:0 18px 40px -20px rgba(40,10,70,.55);transform:rotate(-3deg) scale(.85);background:#3a2352">
+          <img src="https://images.unsplash.com/photo-1528164344705-47542687000d?w=360&amp;q=72&amp;auto=format&amp;fit=crop" data-rush="temple" data-rf="thumb" alt="" style="width:100%;height:100%;object-fit:cover;display:block">
+          <span data-h="cscan" style="position:absolute;top:0;bottom:0;left:0;width:30%;background:linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,.45),rgba(255,255,255,0));opacity:0"></span>
+          <span data-h="cbadge" style="position:absolute;right:6px;top:6px;font-family:'JetBrains Mono';font-size:8px;letter-spacing:.06em;color:#26143a;background:#fff;padding:2px 5px;border-radius:4px;opacity:0">{{ rush.temple.score }}</span>
+          <div style="position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:5px;padding:14px 7px 5px;background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.55));font-family:'JetBrains Mono';font-size:8px;letter-spacing:.08em;color:#fff"><span style="width:0;height:0;border-left:5px solid #fff;border-top:3px solid transparent;border-bottom:3px solid transparent"></span><span style="flex:1">{{ rush.temple.label }}</span><span style="opacity:.8">{{ rush.temple.dur }}</span></div>
+        </div>
+      </div>
+
+      <div data-h="panel" style="position:relative;z-index:2;max-width:480px;margin:0 auto;border-radius:22px;padding:12px;background:rgba(28,14,44,.78);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);box-shadow:0 40px 80px -36px rgba(40,10,70,.8);display:flex;flex-direction:column;gap:10px;color:#fff;will-change:transform">
+        <div style="display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono';font-size:9px;letter-spacing:.12em">
+          <span style="flex:none;padding:3px 6px;border-radius:5px;background:linear-gradient(135deg,#8a5cff,#ff6fb0);font-weight:500">AI</span>
+          <span data-h="st" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#e9dcff">DROP YOUR RUSHES</span>
+          <span data-h="ok" style="flex:none;width:16px;height:16px;border-radius:50%;background:#5ee0a0;color:#140a22;display:grid;place-items:center;font-size:10px;font-weight:700;opacity:0;transform:scale(.6)">✓</span>
+          <span data-h="pct" style="flex:none;color:#9d8bb8;min-width:30px;text-align:right">—</span>
+        </div>
+        <div style="height:2px;border-radius:2px;background:rgba(255,255,255,.1);overflow:hidden;margin-top:-4px"><div data-h="prog" style="height:100%;background:linear-gradient(90deg,#8a5cff,#ff6fb0);transform-origin:left;transform:scaleX(0)"></div></div>
+
+        <div style="position:relative;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#140a22;isolation:isolate">
+          <img data-h="shot" src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=1000&amp;q=72&amp;auto=format&amp;fit=crop" data-rush="tokyo" data-rf="img" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0">
+          <img data-h="shot" src="https://images.unsplash.com/photo-1554797589-7241bb691973?w=1000&amp;q=72&amp;auto=format&amp;fit=crop" data-rush="food" data-rf="img" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0">
+          <img data-h="shot" src="https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=1000&amp;q=72&amp;auto=format&amp;fit=crop" data-rush="walk" data-rf="img" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0">
+          <img data-h="shot" src="https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=1000&amp;q=72&amp;auto=format&amp;fit=crop" data-rush="city" data-rf="img" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0">
+          <div data-h="tint" style="position:absolute;inset:0;background:linear-gradient(160deg,rgba(0,110,130,.6),rgba(255,150,70,.35));mix-blend-mode:soft-light;opacity:0"></div>
+          <div data-h="vig" style="position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 50%,rgba(0,0,0,.5));opacity:0"></div>
+          <div data-h="lbt" style="position:absolute;left:0;right:0;top:0;height:8%;background:#000;transform-origin:top;transform:scaleY(0)"></div>
+          <div data-h="lbb" style="position:absolute;left:0;right:0;bottom:0;height:8%;background:#000;transform-origin:bottom;transform:scaleY(0)"></div>
+          <div style="position:absolute;left:6%;top:14%;display:flex;flex-direction:column;align-items:flex-start;pointer-events:none">
+            <div style="overflow:hidden"><div data-h="lt1" style="font-family:Poppins;font-weight:700;font-size:clamp(14px,1.7vw,22px);line-height:1;letter-spacing:-.03em;color:#FFD35C;transform:translateY(110%)">48 HEURES</div></div>
+            <div style="overflow:hidden"><div data-h="lt2" style="font-family:Poppins;font-weight:700;font-size:clamp(14px,1.7vw,22px);line-height:1;letter-spacing:-.03em;color:#fff;transform:translateY(110%)">À TOKYO</div></div>
+            <span data-h="ltr" style="width:34px;height:2px;background:#fff;margin-top:7px;transform-origin:left;transform:scaleX(0)"></span>
+          </div>
+          <div data-h="cap" style="position:absolute;left:0;right:0;bottom:12%;display:flex;justify-content:center;gap:.3em;font-family:Manrope;font-weight:700;font-size:clamp(10px,1.1vw,13px);color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.7);opacity:0">
+            <span data-h="w">On</span><span data-h="w">a</span><span data-h="w">48 heures</span><span data-h="w">pour</span><span data-h="w">tout</span><span data-h="w">voir.</span>
+          </div>
+          <img data-h="raw" src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=1000&amp;q=72&amp;auto=format&amp;fit=crop" data-rush="tokyo" data-rf="img" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.35) contrast(.8) brightness(1.08)">
+          <div data-h="veil" style="position:absolute;inset:0;background:#140a22;opacity:.25"></div>
+          <div data-h="box" style="position:absolute;left:54%;top:40%;width:16%;height:42%;border:1px solid rgba(255,255,255,.9);border-radius:3px;opacity:0"><span style="position:absolute;left:-1px;top:-15px;font-family:'JetBrains Mono';font-size:8px;letter-spacing:.06em;background:#fff;color:#140a22;padding:1px 4px">SUJET 0.97</span></div>
+          <div data-h="dv" style="position:absolute;inset:0;pointer-events:none;opacity:0">
+            <div style="position:absolute;top:0;bottom:0;left:-1px;width:2px;background:#fff;box-shadow:0 0 14px rgba(0,0,0,.4)"></div>
+            <span style="position:absolute;top:10px;left:-8px;transform:translateX(-100%);font-family:'JetBrains Mono';font-size:8px;letter-spacing:.14em;color:#26143a;background:#fff;padding:3px 6px;border-radius:4px;white-space:nowrap">AI EDIT</span>
+          </div>
+          <span data-h="lraw" style="position:absolute;right:8px;top:10px;font-family:'JetBrains Mono';font-size:8px;letter-spacing:.14em;color:#fff;background:rgba(0,0,0,.45);padding:3px 6px;border-radius:4px;opacity:0">RAW</span>
+        </div>
+
+        <div style="position:relative;display:grid;grid-template-columns:48px minmax(0,1fr);gap:5px 8px;align-items:center;font-family:'JetBrains Mono';font-size:8px;letter-spacing:.08em;color:#b3a3cf">
+          <span>VIDEO</span>
+          <div data-h="vtrack" style="position:relative;height:28px;border-radius:5px;background:rgba(255,255,255,.05);border:1px dashed rgba(255,255,255,.12)">
+            <div data-h="clip" style="position:absolute;top:0;bottom:0;left:0%;width:calc(24% - 2px);border-radius:5px;overflow:hidden;opacity:0;outline-offset:-2px" style-hover="filter:brightness(1.2)"><img src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=360&amp;q=72&amp;auto=format&amp;fit=crop" data-rush="tokyo" data-rf="thumb" alt="" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+            <div data-h="clip" style="position:absolute;top:0;bottom:0;left:24%;width:calc(18% - 2px);border-radius:5px;overflow:hidden;opacity:0;outline-offset:-2px" style-hover="filter:brightness(1.2)"><img src="https://images.unsplash.com/photo-1554797589-7241bb691973?w=360&amp;q=72&amp;auto=format&amp;fit=crop" data-rush="food" data-rf="thumb" alt="" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+            <div data-h="clip" style="position:absolute;top:0;bottom:0;left:42%;width:calc(22% - 2px);border-radius:5px;overflow:hidden;opacity:0;outline-offset:-2px" style-hover="filter:brightness(1.2)"><img src="https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=360&amp;q=72&amp;auto=format&amp;fit=crop" data-rush="walk" data-rf="thumb" alt="" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+            <div data-h="clip" style="position:absolute;top:0;bottom:0;left:64%;width:36%;border-radius:5px;overflow:hidden;opacity:0;outline-offset:-2px" style-hover="filter:brightness(1.2)"><img src="https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=360&amp;q=72&amp;auto=format&amp;fit=crop" data-rush="city" data-rf="thumb" alt="" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+            <span data-h="cut" style="position:absolute;top:-3px;bottom:-3px;left:24%;width:2px;margin-left:-2px;background:#FFD35C;transform:scaleY(0)"></span>
+            <span data-h="cut" style="position:absolute;top:-3px;bottom:-3px;left:42%;width:2px;margin-left:-2px;background:#FFD35C;transform:scaleY(0)"></span>
+            <span data-h="cut" style="position:absolute;top:-3px;bottom:-3px;left:64%;width:2px;margin-left:-2px;background:#FFD35C;transform:scaleY(0)"></span>
+          </div>
+          <span>CAPTIONS</span>
+          <div style="position:relative;height:10px;border-radius:3px;background:rgba(255,255,255,.05)">
+            <span data-h="cb" style="position:absolute;top:0;bottom:0;left:6%;width:26%;border-radius:3px;background:#ff9ec8;transform-origin:left;transform:scaleX(0)"></span>
+            <span data-h="cb" style="position:absolute;top:0;bottom:0;left:36%;width:20%;border-radius:3px;background:#ff9ec8;transform-origin:left;transform:scaleX(0)"></span>
+            <span data-h="cb" style="position:absolute;top:0;bottom:0;left:60%;width:34%;border-radius:3px;background:#ff9ec8;transform-origin:left;transform:scaleX(0)"></span>
+          </div>
+          <span>MUSIC</span>
+          <div style="position:relative;height:16px;border-radius:3px;background:rgba(255,255,255,.05);overflow:hidden">
+            <div data-h="wave" style="position:absolute;inset:0;display:flex;align-items:center;gap:1.5px;padding:0 2px;clip-path:inset(0 100% 0 0)">
+              <sc-for list="{{ heroWave }}" as="b" hint-placeholder-count="64"><span style="flex:1;min-width:0;height:{{ b }};border-radius:1px;background:#a98ae0"></span></sc-for>
+            </div>
+          </div>
+          <span data-h="fxl">FX</span>
+          <div data-h="fxt" style="position:relative;height:13px">
+            <span data-h="fx" style="position:absolute;top:0;left:20%;height:13px;padding:0 4px;border:1px solid rgba(255,255,255,.22);border-radius:3px;color:#d9c8f5;display:flex;align-items:center;opacity:0">DISSOLVE</span>
+            <span data-h="fx" style="position:absolute;top:0;left:43%;height:13px;padding:0 4px;border:1px solid rgba(255,255,255,.22);border-radius:3px;color:#d9c8f5;display:flex;align-items:center;opacity:0">ZOOM</span>
+            <span data-h="fx" style="position:absolute;top:0;left:66%;height:13px;padding:0 4px;border:1px solid rgba(255,255,255,.22);border-radius:3px;color:#d9c8f5;display:flex;align-items:center;opacity:0">GRADE</span>
+          </div>
+          <div data-h="ph" style="position:absolute;top:-3px;bottom:0;left:56px;right:0;pointer-events:none;opacity:0">
+            <div style="position:absolute;top:0;bottom:0;left:-1px;width:1.5px;background:#fff;box-shadow:0 0 8px rgba(255,255,255,.7)"><span style="position:absolute;top:0;left:-3px;width:7.5px;height:7.5px;border-radius:2px;background:#fff"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <div style="position:relative;z-index:2;margin-top:clamp(56px,7vw,96px)">
+    <a href="Plug%20Editeur.dc.html" style="position:absolute;left:calc(50% - 66px);top:-58px;z-index:4;width:132px;height:132px;border-radius:50%;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.55);backdrop-filter:blur(18px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#fff;font-weight:700;font-size:14px;animation:plugPulse 3s ease-in-out infinite" style-hover="background:rgba(255,255,255,.34);color:#fff">
+      <svg width="22" height="24" viewBox="0 0 22 24"><path d="M3 2 L20 12 L3 22 Z" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"></path></svg>Voir la démo
+    </a>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:22px">
+
+      <div id="upload" style="border-radius:32px;padding:clamp(22px,3vw,40px);padding-top:84px;background:rgba(255,255,255,.26);border:1px solid rgba(255,255,255,.55);backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px);display:flex;flex-direction:column;gap:18px">
+        <div>
+          <div style="font-family:Poppins;font-weight:700;font-size:26px;color:#fff;letter-spacing:-.02em">Essayez maintenant</div>
+          <div style="color:#fff;font-size:15px;font-weight:600;margin-top:4px">Déposez un rush, l’éditeur s’ouvre avec votre vidéo.</div>
+        </div>
+
+        <sc-if value="{{ isIdle }}" hint-placeholder-val="{{ true }}">
+          <div onDragOver="{{ onDragOver }}" onDragLeave="{{ onDragLeave }}" onDrop="{{ onDrop }}" onClick="{{ onPick }}" style="cursor:pointer;border-radius:22px;border:2px dashed {{ dzBorder }};background:{{ dzBg }};padding:34px 20px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;transition:all .2s">
+            <div style="width:58px;height:58px;border-radius:18px;background:#fff;display:grid;place-items:center;box-shadow:0 10px 24px -10px rgba(80,30,120,.5)">
+              <svg width="26" height="26" viewBox="0 0 26 26"><path d="M13 18 V5 M7 10 L13 4 L19 10 M4 20 V22 H22 V20" fill="none" stroke="#6a36c9" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </div>
+            <div style="font-weight:800;font-size:17px;color:#26143a">{{ dzTitle }}</div>
+            <div style="font-size:14px;color:#3d2556;font-weight:500">MP4, MOV ou MKV · votre vidéo reste privée</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:6px">
+              <span style="background:#26143a;color:#fff;font-weight:700;font-size:14px;padding:11px 18px;border-radius:999px">Choisir un fichier</span>
+              <span onClick="{{ onSample }}" style="background:rgba(255,255,255,.7);color:#26143a;font-weight:700;font-size:14px;padding:11px 18px;border-radius:999px" style-hover="background:#fff">Utiliser une vidéo exemple</span>
+            </div>
+          </div>
+        </sc-if>
+        <input type="file" multiple="{{ true }}" accept="{{ acceptAll }}" ref="{{ inputRef }}" onChange="{{ onFile }}" style="display:none">
+
+        <sc-if value="{{ isBusy }}" hint-placeholder-val="{{ false }}">
+          <div style="border-radius:22px;background:rgba(255,255,255,.82);padding:16px;display:flex;gap:14px;align-items:center;box-shadow:0 18px 40px -20px rgba(80,30,120,.5)">
+            <div style="position:relative;width:96px;height:62px;flex:none;border-radius:12px;overflow:hidden;background:#3a2352">
+              <img src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=240&amp;q=70&amp;auto=format&amp;fit=crop" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+              {{ fileVideo }}
+            </div>
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:9px">
+              <div style="display:flex;justify-content:space-between;gap:10px;font-size:15px">
+                <span style="font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ fileName }}</span>
+                <span style="color:#5a4470;font-weight:600;flex:none">{{ fileSize }}</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px">
+                <div style="flex:1;height:8px;border-radius:9px;background:#eadcf0;overflow:hidden"><div style="height:100%;width:{{ progressPct }};border-radius:9px;background:linear-gradient(90deg,#7c4dff,#ff6fb0);transition:width .2s"></div></div>
+                <span style="font-family:'JetBrains Mono';font-size:13px;font-weight:500;color:#3d2556;width:42px;text-align:right">{{ progressPct }}</span>
+              </div>
+              <div style="font-size:13px;color:#5a4470;font-weight:600">{{ statusText }}</div>
+            </div>
+          </div>
+          <sc-if value="{{ isDone }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <a href="Plug%20Editeur.dc.html" style="flex:1;text-align:center;background:#26143a;color:#fff;font-weight:800;font-size:16px;padding:16px;border-radius:16px" style-hover="background:#3b2059;color:#fff">Ouvrir dans l’éditeur →</a>
+              <span onClick="{{ onReset }}" style="cursor:pointer;background:rgba(255,255,255,.55);color:#26143a;font-weight:700;font-size:15px;padding:16px 20px;border-radius:16px">Changer</span>
+            </div>
+          </sc-if>
+        </sc-if>
+      </div>
+
+      <div style="border-radius:32px;padding:clamp(22px,3vw,40px);padding-top:84px;background:rgba(255,255,255,.26);border:1px solid rgba(255,255,255,.55);backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px);display:flex;flex-direction:column;gap:22px;justify-content:space-between">
+        <div ref="{{ stackRef }}" style="display:flex;align-items:center;justify-content:flex-end;padding:12px 0">
+          <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300&amp;q=70&amp;auto=format&amp;fit=crop" alt="" style="width:clamp(72px,21vw,112px);aspect-ratio:112/128;height:auto;border-radius:clamp(16px,5vw,24px);object-fit:cover;margin-right:-26px;box-shadow:0 14px 30px -14px rgba(40,10,70,.7)">
+          <img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=300&amp;q=70&amp;auto=format&amp;fit=crop" alt="" style="width:clamp(72px,21vw,112px);aspect-ratio:112/128;height:auto;border-radius:clamp(16px,5vw,24px);object-fit:cover;margin-right:-26px;box-shadow:0 14px 30px -14px rgba(40,10,70,.7)">
+          <img src="https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=300&amp;q=70&amp;auto=format&amp;fit=crop" alt="" style="width:clamp(72px,21vw,112px);aspect-ratio:112/128;height:auto;border-radius:clamp(16px,5vw,24px);object-fit:cover;margin-right:-26px;box-shadow:0 14px 30px -14px rgba(40,10,70,.7)">
+          <div style="position:relative;overflow:hidden;width:clamp(72px,21vw,112px);aspect-ratio:112/128;height:auto;border-radius:clamp(16px,5vw,24px);border:1.5px solid rgba(255,255,255,.8);background:rgba(255,255,255,.18);backdrop-filter:blur(8px);display:grid;place-items:center;color:#fff;font-family:Poppins;font-weight:600;font-size:28px"><span data-count="40" style="position:relative;font-variant-numeric:tabular-nums">40+</span><div data-shine="1" style="position:absolute;top:-20%;bottom:-20%;left:0;width:60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);transform:translateX(-160%);pointer-events:none"></div></div>
+        </div>
+        <div>
+          <div style="font-family:Poppins;font-weight:700;font-size:26px;color:#fff;letter-spacing:-.02em">Packs Motion &amp; Style</div>
+          <div style="color:#fff;font-size:15px;font-weight:600;margin-top:4px;max-width:440px">Transitions, titres animés et étalonnages créés par des motion designers. Appliqués en un clic, dès 19 €.</div>
+        </div>
+        <a href="Plug%20Tarifs.dc.html#packs" style="align-self:flex-start;display:inline-flex;gap:12px;align-items:center;color:#fff;font-weight:700;font-size:15px;padding:15px 24px;border-radius:999px;border:1.5px solid rgba(255,255,255,.75)" style-hover="background:rgba(255,255,255,.15);color:#fff">Découvrir les packs <span>→</span></a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main style="background:#faf6fb;border-radius:36px;padding:clamp(48px,7vw,110px) clamp(20px,5vw,72px);display:flex;flex-direction:column;gap:clamp(80px,10vw,140px)">
+
+  <section id="fonctionnement" data-screen-label="Fonctionnement" style="display:flex;flex-direction:column;gap:44px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap">
+      <h2 style="margin:0;font-family:Poppins;font-weight:700;font-size:clamp(34px,4.6vw,64px);line-height:1;letter-spacing:-.04em;max-width:760px;text-wrap:balance">Du rush brut à la vidéo publiée, en trois étapes.</h2>
+      <p style="margin:0;max-width:360px;font-size:17px;line-height:1.55;color:#4b3561">Le montage qui vous prenait une journée tient dans une pause café.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:18px">
+      <div style="border-radius:28px;padding:32px;background:#fff;border:1px solid #eee2f2;display:flex;flex-direction:column;gap:16px;min-height:260px">
+        <div style="font-family:Poppins;font-weight:800;font-size:64px;line-height:1;background:linear-gradient(135deg,#7c4dff,#ff6fb0);-webkit-background-clip:text;background-clip:text;color:transparent">01</div>
+        <div style="font-family:Poppins;font-weight:700;font-size:24px;letter-spacing:-.02em">Déposez vos rushes</div>
+        <div style="font-size:16px;line-height:1.55;color:#4b3561">Glissez vos fichiers bruts, même longs. Plug analyse l’image, le son et la parole.</div>
+      </div>
+      <div style="border-radius:28px;padding:32px;background:linear-gradient(160deg,#2c1745,#1a0d2b);color:#fff;display:flex;flex-direction:column;gap:16px;min-height:260px">
+        <div style="font-family:Poppins;font-weight:800;font-size:64px;line-height:1;color:#ff9ec8">02</div>
+        <div style="font-family:Poppins;font-weight:700;font-size:24px;letter-spacing:-.02em">L’IA monte pour vous</div>
+        <div style="font-size:16px;line-height:1.55;color:#e8dcf2">Choisissez un style : vlog, tuto, podcast, gaming. Plug coupe les temps morts et cale le rythme.</div>
+      </div>
+      <div style="border-radius:28px;padding:32px;background:#fff;border:1px solid #eee2f2;display:flex;flex-direction:column;gap:16px;min-height:260px">
+        <div style="font-family:Poppins;font-weight:800;font-size:64px;line-height:1;background:linear-gradient(135deg,#ff6fb0,#ffb36b);-webkit-background-clip:text;background-clip:text;color:transparent">03</div>
+        <div style="font-family:Poppins;font-weight:700;font-size:24px;letter-spacing:-.02em">Peaufinez et exportez</div>
+        <div style="font-size:16px;line-height:1.55;color:#4b3561">Chaque coupe reste modifiable sur la timeline. Exportez en 1080p ou 4K, prêt pour YouTube.</div>
+      </div>
+    </div>
+  </section>
+
+  <section data-screen-label="Éditeur" style="border-radius:36px;overflow:hidden;background:#140a22;color:#fff;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr))">
+    <div style="padding:clamp(32px,5vw,64px);display:flex;flex-direction:column;gap:22px;justify-content:center">
+      <div style="font-family:'JetBrains Mono';font-size:13px;color:#c9a8ff;letter-spacing:.08em">L’ÉDITEUR PLUG</div>
+      <h2 style="margin:0;font-family:Poppins;font-weight:700;font-size:clamp(32px,3.8vw,52px);line-height:1.02;letter-spacing:-.035em;text-wrap:balance">L’IA fait le premier montage. Vous signez le final.</h2>
+      <p style="margin:0;font-size:17px;line-height:1.6;color:#d9cbe8;max-width:460px">Une timeline complète, des pistes titres et audio, un inspecteur précis. Tout ce que l’IA propose se corrige à la frame près.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:6px">
+        <a href="Plug%20Editeur.dc.html" style="background:linear-gradient(135deg,#8a5cff,#ff6fb0);color:#fff;font-weight:800;font-size:16px;padding:16px 24px;border-radius:999px" style-hover="color:#fff;filter:brightness(1.08)">Ouvrir l’éditeur →</a>
+      </div>
+    </div>
+    <div style="padding:clamp(20px,3vw,40px);display:flex;align-items:center">
+      <div ref="{{ demoRef }}" style="width:100%;border-radius:22px;background:#1e1230;border:1px solid #2f2046;padding:14px;display:flex;flex-direction:column;gap:12px;box-shadow:0 40px 80px -30px rgba(138,92,255,.45);will-change:transform">
+        <div style="display:flex;align-items:center;gap:10px;font-family:'JetBrains Mono';font-size:10px;letter-spacing:.1em;color:#8f7cab">
+          <span style="display:flex;gap:5px;flex:none"><span style="width:8px;height:8px;border-radius:50%;background:#3a2a52"></span><span style="width:8px;height:8px;border-radius:50%;background:#3a2a52"></span><span style="width:8px;height:8px;border-radius:50%;background:#3a2a52"></span></span>
+          <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">TOKYO_VLOG.PLUG</span>
+          <span style="flex:none;display:flex;align-items:center;gap:7px;padding:5px 10px;border-radius:999px;background:#2a1b3e;color:#e9dcff"><span data-a="sdot" style="width:6px;height:6px;border-radius:50%;background:#a06bff"></span><span data-a="status">READY</span></span>
+          <span data-a="tc" style="flex:none;color:#fff">00:00:00</span>
+        </div>
+        <div style="position:relative;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#140a22;isolation:isolate">
+          <div data-a="stage" style="position:absolute;inset:0;transform:scale(1.03)">
+            <img data-a="shot" src="https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=1000&amp;q=70&amp;auto=format&amp;fit=crop" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;will-change:transform,opacity">
+            <img data-a="shot" src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=1200&amp;q=75&amp;auto=format&amp;fit=crop" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;will-change:transform,opacity">
+            <img data-a="shot" src="https://images.unsplash.com/photo-1554797589-7241bb691973?w=1000&amp;q=70&amp;auto=format&amp;fit=crop" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;will-change:transform,opacity">
+            <img data-a="shot" src="https://images.unsplash.com/photo-1480796927426-f609979314bd?w=1000&amp;q=70&amp;auto=format&amp;fit=crop" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;will-change:transform,opacity">
+            <img data-a="shot" src="https://images.unsplash.com/photo-1528164344705-47542687000d?w=1000&amp;q=70&amp;auto=format&amp;fit=crop" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;will-change:transform,opacity">
+            <img data-a="shot" src="https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=1000&amp;q=70&amp;auto=format&amp;fit=crop" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;will-change:transform,opacity">
+            <div data-a="desat" style="position:absolute;inset:0;background:#808080;mix-blend-mode:saturation;opacity:0"></div>
+            <div data-a="tint" style="position:absolute;inset:0;background:linear-gradient(160deg,rgba(0,110,130,.6),rgba(255,150,70,.35));mix-blend-mode:soft-light;opacity:0"></div>
+            <div data-a="vig" style="position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 50%,rgba(0,0,0,.55));opacity:0"></div>
+          </div>
+          <div data-a="grain" style="position:absolute;inset:-20%;opacity:0;mix-blend-mode:overlay;pointer-events:none"></div>
+          <div data-a="lbt" style="position:absolute;left:0;right:0;top:0;height:9%;background:#000;transform-origin:top;transform:scaleY(0)"></div>
+          <div data-a="lbb" style="position:absolute;left:0;right:0;bottom:0;height:9%;background:#000;transform-origin:bottom;transform:scaleY(0)"></div>
+          <div style="position:absolute;left:6%;bottom:17%;display:flex;flex-direction:column;align-items:flex-start;pointer-events:none">
+            <span data-a="kicker" style="font-family:'JetBrains Mono';font-size:clamp(8px,.9vw,11px);letter-spacing:.24em;color:rgba(255,255,255,.9);margin-bottom:10px;opacity:0">ÉPISODE 01 — JAPON</span>
+            <div style="overflow:hidden"><div data-a="t1" style="font-family:Poppins;font-weight:700;font-size:clamp(22px,3.4vw,46px);line-height:1;letter-spacing:-.035em;color:#FFD35C;transform:translateY(110%)">48 HEURES</div></div>
+            <div style="overflow:hidden"><div data-a="t2" style="font-family:Poppins;font-weight:700;font-size:clamp(22px,3.4vw,46px);line-height:1;letter-spacing:-.035em;color:#fff;transform:translateY(110%)">À TOKYO</div></div>
+            <span data-a="rule" style="width:clamp(50px,7vw,96px);height:2px;background:#fff;margin-top:12px;transform-origin:left;transform:scaleX(0)"></span>
+          </div>
+          <div data-a="cap" style="position:absolute;left:0;right:0;bottom:8%;display:flex;justify-content:center;gap:.32em;font-family:Manrope;font-weight:700;font-size:clamp(11px,1.4vw,17px);color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.7);opacity:0">
+            <span data-a="word" style="opacity:0">On</span><span data-a="word" style="opacity:0">a</span><span data-a="word" style="opacity:0">48 heures</span><span data-a="word" style="opacity:0">pour</span><span data-a="word" style="opacity:0">tout</span><span data-a="word" style="opacity:0">voir.</span>
+          </div>
+          <img data-a="raw" src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=1200&amp;q=75&amp;auto=format&amp;fit=crop" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.35) contrast(.8) brightness(1.08)">
+          <div data-a="veil" style="position:absolute;inset:0;background:#140a22;opacity:.35"></div>
+          <div data-a="box" style="position:absolute;left:52%;top:40%;width:17%;height:40%;border:1px solid rgba(255,255,255,.9);border-radius:3px;opacity:0"><span style="position:absolute;left:-1px;top:-18px;font-family:'JetBrains Mono';font-size:9px;letter-spacing:.08em;background:#fff;color:#140a22;padding:2px 5px">SUJET 0.97</span></div>
+          <div data-a="box" style="position:absolute;left:14%;top:14%;width:30%;height:44%;border:1px solid rgba(255,255,255,.6);border-radius:3px;opacity:0"><span style="position:absolute;left:-1px;top:-18px;font-family:'JetBrains Mono';font-size:9px;letter-spacing:.08em;background:rgba(255,255,255,.85);color:#140a22;padding:2px 5px">SCÈNE · RUE</span></div>
+          <div data-a="div" style="position:absolute;inset:0;pointer-events:none;opacity:0">
+            <div style="position:absolute;top:0;bottom:0;left:-1px;width:2px;background:#fff;box-shadow:0 0 18px rgba(0,0,0,.4)"></div>
+            <div style="position:absolute;top:50%;left:-15px;width:30px;height:30px;margin-top:-15px;border-radius:50%;background:#fff;display:grid;place-items:center;color:#140a22;font-size:11px;font-weight:700">‹›</div>
+          </div>
+          <span data-a="lraw" style="position:absolute;left:12px;top:12px;font-family:'JetBrains Mono';font-size:10px;letter-spacing:.14em;color:#fff;background:rgba(0,0,0,.45);padding:4px 8px;border-radius:6px;opacity:0">RAW FOOTAGE</span>
+          <span data-a="lai" style="position:absolute;right:12px;top:12px;font-family:'JetBrains Mono';font-size:10px;letter-spacing:.14em;color:#140a22;background:#fff;padding:4px 8px;border-radius:6px;opacity:0">AI EDIT</span>
+          <div data-a="exp" style="position:absolute;right:12px;top:12px;display:flex;align-items:center;gap:10px;font-family:'JetBrains Mono';font-size:10px;letter-spacing:.14em;color:#fff;background:rgba(20,10,34,.8);padding:6px 10px;border-radius:8px;opacity:0">
+            <span data-a="expt">EXPORTING 0%</span>
+            <span style="width:70px;height:2px;background:rgba(255,255,255,.25);overflow:hidden"><span data-a="expb" style="display:block;height:100%;background:#fff;transform-origin:left;transform:scaleX(0)"></span></span>
+          </div>
+        </div>
+        <div data-full="1" style="display:flex;align-items:center;gap:6px">
+          <span style="font-family:'JetBrains Mono';font-size:9px;letter-spacing:.12em;color:#8f7cab;margin-right:4px">MÉDIAS</span>
+          <img data-a="bin" src="https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=120&amp;q=60&amp;auto=format&amp;fit=crop" alt="" style="width:34px;height:22px;border-radius:4px;object-fit:cover">
+          <img data-a="bin" src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=120&amp;q=60&amp;auto=format&amp;fit=crop" alt="" style="width:34px;height:22px;border-radius:4px;object-fit:cover">
+          <img data-a="bin" src="https://images.unsplash.com/photo-1554797589-7241bb691973?w=120&amp;q=60&amp;auto=format&amp;fit=crop" alt="" style="width:34px;height:22px;border-radius:4px;object-fit:cover">
+          <img data-a="bin" src="https://images.unsplash.com/photo-1480796927426-f609979314bd?w=120&amp;q=60&amp;auto=format&amp;fit=crop" alt="" style="width:34px;height:22px;border-radius:4px;object-fit:cover">
+          <img data-a="bin" src="https://images.unsplash.com/photo-1528164344705-47542687000d?w=120&amp;q=60&amp;auto=format&amp;fit=crop" alt="" style="width:34px;height:22px;border-radius:4px;object-fit:cover">
+          <img data-a="bin" src="https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=120&amp;q=60&amp;auto=format&amp;fit=crop" alt="" style="width:34px;height:22px;border-radius:4px;object-fit:cover">
+        </div>
+        <div style="position:relative;display:grid;grid-template-columns:20px minmax(0,1fr);gap:6px 8px;align-items:center;font-family:'JetBrains Mono';font-size:9px;color:#7d6b98">
+          <span></span><div style="height:8px;background:repeating-linear-gradient(90deg,#3a2a52 0 1px,transparent 1px 24px)"></div>
+          <span>T1</span>
+          <div style="position:relative;height:16px;border-radius:4px;background:#221535">
+            <div data-a="tb" style="position:absolute;top:0;bottom:0;left:4%;width:30%;border-radius:4px;background:#7c4dff;color:#fff;display:flex;align-items:center;padding:0 6px;white-space:nowrap;overflow:hidden;transform-origin:left;transform:scaleX(0)">48 HEURES À TOKYO</div>
+            <div data-a="tb" style="position:absolute;top:0;bottom:0;left:40%;width:42%;border-radius:4px;background:#5b3bb8;color:#fff;display:flex;align-items:center;padding:0 6px;white-space:nowrap;overflow:hidden;transform-origin:left;transform:scaleX(0)">SOUS-TITRES</div>
+          </div>
+          <span>V1</span>
+          <div style="position:relative;height:40px;border-radius:5px;background:#221535;border:1px dashed #33244a">
+            <div data-a="clip" style="position:absolute;top:0;bottom:0;left:0%;width:calc(16% - 2px);border-radius:5px;overflow:hidden;opacity:0;outline-offset:-2px"><img src="https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=240&amp;q=60&amp;auto=format&amp;fit=crop" alt="" style="width:100%;height:100%;object-fit:cover;display:block"><span data-a="cbar" style="position:absolute;left:0;right:0;bottom:0;height:2px;background:#fff;transform-origin:left;transform:scaleX(0)"></span></div>
+            <div data-a="clip" style="position:absolute;top:0;bottom:0;left:16%;width:calc(20% - 2px);border-radius:5px;overflow:hidden;opacity:0;outline-offset:-2px"><img src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=240&amp;q=60&amp;auto=format&amp;fit=crop" alt="" style="width:100%;height:100%;object-fit:cover;display:block"><span data-a="cbar" style="position:absolute;left:0;right:0;bottom:0;height:2px;background:#fff;transform-origin:left;transform:scaleX(0)"></span></div>
+            <div data-a="clip" style="position:absolute;top:0;bottom:0;left:36%;width:calc(14% - 2px);border-radius:5px;overflow:hidden;opacity:0;outline-offset:-2px"><img src="https://images.unsplash.com/photo-1554797589-7241bb691973?w=240&amp;q=60&amp;auto=format&amp;fit=crop" alt="" style="width:100%;height:100%;object-fit:cover;display:block"><span data-a="cbar" style="position:absolute;left:0;right:0;bottom:0;height:2px;background:#fff;transform-origin:left;transform:scaleX(0)"></span></div>
+            <div data-a="clip" style="position:absolute;top:0;bottom:0;left:50%;width:calc(18% - 2px);border-radius:5px;overflow:hidden;opacity:0;outline-offset:-2px"><img src="https://images.unsplash.com/photo-1480796927426-f609979314bd?w=240&amp;q=60&amp;auto=format&amp;fit=crop" alt="" style="width:100%;height:100%;object-fit:cover;display:block"><span data-a="cbar" style="position:absolute;left:0;right:0;bottom:0;height:2px;background:#fff;transform-origin:left;transform:scaleX(0)"></span></div>
+            <div data-a="clip" style="position:absolute;top:0;bottom:0;left:68%;width:calc(12% - 2px);border-radius:5px;overflow:hidden;opacity:0;outline-offset:-2px"><img src="https://images.unsplash.com/photo-1528164344705-47542687000d?w=240&amp;q=60&amp;auto=format&amp;fit=crop" alt="" style="width:100%;height:100%;object-fit:cover;display:block"><span data-a="cbar" style="position:absolute;left:0;right:0;bottom:0;height:2px;background:#fff;transform-origin:left;transform:scaleX(0)"></span></div>
+            <div data-a="clip" style="position:absolute;top:0;bottom:0;left:80%;width:20%;border-radius:5px;overflow:hidden;opacity:0;outline-offset:-2px"><img src="https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=240&amp;q=60&amp;auto=format&amp;fit=crop" alt="" style="width:100%;height:100%;object-fit:cover;display:block"><span data-a="cbar" style="position:absolute;left:0;right:0;bottom:0;height:2px;background:#fff;transform-origin:left;transform:scaleX(0)"></span></div>
+            <span data-a="cut" style="position:absolute;top:-4px;bottom:-4px;left:16%;width:2px;margin-left:-2px;background:#FFD35C;transform:scaleY(0);opacity:0"></span>
+            <span data-a="cut" style="position:absolute;top:-4px;bottom:-4px;left:36%;width:2px;margin-left:-2px;background:#FFD35C;transform:scaleY(0);opacity:0"></span>
+            <span data-a="cut" style="position:absolute;top:-4px;bottom:-4px;left:50%;width:2px;margin-left:-2px;background:#FFD35C;transform:scaleY(0);opacity:0"></span>
+            <span data-a="cut" style="position:absolute;top:-4px;bottom:-4px;left:68%;width:2px;margin-left:-2px;background:#FFD35C;transform:scaleY(0);opacity:0"></span>
+            <span data-a="cut" style="position:absolute;top:-4px;bottom:-4px;left:80%;width:2px;margin-left:-2px;background:#FFD35C;transform:scaleY(0);opacity:0"></span>
+            <span data-a="scan" style="position:absolute;top:0;bottom:0;left:0;width:18%;background:linear-gradient(90deg,rgba(160,107,255,0),rgba(200,170,255,.55),rgba(160,107,255,0));opacity:0;pointer-events:none"></span>
+          </div>
+          <span data-full="1">FX</span>
+          <div data-full="1" style="position:relative;height:16px">
+            <span data-a="fx" style="position:absolute;top:0;left:33%;height:16px;padding:0 5px;border:1px solid #5a4480;border-radius:4px;color:#c9b6ea;display:flex;align-items:center;opacity:0">FONDU</span>
+            <span data-a="fx" style="position:absolute;top:0;left:49%;height:16px;padding:0 5px;border:1px solid #5a4480;border-radius:4px;color:#c9b6ea;display:flex;align-items:center;opacity:0">ZOOM</span>
+            <span data-a="fx" style="position:absolute;top:0;left:64%;height:16px;padding:0 5px;border:1px solid #5a4480;border-radius:4px;color:#c9b6ea;display:flex;align-items:center;opacity:0">GRADE</span>
+            <span data-a="fx" style="position:absolute;top:0;left:80%;height:16px;padding:0 5px;border:1px solid #5a4480;border-radius:4px;color:#c9b6ea;display:flex;align-items:center;opacity:0">RAMP</span>
+          </div>
+          <span>A1</span>
+          <div style="position:relative;height:20px;border-radius:4px;background:#221535;overflow:hidden">
+            <div data-a="wave" style="position:absolute;inset:0;display:flex;align-items:center;gap:2px;padding:0 2px;clip-path:inset(0 100% 0 0)">
+              <sc-for list="{{ waveBars }}" as="b" hint-placeholder-count="80"><span style="flex:1;min-width:0;height:{{ b }};border-radius:1px;background:#8a72c4"></span></sc-for>
+            </div>
+          </div>
+          <span data-full="1">A2</span>
+          <div data-full="1" style="position:relative;height:14px;border-radius:4px;background:#221535">
+            <div data-a="music" style="position:absolute;inset:0;border-radius:4px;background:#3c2a55;color:#c9b6ea;display:flex;align-items:center;padding:0 6px;white-space:nowrap;overflow:hidden;transform-origin:left;transform:scaleX(0)">MUSIQUE · LO-FI</div>
+          </div>
+          <div data-a="ph" style="position:absolute;top:0;bottom:0;left:28px;right:0;pointer-events:none;opacity:0">
+            <div style="position:absolute;top:-2px;bottom:0;left:-1px;width:2px;background:#fff;box-shadow:0 0 10px rgba(255,255,255,.6)"><span data-a="phh" style="position:absolute;top:0;left:-4px;width:10px;height:10px;border-radius:2px;background:#fff"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="tarifs" data-screen-label="Tarifs" style="display:flex;flex-direction:column;gap:40px">
+    <div style="text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center">
+      <h2 style="margin:0;font-family:Poppins;font-weight:700;font-size:clamp(34px,4.6vw,64px);line-height:1;letter-spacing:-.04em">Un prix simple. Des minutes IA claires.</h2>
+      <p style="margin:0;font-size:17px;color:#4b3561">Commencez gratuitement. Changez de plan quand votre chaîne grandit.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:16px;align-items:stretch">
+      <sc-for list="{{ plans }}" as="p" hint-placeholder-count="4">
+        <div style="border-radius:28px;padding:28px;display:flex;flex-direction:column;gap:18px;background:{{ p.bg }};color:{{ p.fg }};border:1px solid {{ p.border }}">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+            <span style="font-family:Poppins;font-weight:700;font-size:21px">{{ p.name }}</span>
+            <sc-if value="{{ p.badge }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:800;padding:5px 10px;border-radius:999px;background:#ff9ec8;color:#26143a">{{ p.badge }}</span></sc-if>
+          </div>
+          <div style="display:flex;align-items:baseline;gap:6px"><span style="font-family:Poppins;font-weight:800;font-size:48px;letter-spacing:-.04em">{{ p.price }}</span><span style="font-size:15px;font-weight:600;opacity:.8">€/mois</span></div>
+          <div style="font-size:15px;line-height:1.5;font-weight:600">{{ p.tag }}</div>
+          <div style="display:flex;flex-direction:column;gap:10px;font-size:15px;line-height:1.4;flex:1">
+            <sc-for list="{{ p.items }}" as="it" hint-placeholder-count="3"><div style="display:flex;gap:10px"><span style="color:{{ p.check }};font-weight:800">✓</span><span>{{ it }}</span></div></sc-for>
+          </div>
+          <a href="{{ p.href }}" style="text-align:center;font-weight:800;font-size:15px;padding:15px;border-radius:999px;background:{{ p.ctaBg }};color:{{ p.ctaFg }}">{{ p.cta }}</a>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display:flex;justify-content:center;gap:28px;flex-wrap:wrap;font-size:15px;font-weight:600;color:#4b3561">
+      <span>Paiement sécurisé</span><span>·</span><span>Résiliable en 1 clic</span><span>·</span><span>Vos vidéos restent privées</span><span>·</span><a href="Plug%20Tarifs.dc.html">Comparer les plans →</a>
+    </div>
+  </section>
+</main>
+
+<section data-screen-label="CTA final" style="position:relative;overflow:hidden;border-radius:36px;padding:clamp(56px,8vw,120px) clamp(20px,5vw,72px);text-align:center;background:radial-gradient(50% 60% at 20% 30%,#b27cc9,rgba(178,124,201,0)),radial-gradient(50% 60% at 80% 70%,#f0a9cf,rgba(240,169,207,0)),linear-gradient(180deg,#a978c2,#d79fc8);display:flex;flex-direction:column;align-items:center;gap:26px">
+  <h2 style="margin:0;font-family:Poppins;font-weight:800;color:#fff;font-size:clamp(40px,6.4vw,96px);line-height:.95;letter-spacing:-.045em;text-transform:uppercase;max-width:1100px;text-wrap:balance">Votre prochaine vidéo est déjà dans vos rushes</h2>
+  <a href="Plug%20Inscription.dc.html" style="background:#fff;color:#26143a;font-weight:800;font-size:17px;padding:18px 30px;border-radius:999px" style-hover="color:#26143a;transform:translateY(-2px)">Commencer gratuitement →</a>
+  <span style="color:#fff;font-weight:600;font-size:14px">30 min de montage IA offertes, sans carte bancaire</span>
+</section>
+
+<footer style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;padding:18px 28px 28px;font-size:14px;color:#4b3561;font-weight:600">
+  <span>© 2026 Plug</span>
+  <div style="display:flex;gap:24px;flex-wrap:wrap"><a href="Plug%20Tarifs.dc.html">Tarifs</a><a href="Plug%20Editeur.dc.html">Éditeur</a><a href="#">Confidentialité</a><a href="#">CGU</a></div>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;autoRedirect&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;heroSpeed&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:1,&quot;min&quot;:0.5,&quot;max&quot;:1.5,&quot;step&quot;:0.1,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Démo hero&quot;}}">
+const PH = (id, w) => 'https://images.unsplash.com/photo-' + id + '?w=' + w + '&q=72&auto=format&fit=crop';
+// Demo footage for the hero. Replace photo ids (or set img/thumb directly) to swap the assets.
+const DEMO_CLIPS = [
+  { id: 'tokyo', label: 'TOKYO', dur: '00:42', score: '0.97', photo: '1540959733332-eab4deabeeaf' },
+  { id: 'walk', label: 'SHIBUYA WALK', dur: '00:27', score: '0.91', photo: '1503899036084-c55cdd92da26' },
+  { id: 'food', label: 'RAMEN', dur: '00:15', score: '0.88', photo: '1554797589-7241bb691973' },
+  { id: 'city', label: 'CITY NIGHT', dur: '01:18', score: '0.93', photo: '1542051841857-5f90071e7989' },
+  { id: 'temple', label: 'TEMPLE', dur: '00:33', score: '0.62', photo: '1528164344705-47542687000d' }
+];
+const HERO_SLOT = [0, 2, 1, 3, -1]; // card order: tokyo, walk, food, city, temple → timeline slot
+const HERO_CL = [[0, 24], [24, 18], [42, 22], [64, 36]]; // timeline slots [left%, width%]: tokyo, food, walk, city
+const RUSH = Object.fromEntries(DEMO_CLIPS.map(c => [c.id, { ...c, img: c.img || PH(c.photo, 1000), thumb: c.thumb || PH(c.photo, 360) }]));
+class Component extends DCLogic {
+  state = { phase: 'idle', drag: false, progress: 0, name: '', size: 0, url: null };
+  inputRef = React.createRef();
+  demoRef = React.createRef();
+  heroRef = React.createRef();
+  stackRef = React.createRef();
+  componentDidMount() { this.initDemo(); this.initHero(); this.initStack(); }
+  componentWillUnmount() { this.stackIO && this.stackIO.disconnect(); }
+  initStack() {
+    const el = this.stackRef.current; if (!el) return;
+    const cards = [...el.children], n = cards.length;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const ease = 'cubic-bezier(.22,1,.36,1)';
+    cards.forEach((c, i) => { c.style.position = 'relative'; c.style.zIndex = i + 1; c.style.willChange = 'transform'; c.style.transition = 'transform .6s cubic-bezier(.34,1.56,.64,1), box-shadow .5s ' + ease; });
+    const num = el.querySelector('[data-count]'), shine = el.querySelector('[data-shine]');
+    const play = () => {
+      if (reduce) return;
+      cards.forEach((c, i) => c.animate([
+        { opacity: 0, transform: 'translateX(90px) translateY(18px) rotate(10deg) scale(.82)', filter: 'blur(10px)' },
+        { opacity: 1, transform: 'none', filter: 'blur(0)' }
+      ], { duration: 1100, delay: i * 120, easing: ease, fill: 'backwards' }));
+      cards.forEach((c, i) => c.animate([{ translate: '0 0' }, { translate: '0 -7px' }, { translate: '0 0' }],
+        { duration: 3600, delay: 1400 + i * 280, iterations: Infinity, easing: 'ease-in-out' }));
+      if (num && num.firstChild) {
+        const t0 = performance.now() + 450, dur = 1500;
+        const tick = (t) => { const p = Math.min(1, Math.max(0, (t - t0) / dur)); const v = Math.round(40 * (1 - Math.pow(1 - p, 4)));
+          num.firstChild.nodeValue = v + (p >= 1 ? '+' : ''); if (p < 1) requestAnimationFrame(tick); };
+        num.firstChild.nodeValue = '0'; requestAnimationFrame(tick);
+        num.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.18)' }, { transform: 'scale(1)' }], { duration: 500, delay: 1950, easing: ease });
+      }
+      if (shine) shine.animate([{ transform: 'translateX(-160%)' }, { transform: 'translateX(260%)' }, { transform: 'translateX(260%)' }],
+        { duration: 4200, delay: 2000, iterations: Infinity, easing: ease });
+    };
+    this.stackIO = new IntersectionObserver((es) => { if (es[0].isIntersecting) { play(); this.stackIO.disconnect(); } }, { threshold: .4 });
+    this.stackIO.observe(el);
+    const mid = (n - 1) / 2;
+    const fan = (on, hot = -1) => cards.forEach((c, i) => {
+      if (!on) { c.style.transform = ''; c.style.boxShadow = ''; return; }
+      const k = Math.min(1, el.clientWidth / 420), tx = -(n - 1 - i) * 30 * k, rot = (i - mid) * 5, ty = Math.abs(i - mid) * 5 - (i === hot ? 14 : 0), s = i === hot ? 1.08 : 1;
+      c.style.transform = `translateX(${tx}px) translateY(${ty}px) rotate(${rot}deg) scale(${s})`;
+      c.style.boxShadow = i === hot ? '0 26px 44px -16px rgba(40,10,70,.85)' : '';
+    });
+    el.addEventListener('mouseleave', () => fan(false));
+    cards.forEach((c, i) => c.addEventListener('mouseenter', () => fan(true, i)));
+    el.addEventListener('mouseenter', () => fan(true));
+  }
+  // ---------- Hero editing demo ----------
+  initHero() {
+    const root = this.heroRef.current; if (!root) return;
+    const q = k => Array.from(root.querySelectorAll('[data-h="' + k + '"]'));
+    const H = {};
+    ['card', 'cin', 'cscan', 'cbadge', 'shot', 'clip', 'cut', 'cb', 'fx', 'w'].forEach(k => H[k] = q(k));
+    ['st', 'ok', 'pct', 'prog', 'tint', 'vig', 'lbt', 'lbb', 'lt1', 'lt2', 'ltr', 'cap', 'raw', 'veil', 'box', 'dv', 'lraw', 'wave', 'ph', 'panel', 'fxl', 'fxt'].forEach(k => H[k] = q(k)[0]);
+    root.querySelectorAll('[data-rush]').forEach(img => { const r = RUSH[img.dataset.rush]; const u = r && r[img.dataset.rf]; if (u && img.getAttribute('src') !== u.replace(/&amp;/g, '&')) img.src = u; });
+    this.H = H; this.hp = { x: 0, y: 0, tx: 0, ty: 0 }; this.hCur = H.card.map(() => ({ x: 0, y: 0 })); this.hD = [];
+    this.hro = new ResizeObserver(() => {
+      const c = root.clientWidth < 460;
+      requestAnimationFrame(() => {
+        if (c !== this.hCompact) {
+          this.hCompact = c;
+          H.card.forEach(el => { if (el.dataset.m === '0') el.style.display = c ? 'none' : ''; });
+          H.fxl.style.display = H.fxt.style.display = c ? 'none' : '';
+          H.card.forEach((el, i) => { if (i === 1 || i === 3) el.style.zIndex = c ? '1' : '3'; });
+        }
+        this.measureHero();
+      });
+    });
+    this.hro.observe(root);
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) { this.heroFrame(10.6, 0); return; }
+    this.hT = 0; this.hClock = 0; this.heroFrame(0, 0);
+    window.addEventListener('pointermove', this.hPM = e => {
+      if (this.hCompact || e.pointerType === 'touch') return;
+      this.hp.tx = e.clientX / innerWidth * 2 - 1; this.hp.ty = e.clientY / innerHeight * 2 - 1;
+    });
+    const loop = now => {
+      const dt = Math.min(0.05, (now - (this.hLast || now)) / 1000) * (this.props.heroSpeed ?? 1); this.hLast = now;
+      this.hT = (this.hT + dt) % 12.8; this.hClock += dt;
+      const hp = this.hp; hp.x += (hp.tx - hp.x) * 0.05; hp.y += (hp.ty - hp.y) * 0.05;
+      this.heroFrame(this.hT, this.hClock);
+      this.hRaf = requestAnimationFrame(loop);
+    };
+    this.hio = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { if (!this.hRaf) { this.hLast = 0; this.hRaf = requestAnimationFrame(loop); } }
+      else { cancelAnimationFrame(this.hRaf); this.hRaf = 0; }
+    }, { threshold: 0.15 });
+    this.hio.observe(root);
+  }
+  measureHero() {
+    const H = this.H; if (!H) return;
+    H.card.forEach((el, i) => {
+      const j = HERO_SLOT[i]; if (j < 0) return;
+      const r = el.getBoundingClientRect(), c = H.clip[j].getBoundingClientRect(), cur = this.hCur[i];
+      this.hD[i] = { dx: (c.left + c.width / 2) - (r.left + r.width / 2 - cur.x), dy: (c.top + c.height / 2) - (r.top + r.height / 2 - cur.y) };
+    });
+  }
+  heroFrame(t, clock) {
+    if (!this.H) return;
+    const cl = x => Math.min(1, Math.max(0, x));
+    const E = { o3: x => 1 - Math.pow(1 - x, 3), io: x => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2, expo: x => x >= 1 ? 1 : 1 - Math.pow(2, -10 * x) };
+    const sg = (a, b, e) => { const x = cl((t - a) / (b - a)); return e ? e(x) : x; };
+    const k = { t, clock, cl, E, sg, ES: 5.0, EE: 8.0 };
+    k.at = pos => k.ES + pos / 100 * 3.0; k.p = sg(k.ES, k.EE);
+    this.heroCards(k); this.heroTimeline(k); this.heroPreview(k); this.heroStatus(k);
+  }
+  heroCards({ t, clock, sg, E }) {
+    const H = this.H, hp = this.hp || { x: 0, y: 0 }, TAU = Math.PI * 2, depth = [0.3, 1, 0.4, 0.9, 0.35];
+    H.card.forEach((el, i) => {
+      const j = HERO_SLOT[i], ph = i * 1.7, r = sg(11.9 + i * 0.08, 12.5 + i * 0.08, E.o3);
+      const fy = 8 * Math.sin(clock * TAU / 6.5 + ph), fx = 4 * Math.sin(clock * TAU / 7.3 + ph * 1.3), fr = Math.sin(clock * TAU / 8 + ph);
+      let f = 0, o = 1, s = 1;
+      if (j >= 0) {
+        const st = 3.6 + j * 0.25;
+        if (t < 11.8) { f = sg(st, st + 0.7, E.io); o = 1 - sg(st + 0.5, st + 0.72); s = 1 - 0.55 * f; }
+        else { o = r; s = 0.92 + 0.08 * r; }
+      } else o = t < 11.8 ? 1 - 0.55 * sg(3.2, 3.6) : 0.45 + 0.55 * r;
+      const d = this.hD[i] || { dx: 0, dy: 0 };
+      const x = fx - hp.x * (2 + 8 * depth[i]) + d.dx * f, y = fy - hp.y * (2 + 6 * depth[i]) + d.dy * f;
+      this.hCur[i] = { x, y };
+      el.style.transform = 'translate(' + x.toFixed(2) + 'px,' + y.toFixed(2) + 'px) rotate(' + (fr + hp.x * depth[i]).toFixed(3) + 'deg) scale(' + s.toFixed(3) + ')';
+      el.style.opacity = o.toFixed(3);
+      const a = sg(1.6 + i * 0.2, 2.2 + i * 0.2);
+      H.cscan[i].style.opacity = a > 0 && a < 1 ? Math.sin(a * Math.PI).toFixed(3) : 0;
+      H.cscan[i].style.transform = 'translateX(' + (-100 + a * 433).toFixed(1) + '%)';
+      H.cbadge[i].style.opacity = (sg(1.9 + i * 0.2, 2.1 + i * 0.2) * (1 - sg(11.8, 12.0))).toFixed(3);
+      H.cin[i].style.borderColor = j >= 0 && t >= 3.0 + j * 0.15 && t < 11.8 ? '#ff9ec8' : 'rgba(255,255,255,.4)';
+    });
+    H.panel.style.transform = 'translate(' + (-hp.x * 3).toFixed(2) + 'px,' + (-hp.y * 2).toFixed(2) + 'px)';
+  }
+  heroTimeline({ t, clock, sg, E, ES, EE, at, p }) {
+    const H = this.H, out = 1 - sg(11.8, 12.2);
+    HERO_CL.forEach(([l, w], j) => {
+      const el = H.clip[j], st = 3.6 + j * 0.25, a = sg(st + 0.55, st + 0.8, E.o3) * out;
+      el.style.opacity = a.toFixed(3);
+      el.style.transform = 'translateY(' + ((1 - a) * -10).toFixed(2) + 'px) scale(' + (0.9 + 0.1 * a).toFixed(3) + ')';
+      const act = t >= ES && t < EE && p * 100 >= l && p * 100 < l + w;
+      if (el._act !== act) { el._act = act; el.style.outline = act ? '1.5px solid #fff' : 'none'; el.style.filter = act ? 'brightness(1.2)' : ''; }
+    });
+    [24, 42, 64].forEach((b, i) => { H.cut[i].style.transform = 'scaleY(' + (sg(at(b), at(b) + 0.2, E.o3) * out).toFixed(3) + ')'; });
+    [6, 36, 60].forEach((b, i) => { H.cb[i].style.transform = 'scaleX(' + (sg(at(b), at(b) + 0.35, E.expo) * out).toFixed(3) + ')'; });
+    [at(23), at(43), 8.67].forEach((tt, i) => { const a = sg(tt, tt + 0.3, E.o3) * out; H.fx[i].style.opacity = a.toFixed(3); H.fx[i].style.transform = 'scale(' + (0.8 + 0.2 * a).toFixed(3) + ')'; });
+    const rv = t < ES ? 0 : t < EE ? p : 1;
+    H.wave.style.clipPath = 'inset(0 ' + ((1 - rv) * 100).toFixed(2) + '% 0 0)';
+    H.wave.style.opacity = out.toFixed(3);
+    H.wave.style.transform = t >= EE && t < 11.8 ? 'scaleY(' + (1 + 0.12 * Math.sin(clock * 9)).toFixed(3) + ')' : 'none';
+    H.ph.style.opacity = (sg(4.8, 5.0) * (1 - sg(11.6, 11.9))).toFixed(3);
+    H.ph.style.transform = 'translateX(' + (rv * 100).toFixed(2) + '%)';
+  }
+  heroPreview({ t, sg, cl, E, ES, EE, at }) {
+    const H = this.H;
+    HERO_CL.forEach(([l, w], j) => {
+      const el = H.shot[j], ts = at(l), te = at(l + w), fi = l === 24 ? 0.22 : 0.05;
+      let o = 0, s = 1.05, tx = 0, ty = 0;
+      if (t >= ts - fi && t < te + 0.05) {
+        const fin = j === 0 ? sg(ES - 0.12, ES + 0.05) : sg(ts - fi, ts + fi), u = sg(ts, te);
+        o = fin * (1 - sg(te - 0.05, te + 0.05)); s = 1.04 + 0.05 * u; tx = (j % 2 ? -1 : 1) * 1.2 * u;
+        if (j === 2) s = 1.04 + 0.14 * E.o3(sg(ts, ts + 0.3)) + 0.03 * u;
+      }
+      if (j === 0 && t >= EE - 0.05) { const h = sg(EE, 10.0, E.expo); o = 1; s = 1.22 - 0.16 * h - 0.02 * sg(10, 12.8); tx = 0.5 * Math.sin(t * 0.7); ty = (1 - h) * -2; }
+      el.style.opacity = o;
+      if (o > 0) el.style.transform = 'translate(' + tx.toFixed(3) + '%,' + ty.toFixed(3) + '%) scale(' + s.toFixed(4) + ')';
+    });
+    const sweep = t >= EE && t < 9.45, x = t < 8.15 ? 0 : 100 * E.io(sg(8.15, 9.3));
+    H.raw.style.opacity = t < EE ? 1 - sg(ES - 0.12, ES + 0.05) : sweep ? 1 : t >= 12.2 ? sg(12.2, 12.8, E.io) : 0;
+    H.raw.style.clipPath = sweep ? 'inset(0 0 0 ' + x.toFixed(2) + '%)' : 'none';
+    const dvo = sweep ? sg(8.05, 8.15) * (1 - sg(9.3, 9.45)) : 0;
+    H.dv.style.opacity = dvo; H.dv.style.transform = 'translateX(' + x.toFixed(2) + '%)';
+    H.lraw.style.opacity = (cl((86 - x) / 10) * dvo).toFixed(3);
+    const g = (t >= EE ? 1 : 0) * (1 - sg(11.9, 12.3));
+    H.tint.style.opacity = g; H.vig.style.opacity = g;
+    H.lbt.style.transform = H.lbb.style.transform = 'scaleY(' + (sg(8.6, 9.2, E.io) * (1 - sg(11.9, 12.3, E.io))).toFixed(3) + ')';
+    const f = 1 - sg(11.8, 12.1);
+    H.lt1.style.transform = 'translateY(' + ((1 - sg(8.7, 9.3, E.expo)) * 110).toFixed(2) + '%)'; H.lt1.style.opacity = f;
+    H.lt2.style.transform = 'translateY(' + ((1 - sg(8.82, 9.42, E.expo)) * 110).toFixed(2) + '%)'; H.lt2.style.opacity = f;
+    H.ltr.style.transform = 'scaleX(' + (sg(8.75, 9.6, E.expo) * f).toFixed(3) + ')';
+    H.cap.style.opacity = (sg(6.1, 6.2) * f).toFixed(3);
+    H.w.forEach((el, j) => {
+      const wt = 6.2 + j * 0.25, a = sg(wt, wt + 0.18, E.o3);
+      el.style.opacity = a.toFixed(3); el.style.transform = 'translateY(' + ((1 - a) * 5).toFixed(2) + 'px)';
+      el.style.color = t >= wt && t < wt + 0.25 && t < EE ? '#FFD35C' : '#fff';
+    });
+    H.veil.style.opacity = (0.25 * (1 - sg(1.5, 2.5)) + 0.25 * sg(12.3, 12.8)).toFixed(3);
+    const bx = sg(1.9, 2.1, E.o3) * (1 - sg(2.8, 3.0));
+    H.box.style.opacity = bx; H.box.style.transform = 'scale(' + (1.08 - 0.08 * bx).toFixed(3) + ')';
+  }
+  heroStatus({ t, sg, E }) {
+    const H = this.H;
+    const st = t < 1.5 ? 'DROP YOUR RUSHES' : t < 3 ? 'AI ANALYZING' : t < 5 ? 'SELECTING BEST SHOTS' : t < 8 ? 'AI EDITING' : t < 8.67 ? 'ADDING MOTION' : t < 9.33 ? 'COLOR GRADING' : t < 10 ? 'SOUND DESIGN' : t < 11.8 ? 'EDIT COMPLETE' : 'READY';
+    if (H.st.textContent !== st) H.st.textContent = st;
+    const pr = sg(1.5, 10.0), pct = t < 1.5 || t >= 12.3 ? '—' : Math.round(pr * 100) + '%';
+    if (H.pct.textContent !== pct) H.pct.textContent = pct;
+    H.prog.style.transform = 'scaleX(' + (pr * (1 - sg(11.8, 12.3))).toFixed(3) + ')';
+    const a = sg(10, 10.3, E.o3) * (1 - sg(11.8, 12.1));
+    H.ok.style.opacity = a; H.ok.style.transform = 'scale(' + (0.6 + 0.4 * a).toFixed(3) + ')';
+  }
+  componentWillUnmount() {
+    clearInterval(this.iv); clearTimeout(this.to);
+    cancelAnimationFrame(this.raf); this.io && this.io.disconnect(); this.ro && this.ro.disconnect();
+    cancelAnimationFrame(this.hRaf); this.hio && this.hio.disconnect(); this.hro && this.hro.disconnect();
+    if (this.hPM) window.removeEventListener('pointermove', this.hPM);
+    const r = this.demoRef.current; if (r && this.onPM) { r.removeEventListener('pointermove', this.onPM); r.removeEventListener('pointerleave', this.onPL); }
+  }
+  initDemo() {
+    const root = this.demoRef.current; if (!root) return;
+    const q = k => Array.from(root.querySelectorAll('[data-a="' + k + '"]'));
+    const A = {};
+    ['clip', 'cbar', 'cut', 'tb', 'fx', 'bin', 'shot', 'word', 'box'].forEach(k => A[k] = q(k));
+    ['scan', 'wave', 'music', 'ph', 'phh', 'desat', 'tint', 'vig', 'grain', 'lbt', 'lbb', 'kicker', 't1', 't2', 'rule', 'cap', 'raw', 'veil', 'div', 'lraw', 'lai', 'exp', 'expt', 'expb', 'status', 'sdot', 'tc', 'stage'].forEach(k => A[k] = q(k)[0]);
+    this.A = A;
+    const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(#n)'/></svg>";
+    A.grain.style.backgroundImage = 'url("data:image/svg+xml,' + encodeURIComponent(svg) + '")';
+    A.grain.style.backgroundSize = '160px';
+    const full = Array.from(root.querySelectorAll('[data-full]'));
+    this.ro = new ResizeObserver(([e]) => {
+      const c = e.contentRect.width < 520; if (c === this.compact) return; this.compact = c;
+      requestAnimationFrame(() => full.forEach(el => { el.style.display = c ? 'none' : ''; }));
+    });
+    this.ro.observe(root);
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) { this.demoTick(12.95); return; }
+    this.demoTick(0);
+    this.el = 0; this.hv = { x: 0, y: 0, tx: 0, ty: 0 };
+    root.addEventListener('pointermove', this.onPM = e => { const r = root.getBoundingClientRect(); this.hv.tx = ((e.clientX - r.left) / r.width) * 2 - 1; this.hv.ty = ((e.clientY - r.top) / r.height) * 2 - 1; });
+    root.addEventListener('pointerleave', this.onPL = () => { this.hv.tx = 0; this.hv.ty = 0; });
+    const loop = now => {
+      const dt = Math.min(0.05, (now - (this.last || now)) / 1000); this.last = now;
+      this.el = (this.el + dt) % 13.6; this.demoTick(this.el); this.hover(root);
+      this.raf = requestAnimationFrame(loop);
+    };
+    this.io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { if (!this.raf) { this.last = 0; this.raf = requestAnimationFrame(loop); } }
+      else { cancelAnimationFrame(this.raf); this.raf = 0; }
+    }, { threshold: 0.2 });
+    this.io.observe(root);
+  }
+  hover(root) {
+    const h = this.hv; h.x += (h.tx - h.x) * 0.07; h.y += (h.ty - h.y) * 0.07;
+    if (Math.abs(h.x) < 0.001 && Math.abs(h.y) < 0.001 && !h.tx && !h.ty) { if (h.on) { root.style.transform = ''; this.A.stage.style.transform = 'scale(1.03)'; h.on = false; } return; }
+    h.on = true;
+    root.style.transform = 'perspective(1600px) rotateX(' + (-h.y * 2.2).toFixed(3) + 'deg) rotateY(' + (h.x * 3).toFixed(3) + 'deg)';
+    this.A.stage.style.transform = 'translate(' + (-h.x * 6).toFixed(2) + 'px,' + (-h.y * 4).toFixed(2) + 'px) scale(1.03)';
+    this.A.phh.style.transform = 'scale(' + (1 + Math.hypot(h.x, h.y) * 0.25).toFixed(3) + ')';
+  }
+  demoTick(t) {
+    const A = this.A; if (!A) return;
+    const cl = x => Math.min(1, Math.max(0, x));
+    const E = { o3: x => 1 - Math.pow(1 - x, 3), io: x => x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2, expo: x => x >= 1 ? 1 : 1 - Math.pow(2, -10 * x) };
+    const sg = (a, b, e) => { const x = cl((t - a) / (b - a)); return e ? e(x) : x; };
+    const ES = 3.6, EE = 7.8, at = pos => ES + pos / 100 * 4.2, p = sg(ES, EE);
+    const CL = [[0, 16], [16, 20], [36, 14], [50, 18], [68, 12], [80, 20]];
+    const outro = sg(13.0, 13.4, E.o3);
+    const txt = (el, v) => { if (el.textContent !== v) el.textContent = v; };
+    // timeline
+    A.clip.forEach((el, i) => {
+      const en = sg(1.4 + i * 0.18, 2.0 + i * 0.18, E.o3), out = sg(13.0 + i * 0.03, 13.4 + i * 0.03, E.o3), o = en * (1 - out);
+      el.style.opacity = o;
+      el.style.transform = 'translateX(' + ((1 - en) * 28).toFixed(1) + 'px) scale(' + (0.9 + 0.1 * en).toFixed(3) + ')';
+      const b = (1 - en) * 6 + out * 4; el.style.filter = b > 0.05 ? 'blur(' + b.toFixed(2) + 'px)' : 'none';
+      const [l, w] = CL[i], act = t >= ES && t < EE && p * 100 >= l && p * 100 < l + w;
+      el.style.outline = act ? '2px solid #fff' : 'none';
+    });
+    A.cbar.forEach((el, i) => { el.style.transform = 'scaleX(' + sg(1.7 + i * 0.18, 2.7 + i * 0.18).toFixed(3) + ')'; el.style.opacity = 1 - sg(3.4, 3.7); });
+    const sc = sg(2.8, 3.6); A.scan.style.opacity = sc > 0 && sc < 1 ? Math.sin(sc * Math.PI) : 0; A.scan.style.transform = 'translateX(' + (-100 + sc * 655) + '%)';
+    [16, 36, 50, 68, 80].forEach((b, k) => { const a = sg(at(b), at(b) + 0.25, E.o3) * (1 - outro); A.cut[k].style.opacity = a; A.cut[k].style.transform = 'scaleY(' + a.toFixed(3) + ')'; });
+    [4, 40].forEach((pos, j) => { const a = sg(at(pos), at(pos) + 0.45, E.expo) * (1 - outro); A.tb[j].style.transform = 'scaleX(' + a.toFixed(3) + ')'; });
+    [34, 50, 65, 81].forEach((pos, j) => { const a = sg(at(pos), at(pos) + 0.3, E.o3) * (1 - outro); A.fx[j].style.opacity = a; A.fx[j].style.transform = 'scale(' + (0.8 + 0.2 * a).toFixed(3) + ')'; });
+    const rv = t < ES ? 0 : t < EE ? p : 1; A.wave.style.clipPath = 'inset(0 ' + ((1 - rv) * 100).toFixed(2) + '% 0 0)'; A.wave.style.opacity = 1 - outro;
+    A.music.style.transform = 'scaleX(' + (sg(7.1, 7.7, E.expo) * (1 - outro)).toFixed(3) + ')';
+    A.bin.forEach((el, i) => { el.style.opacity = 1 - 0.65 * sg(1.4 + i * 0.18, 1.7 + i * 0.18) * (1 - outro); });
+    A.ph.style.opacity = sg(3.3, 3.6) * (1 - sg(12.9, 13.2));
+    A.ph.style.transform = 'translateX(' + (t < ES ? 0 : t < EE ? p * 100 : 100).toFixed(2) + '%)';
+    A.ph.style.width = 'calc(100% - 28px)';
+    // preview
+    A.shot.forEach((el, i) => {
+      const [l, w] = CL[i], ts = at(l), te = at(l + w), fi = l === 36 ? 0.25 : 0.06;
+      let o = 0, s = 1.06, tx = 0, ty = 0;
+      if (t >= ts - fi && t < te + 0.06) {
+        const fin = i === 0 ? 1 : sg(ts - fi, ts + fi), fout = sg(te - 0.06, te + 0.06), u = sg(ts, te);
+        o = fin * (1 - fout); s = 1.04 + 0.06 * u; tx = (i % 2 ? -1 : 1) * 1.5 * u;
+        if (i === 3) s = 1.04 + 0.16 * E.o3(sg(ts, ts + 0.3)) + 0.03 * u;
+        if (i === 5) s = 1.02 + 0.14 * E.expo(u);
+      }
+      if (i === 1 && t >= EE - 0.12) {
+        const h = sg(EE, 9.8, E.expo); o = Math.max(o, sg(EE - 0.12, EE + 0.08));
+        s = 1.3 - 0.22 * h - 0.03 * sg(9.8, 13.6); ty = (1 - h) * -2.5; tx = 0.6 * Math.sin(t * 0.7);
+      }
+      el.style.opacity = o;
+      if (o > 0) el.style.transform = 'translate(' + tx.toFixed(3) + '%,' + ty.toFixed(3) + '%) scale(' + s.toFixed(4) + ')';
+    });
+    const grade = sg(6.4, 7.0, E.io);
+    A.desat.style.opacity = t < ES ? 0 : 0.75 * (1 - grade);
+    A.tint.style.opacity = grade * (1 - sg(13.0, 13.5));
+    A.vig.style.opacity = grade * (1 - sg(13.0, 13.5));
+    const go = 0.14 * sg(EE, EE + 0.3) * (1 - outro); A.grain.style.opacity = go;
+    if (go > 0) { this.gf = (this.gf || 0) + 1; if (this.gf % 2 === 0) A.grain.style.transform = 'translate(' + (Math.random() * 8 - 4).toFixed(1) + '%,' + (Math.random() * 8 - 4).toFixed(1) + '%)'; }
+    const lb = sg(EE, EE + 0.6, E.io) * (1 - sg(13.0, 13.45, E.io)); A.lbt.style.transform = A.lbb.style.transform = 'scaleY(' + lb.toFixed(3) + ')';
+    const f = 1 - sg(12.95, 13.25);
+    const k = sg(8.2, 8.7, E.o3); A.kicker.style.opacity = k * f; A.kicker.style.transform = 'translateY(' + ((1 - k) * 6).toFixed(2) + 'px)';
+    A.t1.style.transform = 'translateY(' + ((1 - sg(8.3, 9.0, E.expo)) * 110).toFixed(2) + '%)'; A.t1.style.opacity = f;
+    A.t2.style.transform = 'translateY(' + ((1 - sg(8.45, 9.15, E.expo)) * 110).toFixed(2) + '%)'; A.t2.style.opacity = f;
+    A.rule.style.transform = 'scaleX(' + (sg(8.35, 9.3, E.expo) * f).toFixed(3) + ')';
+    A.cap.style.opacity = sg(5.2, 5.3) * (1 - sg(7.6, 7.8));
+    A.word.forEach((el, j) => {
+      const wt = 5.3 + j * 0.28, a = sg(wt, wt + 0.2, E.o3), last = j === A.word.length - 1;
+      el.style.opacity = a; el.style.transform = 'translateY(' + ((1 - a) * 6).toFixed(2) + 'px)';
+      el.style.color = t >= wt && t < wt + (last ? 2 : 0.28) ? '#FFD35C' : '#fff';
+    });
+    const split = t >= 9.8 && t < 11.95;
+    const x = !split ? 0 : t < 10.6 ? 88 * E.io(sg(9.8, 10.6)) : t < 11.3 ? 88 - 42 * E.io(sg(10.6, 11.3)) : t < 11.5 ? 46 : 46 * (1 - E.io(sg(11.5, 11.95)));
+    A.raw.style.opacity = t < ES + 0.15 ? 1 - sg(ES, ES + 0.15) : split ? 1 : t >= 13.0 ? sg(13.0, 13.55, E.io) : 0;
+    A.raw.style.clipPath = split ? 'inset(0 ' + (100 - x).toFixed(2) + '% 0 0)' : 'none';
+    A.veil.style.opacity = 0.35 * (1 - sg(1.4, 2.8)) + 0.35 * sg(13.1, 13.6);
+    const bx = sg(2.8, 3.05, E.o3) * (1 - sg(3.45, 3.7));
+    A.box.forEach((el, j) => { el.style.opacity = bx; el.style.transform = 'scale(' + (1.08 - 0.08 * bx).toFixed(3) + ')'; });
+    const dvo = split ? sg(9.8, 9.9) * (1 - sg(11.85, 11.95)) : 0;
+    A.div.style.opacity = dvo; A.div.style.transform = 'translateX(' + x.toFixed(2) + '%)';
+    A.lraw.style.opacity = cl((x - 14) / 10) * dvo; A.lai.style.opacity = cl((96 - x) / 10) * dvo;
+    const eb = sg(12.0, 12.75, E.io); A.exp.style.opacity = sg(11.95, 12.15) * (1 - sg(13.2, 13.5));
+    A.expb.style.transform = 'scaleX(' + eb.toFixed(3) + ')';
+    txt(A.expt, eb < 1 ? 'EXPORTING ' + Math.round(eb * 100) + '%' : 'EDIT COMPLETE ✓');
+    // status
+    const SUB = ['ANALYZING', 'SELECTING BEST SHOTS', 'BUILDING RHYTHM', 'ADDING MOTION', 'COLOR GRADING', 'SOUND DESIGN'];
+    const st = t < 1.4 ? 'READY' : t < 2.8 ? 'IMPORTING ASSETS' : t < ES ? 'ANALYZING FOOTAGE' : t < EE ? 'AI EDITING · ' + SUB[Math.min(5, Math.floor((t - ES) / 0.7))] : t < 9.8 ? 'AI EDIT' : t < 11.95 ? 'BEFORE / AFTER' : t < 12.75 ? 'EXPORTING' : t < 13.35 ? 'EDIT COMPLETE' : 'READY';
+    txt(A.status, st);
+    const done = st === 'EDIT COMPLETE', busy = t >= 1.4 && t < 12.75;
+    A.sdot.style.background = done ? '#5ee0a0' : '#a06bff';
+    A.sdot.style.opacity = busy ? (0.55 + 0.45 * Math.sin(t * 7)).toFixed(3) : 1;
+    const secs = Math.round(t < ES ? 0 : t < EE ? p * 552 : 552);
+    txt(A.tc, '00:' + String(Math.floor(secs / 60)).padStart(2, '0') + ':' + String(secs % 60).padStart(2, '0'));
+  }
+  start(name, size, url, count) {
+    clearInterval(this.iv); clearTimeout(this.to);
+    this.setState({ phase: 'uploading', drag: false, progress: 0, name, size, url });
+    try { localStorage.setItem('plug_upload', JSON.stringify({ name, size, count: count || 1 })); } catch (e) {}
+    this.iv = setInterval(() => {
+      this.setState(s => {
+        const p = Math.min(100, s.progress + 4 + Math.random() * 9);
+        if (p >= 100) {
+          clearInterval(this.iv);
+          if (this.props.autoRedirect ?? true) this.to = setTimeout(() => { window.location.href = 'Plug%20Editeur.dc.html'; }, 1800);
+          return { progress: 100, phase: 'done' };
+        }
+        return { progress: p };
+      });
+    }, 160);
+  }
+  fmt(b) { return b > 1e9 ? (b / 1e9).toFixed(1) + ' Go' : (b / 1e6).toFixed(1) + ' Mo'; }
+  renderVals() {
+    return { stackRef: this.stackRef, ...this.renderVals0() };
+  }
+  renderVals0() {
+    const s = this.state;
+    const pick = (list) => {
+      const fs = Array.from(list || []); if (!fs.length) return;
+      const f = fs[0], total = fs.reduce((a, x) => a + x.size, 0);
+      if (window.PlugMedia) window.PlugMedia.stash(fs).catch(() => {});
+      this.start(fs.length > 1 ? fs.length + ' fichiers' : f.name, total, fs.length === 1 && f.type.startsWith('video') ? URL.createObjectURL(f) : null, fs.length);
+    };
+    let sd = 11;
+    const waveBars = Array.from({ length: 80 }, (_, i) => { sd = (sd * 9301 + 49297) % 233280; return Math.round(22 + (sd % 70) * (0.6 + 0.4 * Math.sin(i / 5))) + '%'; });
+    return {
+      demoRef: this.demoRef, waveBars, heroRef: this.heroRef, rush: RUSH, heroWave: waveBars.slice(0, 64),
+      isIdle: s.phase === 'idle',
+      isBusy: s.phase !== 'idle',
+      isDone: s.phase === 'done',
+      dzBorder: s.drag ? '#fff' : 'rgba(255,255,255,.75)',
+      dzBg: s.drag ? 'rgba(255,255,255,.7)' : 'rgba(255,255,255,.45)',
+      dzTitle: s.drag ? 'Relâchez pour importer' : 'Glissez-déposez votre vidéo ici',
+      inputRef: this.inputRef,
+      onDragOver: (e) => { e.preventDefault(); if (!s.drag) this.setState({ drag: true }); },
+      onDragLeave: () => this.setState({ drag: false }),
+      onDrop: (e) => { e.preventDefault(); pick(e.dataTransfer.files); },
+      onPick: () => this.inputRef.current && this.inputRef.current.click(),
+      onFile: (e) => pick(e.target.files), acceptAll: window.PlugMedia ? window.PlugMedia.ACCEPT : 'video/*,image/*,audio/*,.srt,.vtt,.txt',
+      onSample: (e) => { e.stopPropagation(); this.start('vlog_tokyo_rush.mp4', 1480000000, null); },
+      onReset: () => { clearInterval(this.iv); clearTimeout(this.to); this.setState({ phase: 'idle', progress: 0, url: null }); },
+      fileName: s.name, fileSize: this.fmt(s.size), fileUrl: s.url, fileVideo: s.url ? React.createElement('video', { src: s.url, muted: true, style: { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' } }) : null,
+      progressPct: Math.round(s.progress) + '%',
+      statusText: s.phase === 'done' ? 'Prêt. Ouverture de l’éditeur…' : 'Import et analyse de la vidéo…',
+      plans: [
+        { name: 'Free', price: '0', tag: 'Pour tester Plug sur vos vraies vidéos.', items: ['30 min de rushes traités par l’IA / mois', 'Export 1080p avec filigrane', '5 Go de stockage'], cta: 'Commencer', href: 'Plug%20Inscription.dc.html?plan=free', bg: '#fff', fg: '#26143a', border: '#eee2f2', check: '#7c4dff', ctaBg: '#f1e8f6', ctaFg: '#26143a', badge: '' },
+        { name: 'Creator', price: '29', tag: 'Pour publier chaque semaine.', items: ['5 h de rushes traités par l’IA / mois', 'Export 1080p sans filigrane', 'Tous les styles de montage', '100 Go de stockage'], cta: 'Choisir Creator', href: 'Plug%20Inscription.dc.html?plan=creator', bg: 'linear-gradient(165deg,#2c1745,#1a0d2b)', fg: '#fff', border: '#2c1745', check: '#ff9ec8', ctaBg: 'linear-gradient(135deg,#8a5cff,#ff6fb0)', ctaFg: '#fff', badge: 'Recommandé' },
+        { name: 'Pro', price: '59', tag: 'Pour les chaînes à fort volume.', items: ['15 h de rushes traités par l’IA / mois', 'Export 4K', 'Rendu prioritaire', '500 Go de stockage'], cta: 'Choisir Pro', href: 'Plug%20Inscription.dc.html?plan=pro', bg: '#fff', fg: '#26143a', border: '#eee2f2', check: '#7c4dff', ctaBg: '#26143a', ctaFg: '#fff', badge: '' },
+        { name: 'Studio', price: '149', tag: 'Pour les agences et équipes.', items: ['50 h de rushes traités par l’IA / mois', '5 sièges inclus', 'Espace équipe partagé', '2 To de stockage'], cta: 'Choisir Studio', href: 'Plug%20Inscription.dc.html?plan=studio', bg: '#fff', fg: '#26143a', border: '#eee2f2', check: '#7c4dff', ctaBg: '#26143a', ctaFg: '#fff', badge: '' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

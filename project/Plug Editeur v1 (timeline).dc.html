@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0e0916;font-family:Manrope,system-ui,sans-serif;color:#f3eefa;-webkit-font-smoothing:antialiased;overflow:hidden}
+a{color:#c9a8ff;text-decoration:none}a:hover{color:#fff}
+*{box-sizing:border-box}
+::-webkit-scrollbar{height:8px;width:8px}::-webkit-scrollbar-thumb{background:#34264c;border-radius:8px}::-webkit-scrollbar-track{background:transparent}
+select,input,textarea{font-family:inherit}
+</style>
+</helmet>
+<div style="height:100vh;min-width:1100px;display:grid;grid-template-rows:60px minmax(0,1fr) 208px;grid-template-columns:260px minmax(0,1fr);background:radial-gradient(60% 50% at 70% 0%,rgba(138,92,255,.16),rgba(0,0,0,0) 70%),#0e0916">
+
+  <header data-screen-label="Barre" style="grid-column:1 / 3;display:flex;align-items:center;gap:16px;padding:0 16px;border-bottom:1px solid #251a38">
+    <a href="Plug%20Accueil.dc.html" style="display:flex;align-items:center;gap:9px;color:#fff;font-family:Poppins;font-weight:700;font-size:20px;letter-spacing:-.02em">
+      <span style="width:28px;height:28px;border-radius:9px;background:#fff;display:grid;place-items:center"><span style="width:11px;height:11px;border-radius:50%;background:linear-gradient(135deg,#7c4dff,#ff6fb0)"></span></span>plug
+    </a>
+    <div style="width:1px;height:24px;background:#2c2042"></div>
+    <div style="display:flex;align-items:center;gap:10px;padding:7px 12px;border-radius:10px;background:#171022;border:1px solid #2c2042;cursor:pointer" style-hover="border-color:#4a3570">
+      <span style="font-weight:700;font-size:14px">{{ epTitle }}</span>
+      <span id="meta-episode" style="font-family:'JetBrains Mono';font-size:12px;color:#b7a8cc">{{ epMeta }}</span>
+      <span style="color:#b7a8cc;font-size:11px">▾</span>
+    </div>
+    <div style="flex:1"></div>
+    <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:#b7a8cc;font-weight:600">
+      <span>Montage IA restant</span>
+      <div style="width:90px;height:6px;border-radius:6px;background:#251a38;overflow:hidden"><div style="width:62%;height:100%;background:linear-gradient(90deg,#8a5cff,#ff6fb0)"></div></div>
+      <span style="font-family:'JetBrains Mono';color:#f3eefa">3h06</span>
+      <a href="Plug%20Tarifs.dc.html" style="color:#ff9ec8;font-weight:700">Plus de minutes</a>
+    </div>
+    <div style="width:1px;height:24px;background:#2c2042"></div>
+    <button id="btn-qc" onClick="{{ toggleQC }}" style="display:flex;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:10px;background:#171022;border:1px solid #2c2042;color:#f3eefa;font-weight:700;font-size:13px;cursor:pointer" style-hover="border-color:#4a3570">
+      Contrôle qualité
+      <span style="display:flex;gap:4px">
+        <span style="font-family:'JetBrains Mono';font-size:11px;padding:2px 6px;border-radius:6px;background:rgba(255,77,106,.16);color:#ff7a90">{{ qcBloq }}</span>
+        <span style="font-family:'JetBrains Mono';font-size:11px;padding:2px 6px;border-radius:6px;background:rgba(255,179,71,.16);color:#ffc47a">{{ qcAtt }}</span>
+      </span>
+    </button>
+    <button onClick="{{ togglePlay }}" style="height:36px;padding:0 14px;border-radius:10px;background:#171022;border:1px solid #2c2042;color:#f3eefa;font-weight:700;font-size:13px;cursor:pointer" style-hover="border-color:#4a3570">{{ playLabel }}</button>
+    <button id="btn-master" onClick="{{ startRender }}" style="height:36px;padding:0 16px;border-radius:10px;border:0;background:linear-gradient(135deg,#8a5cff,#ff6fb0);color:#fff;font-weight:800;font-size:13px;cursor:pointer" style-hover="filter:brightness(1.1)">Rendre le master</button>
+  </header>
+
+  <aside data-screen-label="Médias" style="grid-row:2 / 3;border-right:1px solid #251a38;display:flex;flex-direction:column;min-height:0">
+    <div style="padding:14px;display:flex;flex-direction:column;gap:10px">
+      <div style="font-family:'JetBrains Mono';font-size:11px;letter-spacing:.14em;color:#8f7fa8">MÉDIAS</div>
+      <div style="border:1.5px dashed #3a2b54;border-radius:12px;padding:12px;text-align:center;font-size:13px;color:#b7a8cc;font-weight:600;cursor:pointer" style-hover="border-color:#8a5cff;color:#fff;background:rgba(138,92,255,.06)">+ Importer des fichiers</div>
+    </div>
+    <div style="flex:1;overflow:auto;padding:0 8px 14px">
+      <sc-for list="{{ media }}" as="g" hint-placeholder-count="6">
+        <div style="padding:10px 6px 4px;display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:#d9cbe8;text-transform:uppercase;letter-spacing:.08em"><span>{{ g.label }}</span><span style="font-family:'JetBrains Mono';color:#8f7fa8">{{ g.count }}</span></div>
+        <sc-for list="{{ g.items }}" as="m" hint-placeholder-count="2">
+          <div draggable="true" style="display:flex;align-items:center;gap:10px;padding:7px 8px;border-radius:9px;cursor:grab" style-hover="background:#1b1328">
+            <span style="width:34px;height:24px;flex:none;border-radius:6px;background:{{ m.bg }};display:grid;place-items:center;font-family:'JetBrains Mono';font-size:9px;font-weight:600;color:#fff">{{ m.tag }}</span>
+            <span style="flex:1;min-width:0;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.nom }}</span>
+            <span style="font-family:'JetBrains Mono';font-size:11px;color:#8f7fa8">{{ m.taille }}</span>
+          </div>
+        </sc-for>
+      </sc-for>
+    </div>
+  </aside>
+
+  <main style="grid-row:2 / 3;display:grid;grid-template-rows:minmax(0,1fr) auto 206px;min-height:0">
+    <section data-screen-label="Lecteur" style="min-height:0;display:flex;align-items:center;justify-content:center;padding:18px 24px 10px">
+      <div style="position:relative;height:100%;max-width:100%;aspect-ratio:16/9;border-radius:18px;overflow:hidden;background:{{ cur.bg }};box-shadow:0 30px 80px -30px rgba(138,92,255,.5),0 0 0 1px rgba(255,255,255,.06);transition:background .3s">
+        <div style="position:absolute;inset:0;background:radial-gradient(80% 80% at 50% 50%,rgba(0,0,0,0),rgba(0,0,0,.45))"></div>
+        <div style="position:absolute;left:16px;top:14px;display:flex;gap:8px">
+          <span style="font-family:'JetBrains Mono';font-size:12px;font-weight:600;padding:5px 9px;border-radius:7px;background:rgba(0,0,0,.45);backdrop-filter:blur(8px)">PLAN {{ cur.num }} / {{ total }}</span>
+          <span style="font-size:12px;font-weight:700;padding:5px 9px;border-radius:7px;background:rgba(0,0,0,.45);backdrop-filter:blur(8px)">{{ cur.recetteLabel }}</span>
+        </div>
+        <span style="position:absolute;right:16px;top:14px;display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;padding:5px 10px;border-radius:7px;background:rgba(0,0,0,.45);backdrop-filter:blur(8px)"><span style="width:8px;height:8px;border-radius:50%;background:{{ cur.color }}"></span>{{ cur.etatLabel }}</span>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:8%">
+          <div style="font-family:Poppins;font-weight:800;text-transform:uppercase;text-align:center;font-size:clamp(22px,3.4vw,56px);line-height:1;letter-spacing:-.02em;text-shadow:0 4px 30px rgba(0,0,0,.5);text-wrap:balance">
+            <sc-for list="{{ cur.segs }}" as="sg" hint-placeholder-count="2"><span style="color:{{ sg.c }}">{{ sg.t }}</span></sc-for>
+          </div>
+        </div>
+        <div style="position:absolute;left:0;right:0;bottom:0;padding:14px 18px;background:linear-gradient(0deg,rgba(0,0,0,.6),rgba(0,0,0,0));font-size:14px;font-weight:600;color:#fff;font-style:italic">« {{ cur.phrase }} »</div>
+      </div>
+    </section>
+
+    <section style="padding:6px 24px 12px;display:flex;align-items:center;gap:14px">
+      <div style="display:flex;gap:6px">
+        <button id="btn-prec" onClick="{{ prev }}" style="width:36px;height:36px;border-radius:10px;background:#171022;border:1px solid #2c2042;color:#fff;cursor:pointer;font-size:14px" style-hover="border-color:#4a3570">‹</button>
+        <button id="btn-lecture" onClick="{{ togglePlay }}" style="width:44px;height:36px;border-radius:10px;border:0;background:#fff;color:#1a0d2b;cursor:pointer;font-size:14px;font-weight:800">{{ playIcon }}</button>
+        <button id="btn-suiv" onClick="{{ next }}" style="width:36px;height:36px;border-radius:10px;background:#171022;border:1px solid #2c2042;color:#fff;cursor:pointer;font-size:14px" style-hover="border-color:#4a3570">›</button>
+      </div>
+      <div style="position:relative;flex:1;height:36px;display:flex;align-items:center">
+        <div id="piste" style="display:flex;gap:2px;width:100%;height:14px">
+          <sc-for list="{{ plans }}" as="s" hint-placeholder-count="40">
+            <div onClick="{{ s.select }}" title="Plan {{ s.num }}" style="flex:{{ s.duree }} 1 0;min-width:0;border-radius:3px;background:{{ s.color }};opacity:{{ s.trackOp }};cursor:pointer;transition:opacity .15s" style-hover="opacity:1"></div>
+          </sc-for>
+        </div>
+        <div style="position:absolute;top:0;bottom:0;left:{{ playPct }};width:2px;background:#fff;border-radius:2px;box-shadow:0 0 10px #fff;pointer-events:none"></div>
+      </div>
+      <span id="chrono-position" style="font-family:'JetBrains Mono';font-size:13px;font-weight:500;color:#f3eefa;white-space:nowrap">{{ tcNow }} <span style="color:#8f7fa8">/ {{ tcTotal }}</span></span>
+    </section>
+
+    <section data-screen-label="Timeline" style="border-top:1px solid #251a38;display:flex;flex-direction:column;min-height:0;background:#120c1c">
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 24px">
+        <span style="font-family:'JetBrains Mono';font-size:11px;letter-spacing:.14em;color:#8f7fa8">TIMELINE</span>
+        <span id="compte-plans" style="font-family:'JetBrains Mono';font-size:11px;color:#b7a8cc">{{ total }} plans</span>
+        <div style="flex:1"></div>
+        <sc-for list="{{ filters }}" as="f" hint-placeholder-count="3">
+          <button onClick="{{ f.on }}" style="height:28px;padding:0 12px;border-radius:8px;border:1px solid {{ f.bd }};background:{{ f.bg }};color:#f3eefa;font-size:12px;font-weight:700;cursor:pointer">{{ f.label }}</button>
+        </sc-for>
+      </div>
+      <div id="timeline" ref="{{ tlRef }}" style="flex:1;min-height:0;overflow-x:auto;overflow-y:hidden;display:flex;gap:8px;padding:2px 24px 14px">
+        <sc-for list="{{ cards }}" as="c" hint-placeholder-count="10">
+          <div onClick="{{ c.select }}" style="flex:none;width:136px;display:flex;flex-direction:column;border-radius:12px;background:#1b1328;border:1.5px solid {{ c.bd }};overflow:hidden;cursor:pointer;opacity:{{ c.op }};transition:border-color .15s,transform .15s" style-hover="transform:translateY(-2px)">
+            <div style="position:relative;height:64px;background:{{ c.bg }}">
+              <span style="position:absolute;left:7px;top:5px;font-family:Poppins;font-weight:800;font-size:20px;letter-spacing:-.03em;text-shadow:0 2px 8px rgba(0,0,0,.4)">{{ c.num }}</span>
+              <span style="position:absolute;right:7px;top:8px;width:9px;height:9px;border-radius:50%;background:{{ c.color }};box-shadow:0 0 0 2px rgba(0,0,0,.35)"></span>
+              <sc-if value="{{ c.corrige }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;right:6px;bottom:5px;font-size:10px;font-weight:800;padding:2px 6px;border-radius:5px;background:#fff;color:#1a0d2b">CORRIGÉ</span></sc-if>
+              <span style="position:absolute;left:7px;bottom:5px;font-family:'JetBrains Mono';font-size:11px;font-weight:600;padding:1px 5px;border-radius:4px;background:rgba(0,0,0,.45)">{{ c.dureeLabel }}</span>
+            </div>
+            <div style="padding:7px 8px 8px;display:flex;flex-direction:column;gap:3px">
+              <span style="font-size:11px;font-weight:800;color:#c9a8ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.recetteLabel }}</span>
+              <span style="font-size:11px;line-height:1.35;color:#b7a8cc;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ c.phrase }}</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+  </main>
+
+  <section id="inspecteur" data-screen-label="Inspecteur" style="grid-column:1 / 3;border-top:1px solid #251a38;background:#150e21;display:grid;grid-template-columns:200px minmax(0,1.2fr) minmax(0,1fr) 220px;gap:22px;padding:18px 24px">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span style="font-family:'JetBrains Mono';font-size:11px;letter-spacing:.14em;color:#8f7fa8">INSPECTEUR</span>
+      <div style="display:flex;align-items:baseline;gap:10px"><span id="badge-plan" style="font-family:Poppins;font-weight:800;font-size:54px;line-height:.9;letter-spacing:-.05em">{{ cur.num }}</span><span style="font-family:'JetBrains Mono';font-size:13px;color:#b7a8cc">{{ cur.range }}</span></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <span style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:4px 9px;border-radius:7px;background:{{ cur.soft }};color:{{ cur.color }}"><span style="width:7px;height:7px;border-radius:50%;background:{{ cur.color }}"></span>{{ cur.etatLabel }}</span>
+        <span style="font-family:'JetBrains Mono';font-size:12px;font-weight:600;padding:4px 9px;border-radius:7px;background:#221833">{{ cur.dureeLabel }}</span>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+      <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:700;color:#b7a8cc">Texte à l’écran <span style="color:#8f7fa8;font-weight:600">· [mots] en jaune</span></span>
+        <input id="champ-texte" value="{{ cur.texte }}" onChange="{{ onTexte }}" style="height:40px;border-radius:10px;border:1px solid #2c2042;background:#0f0a18;color:#fff;padding:0 12px;font-size:14px;font-weight:700;outline:none" style-focus="border-color:#8a5cff">
+      </label>
+      <div style="font-size:13px;line-height:1.5;color:#b7a8cc;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden"><span style="font-family:'JetBrains Mono';font-size:11px;color:#8f7fa8;letter-spacing:.1em">VOIX  </span>{{ cur.phrase }}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-content:start">
+      <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:700;color:#b7a8cc">Recette</span>
+        <select id="champ-recette" value="{{ cur.recette }}" onChange="{{ onRecette }}" style="height:40px;border-radius:10px;border:1px solid #2c2042;background:#0f0a18;color:#fff;padding:0 10px;font-size:13px;font-weight:600;outline:none">
+          <sc-for list="{{ recettes }}" as="r" hint-placeholder-count="4"><option value="{{ r.id }}">{{ r.label }}</option></sc-for>
+        </select>
+      </label>
+      <label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:12px;font-weight:700;color:#b7a8cc">Source</span>
+        <input id="champ-source" value="{{ cur.source }}" onChange="{{ onSource }}" placeholder="ex. INSEE 2024" style="height:40px;border-radius:10px;border:1px solid #2c2042;background:#0f0a18;color:#fff;padding:0 12px;font-size:13px;outline:none" style-focus="border-color:#8a5cff">
+      </label>
+      <div style="grid-column:1 / 3;display:flex;align-items:center;gap:10px;padding:6px;border-radius:10px;border:1px solid #2c2042;background:#0f0a18">
+        <span style="width:54px;height:30px;border-radius:6px;background:{{ cur.bg }};flex:none"></span>
+        <span style="flex:1;min-width:0;font-family:'JetBrains Mono';font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ cur.visuel }}</span>
+        <button id="btn-visuel" onClick="{{ openVisuel }}" style="height:30px;padding:0 12px;border-radius:8px;border:0;background:#2a1d40;color:#fff;font-size:12px;font-weight:700;cursor:pointer" style-hover="background:#3a2858">Changer</button>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;justify-content:flex-end">
+      <button onClick="{{ nextIssue }}" style="height:42px;border-radius:10px;border:0;background:#fff;color:#1a0d2b;font-weight:800;font-size:13px;cursor:pointer" style-hover="background:#efe4f1">Plan suivant à revoir →</button>
+      <button id="btn-desactiver" onClick="{{ toggleOff }}" style="height:38px;border-radius:10px;border:1px solid #2c2042;background:transparent;color:#d9cbe8;font-weight:700;font-size:13px;cursor:pointer" style-hover="border-color:#4a3570;color:#fff">{{ offLabel }}</button>
+      <span style="font-size:11px;color:#8f7fa8;text-align:center;font-family:'JetBrains Mono'">espace lecture · ← → plans</span>
+    </div>
+  </section>
+
+  <sc-if value="{{ qcOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ toggleQC }}" style="position:fixed;inset:0;background:rgba(8,4,14,.45);z-index:20"></div>
+    <aside id="tiroir-qc" style="position:fixed;top:0;right:0;bottom:0;width:380px;z-index:21;background:#150e21;border-left:1px solid #2c2042;display:flex;flex-direction:column;box-shadow:-30px 0 80px -30px rgba(0,0,0,.7)">
+      <div style="padding:18px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #251a38">
+        <div><div style="font-family:Poppins;font-weight:700;font-size:18px">Contrôle qualité</div><div style="font-size:13px;color:#b7a8cc;margin-top:2px">{{ qcSummary }}</div></div>
+        <button data-fermer="tiroir-qc" onClick="{{ toggleQC }}" style="width:32px;height:32px;border-radius:8px;border:1px solid #2c2042;background:transparent;color:#fff;cursor:pointer">✕</button>
+      </div>
+      <div id="liste-qc" style="flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:8px">
+        <sc-for list="{{ problems }}" as="p" hint-placeholder-count="3">
+          <div onClick="{{ p.go }}" style="padding:14px;border-radius:12px;background:#1b1328;border:1px solid #2c2042;cursor:pointer;display:flex;flex-direction:column;gap:6px" style-hover="border-color:#4a3570">
+            <div style="display:flex;gap:8px;align-items:center"><span style="width:8px;height:8px;border-radius:50%;background:{{ p.color }}"></span><span style="font-weight:800;font-size:14px">{{ p.titre }}</span></div>
+            <div style="font-size:13px;color:#b7a8cc;line-height:1.45">{{ p.detail }}</div>
+            <div style="font-size:12px;color:#c9a8ff;font-weight:700">{{ p.correction }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </aside>
+  </sc-if>
+
+  <sc-if value="{{ visOpen }}" hint-placeholder-val="{{ false }}">
+    <div id="modale-visuel" onClick="{{ closeVisuel }}" style="position:fixed;inset:0;z-index:30;background:rgba(8,4,14,.7);backdrop-filter:blur(6px);display:grid;place-items:center">
+      <div onClick="{{ stop }}" style="width:640px;max-width:92vw;border-radius:20px;background:#171022;border:1px solid #2c2042;padding:20px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-family:Poppins;font-weight:700;font-size:18px">Choisir un visuel · plan {{ cur.num }}</span><button data-fermer="modale-visuel" onClick="{{ closeVisuel }}" style="width:32px;height:32px;border-radius:8px;border:1px solid #2c2042;background:transparent;color:#fff;cursor:pointer">✕</button></div>
+        <div id="grille-visuels" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+          <sc-for list="{{ visuals }}" as="v" hint-placeholder-count="8">
+            <div onClick="{{ v.pick }}" style="border-radius:10px;overflow:hidden;background:#1b1328;border:1.5px solid {{ v.bd }};cursor:pointer" style-hover="border-color:#8a5cff">
+              <div style="aspect-ratio:16/10;background:{{ v.bg }}"></div>
+              <div style="padding:6px 8px;font-size:11px;font-family:'JetBrains Mono';white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ v.nom }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ renderOpen }}" hint-placeholder-val="{{ false }}">
+    <div id="voile-rendu" style="position:fixed;inset:0;z-index:40;background:rgba(8,4,14,.8);backdrop-filter:blur(10px);display:grid;place-items:center">
+      <div style="width:460px;border-radius:22px;background:#171022;border:1px solid #2c2042;padding:28px;display:flex;flex-direction:column;gap:16px">
+        <div style="font-family:Poppins;font-weight:700;font-size:22px">{{ renderTitle }}</div>
+        <div style="height:10px;border-radius:10px;background:#251a38;overflow:hidden"><div id="rendu-jauge" style="height:100%;width:{{ renderPct }};background:linear-gradient(90deg,#8a5cff,#ff6fb0);transition:width .2s"></div></div>
+        <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono';font-size:13px;color:#b7a8cc"><span>{{ renderPct }}</span><span id="rendu-restant">{{ renderLeft }}</span></div>
+        <div id="rendu-journal" style="font-family:'JetBrains Mono';font-size:12px;color:#8f7fa8;line-height:1.6">{{ renderLog }}</div>
+        <sc-if value="{{ renderDone }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;gap:10px"><button style="flex:1;height:44px;border-radius:12px;border:0;background:linear-gradient(135deg,#8a5cff,#ff6fb0);color:#fff;font-weight:800;cursor:pointer">Publier sur YouTube</button><button id="btn-fermer-rendu" onClick="{{ closeRender }}" style="height:44px;padding:0 18px;border-radius:12px;border:1px solid #2c2042;background:transparent;color:#fff;font-weight:700;cursor:pointer">Fermer</button></div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;left:50%;bottom:226px;transform:translateX(-50%);z-index:50;padding:11px 18px;border-radius:12px;background:#fff;color:#1a0d2b;font-weight:700;font-size:14px;box-shadow:0 20px 40px -12px rgba(0,0,0,.6)">{{ toast }}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const RECETTES = [
+  ['accroche_choc', 'Accroche choc', 'linear-gradient(135deg,#3b1a5c,#b0356f)'],
+  ['image_ambiance', 'Image d’ambiance', 'linear-gradient(135deg,#1d2d4f,#6b4fa8)'],
+  ['chiffre_cle', 'Chiffre clé', 'linear-gradient(135deg,#2a1540,#7c4dff)'],
+  ['texte_plein_ecran', 'Texte plein écran', 'linear-gradient(135deg,#181020,#3a2852)'],
+  ['document_surligne', 'Document surligné', 'linear-gradient(135deg,#3d3346,#9b7fb3)'],
+  ['carte_flux', 'Carte de flux', 'linear-gradient(135deg,#0f3340,#3a6fa8)'],
+  ['ticket_de_caisse', 'Ticket de caisse', 'linear-gradient(135deg,#4a2a2a,#c26a7a)'],
+  ['revelation', 'Révélation', 'linear-gradient(135deg,#4d1636,#ff6fb0)'],
+  ['carton_chapitre', 'Carton chapitre', 'linear-gradient(135deg,#120a1c,#5b2fb8)']
+];
+const RL = Object.fromEntries(RECETTES.map(r => [r[0], r]));
+const PHRASES = ['chaque jour en France, des millions de personnes passent une porte,','celle d’un café, d’une boulangerie ou d’une station-service,','et laissent en moyenne quelques euros sur le comptoir.','mais derrière ce petit geste se cache une machine énorme,','un marché qui pèse plus que l’industrie du cinéma.','pour comprendre, il faut remonter la chaîne jusqu’au producteur,','là où un kilo de grains se vend moins de trois euros,','avant de traverser trois continents et deux intermédiaires.','à l’arrivée, la même tasse coûte vingt fois plus cher.','alors qui empoche la différence ?','les torréfacteurs, d’abord, qui fixent les prix de gros,','puis la grande distribution, qui négocie chaque centime,','et enfin le loyer, premier poste de dépense des cafés parisiens.','en dix ans, ce loyer a doublé dans certains quartiers.','résultat : le prix du petit noir a suivi, sans prévenir.','sauf que le client, lui, n’a rien vu venir.'];
+const TEXTES = ['[2 MILLIONS] PAR JOUR','UNE PORTE, UN [COMPTOIR]','[3,20 €] EN MOYENNE','UNE MACHINE [ÉNORME]','PLUS GROS QUE LE [CINÉMA]','RETOUR À LA [SOURCE]','[2,80 €] LE KILO','[3] CONTINENTS','[×20] À L’ARRIVÉE','QUI EMPOCHE LA [DIFFÉRENCE] ?','LES [TORRÉFACTEURS]','CHAQUE [CENTIME]','LE [LOYER] D’ABORD','[×2] EN DIX ANS','LE PETIT NOIR [GRIMPE]','PERSONNE NE L’A [VU]'];
+const VIS = ['visuels/ville.mp4','visuels/foule.jpg','visuels/comptoir.mp4','visuels/grains.jpg','graphiques/courbe_prix.png','documents/rapport_insee.pdf','visuels/port_cargo.mp4','visuels/rue_paris.jpg'];
+const VBG = ['linear-gradient(135deg,#1d2d4f,#6b4fa8)','linear-gradient(135deg,#3b1a5c,#b0356f)','linear-gradient(135deg,#4a2a2a,#c26a7a)','linear-gradient(135deg,#3a2616,#a8764f)','linear-gradient(135deg,#2a1540,#7c4dff)','linear-gradient(135deg,#3d3346,#9b7fb3)','linear-gradient(135deg,#0f3340,#3a6fa8)','linear-gradient(135deg,#2d1d3f,#d77bb3)'];
+const ETAT = { ok: ['#3ddc97', 'Validé', 'rgba(61,220,151,.14)'], attention: ['#ffb347', 'À revoir', 'rgba(255,179,71,.14)'], bloquant: ['#ff4d6a', 'Bloquant', 'rgba(255,77,106,.14)'] };
+const ISSUES = [['image fixe sans mouvement','Une image sans zoom paraît figée à l’écran.','Ajoute un zoom lent de 6 %.'],['plan trop long','La charte impose 2,5 à 4 s après l’accroche.','Coupe à 3,5 s ou scinde le plan.'],['source manquante','Un chiffre affiché doit citer sa source.','Renseigne le champ Source.']];
+
+function buildPlans() {
+  const out = []; let t = 0;
+  for (let i = 0; i < 64; i++) {
+    let rec = i === 0 ? 'accroche_choc' : i % 12 === 0 ? 'carton_chapitre' : RECETTES[1 + ((i * 5) % 7)][0];
+    const duree = i === 0 ? 2.2 : +(2.5 + ((i * 37) % 17) / 10).toFixed(1);
+    const etat = [33].includes(i) ? 'bloquant' : [6, 13, 21, 41, 52].includes(i) || duree > 4 ? 'attention' : 'ok';
+    out.push({ index: i, numero: i + 1, debut: t, fin: t + duree, duree, recette: rec, texte: TEXTES[i % 16], visuel: VIS[i % 8], vbg: VBG[i % 8], source: rec === 'chiffre_cle' && i % 3 ? 'INSEE 2024' : '', phrase: PHRASES[i % 16], etat, corrige: [3, 9, 17].includes(i), off: false });
+    t += duree;
+  }
+  return out;
+}
+const tc = s => { const m = Math.floor(s / 60), r = s - m * 60; return String(m).padStart(2, '0') + ':' + r.toFixed(1).padStart(4, '0'); };
+const segs = txt => txt.split(/(\[[^\]]*\])/).filter(Boolean).map(p => p[0] === '[' ? { t: p.slice(1, -1), c: '#FFC72C' } : { t: p, c: '#ffffff' });
+
+class Component extends DCLogic {
+  state = { plans: buildPlans(), sel: 0, time: 0, playing: false, filter: 'all', qc: false, vis: false, render: null, toast: '' };
+  tlRef = React.createRef();
+  componentDidMount() {
+    let up = null; try { up = JSON.parse(localStorage.getItem('plug_upload') || 'null'); } catch (e) {}
+    this.epName = up && up.name ? up.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ') : 'Le vrai prix du café';
+    if (up) this.flash('Import terminé · l’IA a proposé 64 plans');
+    this.key = e => {
+      if (/INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
+      if (e.code === 'Space') { e.preventDefault(); this.togglePlay(); }
+      if (e.key === 'ArrowRight') this.go(this.state.sel + 1);
+      if (e.key === 'ArrowLeft') this.go(this.state.sel - 1);
+    };
+    window.addEventListener('keydown', this.key);
+    this.forceUpdate();
+  }
+  componentWillUnmount() { window.removeEventListener('keydown', this.key); clearInterval(this.iv); clearInterval(this.riv); clearTimeout(this.tt); }
+  componentDidUpdate(pp, ps) {
+    if (ps.sel !== this.state.sel && this.tlRef.current) {
+      const el = this.tlRef.current, x = this.state.sel * 144 + 24 - el.clientWidth / 2 + 68;
+      el.scrollTo({ left: Math.max(0, x), behavior: 'smooth' });
+    }
+  }
+  flash(msg) { clearTimeout(this.tt); this.setState({ toast: msg }); this.tt = setTimeout(() => this.setState({ toast: '' }), 2400); }
+  go(i) { const n = this.state.plans.length; i = Math.max(0, Math.min(n - 1, i)); this.setState({ sel: i, time: this.state.plans[i].debut }); }
+  togglePlay() {
+    if (this.state.playing) { clearInterval(this.iv); return this.setState({ playing: false }); }
+    this.setState({ playing: true });
+    this.iv = setInterval(() => this.setState(s => {
+      const total = s.plans[s.plans.length - 1].fin, t = s.time + 0.1;
+      if (t >= total) { clearInterval(this.iv); return { playing: false, time: total }; }
+      const sel = s.plans.findIndex(p => t >= p.debut && t < p.fin);
+      return { time: t, sel: sel < 0 ? s.sel : sel };
+    }), 100);
+  }
+  patch(fields) { this.setState(s => ({ plans: s.plans.map((p, i) => i === s.sel ? { ...p, ...fields, corrige: true, etat: fields.etat || (p.etat === 'bloquant' ? 'attention' : p.etat) } : p) })); }
+  startRender() {
+    clearInterval(this.riv); this.setState({ render: 0 });
+    this.riv = setInterval(() => this.setState(s => { const r = Math.min(100, s.render + 2 + Math.random() * 3); if (r >= 100) clearInterval(this.riv); return { render: r }; }), 120);
+  }
+  renderVals() {
+    const s = this.state, P = s.plans, cp = P[s.sel], total = P[P.length - 1].fin;
+    const view = p => { const e = ETAT[p.etat], r = RL[p.recette]; return { num: String(p.numero).padStart(2, '0'), color: p.off ? '#5a4c6e' : e[0], etatLabel: p.off ? 'Désactivé' : e[1], soft: e[2], recetteLabel: r[1], bg: p.vbg, dureeLabel: p.duree.toFixed(1) + ' s' }; };
+    const cur = { ...view(cp), segs: segs(cp.texte), phrase: cp.phrase, texte: cp.texte, recette: cp.recette, source: cp.source, visuel: cp.visuel, range: tc(cp.debut) + ' → ' + tc(cp.fin) };
+    const issues = P.filter(p => p.etat !== 'ok' && !p.off);
+    const bloq = issues.filter(p => p.etat === 'bloquant').length;
+    const shown = P.filter(p => s.filter === 'all' || (s.filter === 'todo' ? p.etat !== 'ok' : p.corrige));
+    const F = [['all', 'Tous'], ['todo', 'À revoir · ' + P.filter(p => p.etat !== 'ok').length], ['fix', 'Corrigés · ' + P.filter(p => p.corrige).length]];
+    const r = s.render;
+    return {
+      epTitle: this.epName || 'Le vrai prix du café', epMeta: P.length + ' plans · ' + tc(total),
+      total: P.length, cur,
+      qcBloq: bloq, qcAtt: issues.length - bloq, qcOpen: s.qc,
+      qcSummary: bloq + ' bloquant · ' + (issues.length - bloq) + ' à revoir',
+      toggleQC: () => this.setState({ qc: !s.qc }),
+      problems: issues.map(p => { const k = ISSUES[p.index % 3]; return { color: ETAT[p.etat][0], titre: 'Plan ' + p.numero + ' : ' + (p.etat === 'bloquant' ? 'visuel introuvable' : k[0]), detail: p.etat === 'bloquant' ? 'Le fichier lié à ce plan a été déplacé ou supprimé.' : k[1], correction: p.etat === 'bloquant' ? 'Choisis un nouveau visuel.' : k[2], go: () => { this.go(p.index); this.setState({ qc: false }); } }; }),
+      playLabel: s.playing ? 'Pause' : 'Aperçu', playIcon: s.playing ? '❚❚' : '▶',
+      togglePlay: () => this.togglePlay(), prev: () => this.go(s.sel - 1), next: () => this.go(s.sel + 1),
+      plans: P.map(p => ({ num: p.numero, duree: p.duree, color: p.off ? '#3a2d4e' : ETAT[p.etat][0], trackOp: p.index === s.sel ? 1 : 0.5, select: () => this.go(p.index) })),
+      playPct: (s.time / total * 100).toFixed(2) + '%', tcNow: tc(s.time), tcTotal: tc(total),
+      filters: F.map(([id, label]) => ({ label, bg: s.filter === id ? '#2a1d40' : 'transparent', bd: s.filter === id ? '#4a3570' : '#251a38', on: () => this.setState({ filter: id }) })),
+      tlRef: this.tlRef,
+      cards: shown.map(p => ({ ...view(p), phrase: p.phrase, corrige: p.corrige, bd: p.index === s.sel ? '#ffffff' : p.etat === 'bloquant' && !p.off ? 'rgba(255,77,106,.6)' : '#2a1f3c', op: p.off ? 0.4 : 1, select: () => this.go(p.index) })),
+      recettes: RECETTES.map(x => ({ id: x[0], label: x[1] })),
+      onTexte: e => this.patch({ texte: e.target.value }),
+      onSource: e => this.patch({ source: e.target.value }),
+      onRecette: e => this.patch({ recette: e.target.value }),
+      toggleOff: () => { this.patch({ off: !cp.off }); this.flash(cp.off ? 'Plan réactivé' : 'Plan désactivé'); },
+      offLabel: cp.off ? 'Réactiver le plan' : 'Désactiver le plan',
+      nextIssue: () => { const n = P.find(p => p.index > s.sel && p.etat !== 'ok' && !p.off) || P.find(p => p.etat !== 'ok' && !p.off); if (n) this.go(n.index); else this.flash('Aucun plan à revoir'); },
+      visOpen: s.vis, openVisuel: () => this.setState({ vis: true }), closeVisuel: () => this.setState({ vis: false }), stop: e => e.stopPropagation(),
+      visuals: VIS.map((v, i) => ({ nom: v.split('/')[1], bg: VBG[i], bd: v === cp.visuel ? '#8a5cff' : '#2a1f3c', pick: () => { this.patch({ visuel: v, vbg: VBG[i], etat: cp.etat === 'bloquant' ? 'ok' : undefined }); this.setState({ vis: false }); this.flash('Visuel remplacé · plan ' + cur.num); } })),
+      media: [
+        ['Voix', [['voix_off_v3.wav', 'AUD', '38 Mo']]],
+        ['Visuels', VIS.filter(v => v.startsWith('visuels')).map(v => [v.split('/')[1], v.endsWith('mp4') ? 'VID' : 'IMG', v.endsWith('mp4') ? '24 Mo' : '97 Ko'])],
+        ['Graphiques', [['courbe_prix.png', 'IMG', '212 Ko'], ['carte_flux.svg', 'IMG', '18 Ko']]],
+        ['Documents', [['rapport_insee.pdf', 'DOC', '1,2 Mo']]],
+        ['Cartons', [['chapitre_01.png', 'IMG', '64 Ko'], ['chapitre_02.png', 'IMG', '61 Ko']]],
+        ['Musique', [['nappe_tension.mp3', 'AUD', '6,8 Mo']]]
+      ].map(([label, items]) => ({ label, count: items.length, items: items.map(([nom, tag, taille], j) => ({ nom, tag, taille, bg: tag === 'AUD' ? '#2d6a5a' : tag === 'VID' ? '#5b2fb8' : tag === 'DOC' ? '#6a5a7e' : VBG[(j + label.length) % 8] })) })),
+      startRender: () => this.startRender(),
+      renderOpen: r !== null, renderDone: r >= 100,
+      renderPct: Math.round(r || 0) + '%',
+      renderTitle: r >= 100 ? 'Master prêt' : 'Rendu du master en cours',
+      renderLeft: r >= 100 ? '1080p · MP4 · ' + tc(total) : 'environ ' + Math.max(1, Math.round((100 - (r || 0)) / 8)) + ' s restantes',
+      renderLog: r >= 100 ? 'le_vrai_prix_du_cafe_master.mp4 exporté' : 'Plan ' + Math.min(P.length, Math.ceil((r || 0) / 100 * P.length) + 1) + ' / ' + P.length + ' · encodage H.264',
+      closeRender: () => this.setState({ render: null }),
+      toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

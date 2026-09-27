@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="plug-media.js"></script>
+<style>
+@keyframes mlIn{from{opacity:0;transform:translateY(6px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes mlFade{from{opacity:0}to{opacity:1}}
+@keyframes mlDz{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+*{box-sizing:border-box}
+</style>
+</helmet>
+<div onDragEnter="{{ onDragEnter }}" onDragOver="{{ onDragOver }}" onDragLeave="{{ onDragLeave }}" onDrop="{{ onDrop }}" style="position:relative;height:100%;min-height:0;display:flex;flex-direction:column;gap:14px;padding:22px;border-radius:30px;background:#17151a;color:#fff;font-family:Poppins,system-ui,sans-serif;overflow:hidden">
+  <input ref="{{ inputRef }}" type="file" multiple="{{ true }}" accept="{{ accept }}" onChange="{{ onFile }}" aria-label="Importer des médias" style="display:none">
+
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;flex:none">
+    <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+      <span style="font-family:'JetBrains Mono';font-size:11px;letter-spacing:.14em;color:#8f8797">MEDIA LIBRARY</span>
+      <span aria-live="polite" style="font-size:17px;font-weight:500;letter-spacing:-.01em">{{ counterLine }}</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <input type="search" value="{{ q }}" onChange="{{ onSearch }}" placeholder="Search media…" aria-label="Search media" style="width:200px;height:38px;padding:0 12px;border-radius:10px;border:1px solid #2e2a33;background:#1c1a1f;color:#fff;font-size:13px;outline:none" style-focus="border-color:#a06bff">
+      <select value="{{ sort }}" onChange="{{ onSort }}" aria-label="Trier" style="height:38px;padding:0 10px;border-radius:10px;border:1px solid #2e2a33;background:#1c1a1f;color:#fff;font-size:13px;outline:none;cursor:pointer" style-focus="border-color:#a06bff">
+        <option value="date">Date added</option><option value="name">Name</option><option value="type">Type</option><option value="duration">Duration</option><option value="size">File size</option>
+      </select>
+      <button onClick="{{ onBrowse }}" style="height:38px;padding:0 16px;border-radius:10px;border:0;background:#fff;color:#111013;font-size:13px;font-weight:600;cursor:pointer" style-focus="outline:2px solid #a06bff;outline-offset:2px">Browse files</button>
+    </div>
+  </div>
+
+  <div role="tablist" aria-label="Filtrer par type" style="display:flex;gap:6px;flex-wrap:wrap;flex:none">
+    <sc-for list="{{ filters }}" as="f" hint-placeholder-count="5">
+      <button role="tab" aria-selected="{{ f.active }}" onClick="{{ f.on }}" style="height:30px;padding:0 12px;border-radius:8px;border:1px solid {{ f.bd }};background:{{ f.bg }};color:{{ f.fg }};font-family:'JetBrains Mono';font-size:10.5px;letter-spacing:.1em;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background .15s,color .15s" style-focus="outline:2px solid #a06bff;outline-offset:2px">{{ f.label }}<span style="opacity:.6">{{ f.count }}</span></button>
+    </sc-for>
+  </div>
+
+  <sc-if value="{{ hasSel }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:none;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 8px 8px 14px;border-radius:12px;background:#221d29;border:1px solid #3a2f4a;animation:mlFade .15s both">
+      <span style="font-size:13px;flex:1;min-width:120px">{{ selLabel }}</span>
+      <button onClick="{{ addSel }}" style="height:32px;padding:0 14px;border-radius:8px;border:0;background:linear-gradient(135deg,#8a5cff,#ff6fb0);color:#fff;font-size:12.5px;font-weight:500;cursor:pointer">Ajouter au montage</button>
+      <button onClick="{{ selAll }}" style="height:32px;padding:0 12px;border-radius:8px;border:1px solid #3a363f;background:transparent;color:#fff;font-size:12.5px;cursor:pointer">Tout sélectionner</button>
+      <button onClick="{{ removeSel }}" style="height:32px;padding:0 12px;border-radius:8px;border:1px solid #5a3440;background:transparent;color:#ffb3bd;font-size:12.5px;cursor:pointer">Retirer du projet</button>
+      <button onClick="{{ clearSel }}" aria-label="Désélectionner" style="width:32px;height:32px;border-radius:8px;border:0;background:transparent;color:#b9b0c2;font-size:16px;cursor:pointer">×</button>
+    </div>
+  </sc-if>
+
+  <div style="flex:1;min-height:0;overflow:auto;scrollbar-width:thin;scrollbar-color:#2e2a33 transparent;display:flex;flex-direction:column;gap:22px;padding-right:4px;opacity:{{ bodyOp }};transition:opacity .18s">
+    <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ true }}">
+      <div style="margin:auto;width:100%;max-width:560px;border-radius:18px;border:1px dashed #3a363f;padding:36px 28px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;animation:mlIn .3s both">
+        <div style="display:flex;gap:10px;color:#b9b0c2" aria-hidden="true">
+          <sc-for list="{{ typeIcons }}" as="ic" hint-placeholder-count="4"><span style="width:38px;height:38px;border-radius:10px;border:1px solid #2e2a33;display:grid;place-items:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="{{ ic }}"></path></svg></span></sc-for>
+        </div>
+        <span style="font-family:'JetBrains Mono';font-size:12px;letter-spacing:.16em">DROP YOUR MEDIA</span>
+        <span style="font-size:14px;color:#b9b0c2;line-height:1.5;max-width:360px">Drag &amp; drop your videos, images, audio and subtitles here</span>
+        <span style="font-size:12px;color:#6f6878">or</span>
+        <button onClick="{{ onBrowse }}" style="height:38px;padding:0 18px;border-radius:10px;border:0;background:#fff;color:#111013;font-size:13px;font-weight:600;cursor:pointer" style-focus="outline:2px solid #a06bff;outline-offset:2px">Browse files</button>
+        <span style="font-family:'JetBrains Mono';font-size:10px;letter-spacing:.08em;color:#6f6878;margin-top:6px">Supported: MP4 · MOV · WEBM · JPG · PNG · MP3 · WAV · SRT · VTT</span>
+        <button onClick="{{ loadSamples }}" style="border:0;background:transparent;color:#c9a8ff;font-size:12.5px;cursor:pointer;padding:4px" style-hover="color:#fff">Essayer avec des exemples</button>
+      </div>
+    </sc-if>
+
+    <sc-for list="{{ sections }}" as="sec" hint-placeholder-count="0">
+      <section aria-label="{{ sec.aria }}" style="display:flex;flex-direction:column;gap:12px;animation:mlIn .25s both">
+        <button onClick="{{ sec.toggle }}" aria-expanded="{{ sec.open }}" style="display:flex;align-items:center;gap:10px;border:0;background:transparent;color:#fff;padding:2px 0;cursor:pointer;font-family:'JetBrains Mono';font-size:11px;letter-spacing:.14em;text-align:left" style-focus="outline:2px solid #a06bff;outline-offset:4px">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ sec.icon }}"></path></svg>
+          <span>{{ sec.label }} · {{ sec.count }}</span>
+          <span style="flex:1;height:1px;background:#2a272e"></span>
+          <span style="color:#8f8797;font-size:14px;transform:rotate({{ sec.rot }});transition:transform .15s">›</span>
+        </button>
+        <sc-if value="{{ sec.open }}" hint-placeholder-val="{{ true }}">
+          <sc-if value="{{ sec.isVisual }}" hint-placeholder-val="{{ false }}">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:12px">
+              <sc-for list="{{ sec.items }}" as="c" hint-placeholder-count="0">
+                <div role="button" tabIndex="0" aria-pressed="{{ c.sel }}" aria-label="{{ c.aria }}" onClick="{{ c.onClick }}" onKeyDown="{{ c.onKey }}" onMouseEnter="{{ c.onEnter }}" onMouseLeave="{{ c.onLeave }}" style="position:relative;border-radius:12px;background:#1c1a1f;border:1px solid {{ c.bd }};overflow:hidden;cursor:pointer;content-visibility:auto;contain-intrinsic-size:auto 150px;animation:mlIn .28s cubic-bezier(.2,.7,.2,1) both;opacity:{{ c.op }};transform:{{ c.tf }};transition:opacity .18s,transform .18s,border-color .15s;outline:none" style-focus="box-shadow:0 0 0 2px #a06bff">
+                  <div style="position:relative;aspect-ratio:16/9;overflow:hidden;background:#241f29">
+                    <sc-if value="{{ c.hasThumb }}" hint-placeholder-val="{{ false }}"><img src="{{ c.thumb }}" loading="lazy" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;transform:scale({{ c.zoom }});transition:transform .35s cubic-bezier(.2,.7,.2,1);animation:mlFade .35s both"></sc-if>
+                    <sc-if value="{{ c.noThumb }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;display:grid;place-items:center;color:#5a5260"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="{{ c.icon }}"></path></svg></div></sc-if>
+                    <sc-if value="{{ c.isVideo }}" hint-placeholder-val="{{ false }}">
+                      <div style="position:absolute;inset:0;display:grid;place-items:center;opacity:{{ c.hovOp }};transition:opacity .18s;pointer-events:none"><span style="width:36px;height:36px;border-radius:50%;background:rgba(17,16,19,.6);backdrop-filter:blur(6px);display:grid;place-items:center"><span style="width:0;height:0;border-left:10px solid #fff;border-top:6px solid transparent;border-bottom:6px solid transparent;margin-left:3px"></span></span></div>
+                      <sc-if value="{{ c.showDur }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;right:6px;bottom:6px;font-family:'JetBrains Mono';font-size:10px;color:#fff;background:rgba(0,0,0,.6);padding:2px 6px;border-radius:5px">{{ c.dur }}</span></sc-if>
+                    </sc-if>
+                    <span style="position:absolute;left:6px;top:6px;display:flex;align-items:center;gap:4px;font-family:'JetBrains Mono';font-size:9px;letter-spacing:.1em;color:#fff;background:rgba(17,16,19,.72);padding:3px 6px;border-radius:5px"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ c.icon }}"></path></svg>{{ c.badge }}</span>
+                    <span aria-hidden="true" style="position:absolute;right:6px;top:6px;width:20px;height:20px;border-radius:50%;border:1.5px solid {{ c.chkBd }};background:{{ c.chkBg }};display:grid;place-items:center;font-size:11px;color:#fff;opacity:{{ c.chkOp }};transition:opacity .15s,background .15s">{{ c.chk }}</span>
+                    <sc-if value="{{ c.busy }}" hint-placeholder-val="{{ false }}">
+                      <div style="position:absolute;inset:0;background:rgba(17,16,19,.55);display:flex;flex-direction:column;justify-content:flex-end;padding:8px;gap:6px;animation:mlFade .2s both">
+                        <span style="font-family:'JetBrains Mono';font-size:10px;color:#fff">{{ c.statusLabel }}</span>
+                        <span style="height:3px;border-radius:3px;background:rgba(255,255,255,.18);overflow:hidden"><span style="display:block;height:100%;width:{{ c.pctW }};background:#fff;transition:width .12s linear"></span></span>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ c.isErr }}" hint-placeholder-val="{{ false }}">
+                      <div style="position:absolute;inset:0;background:rgba(40,16,24,.78);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px;text-align:center">
+                        <span style="font-size:11.5px;color:#ffb3bd;line-height:1.3">{{ c.errMsg }}</span>
+                        <sc-if value="{{ c.canRetry }}" hint-placeholder-val="{{ false }}"><button onClick="{{ c.onRetry }}" style="height:24px;padding:0 10px;border-radius:6px;border:1px solid #ffb3bd;background:transparent;color:#ffb3bd;font-size:11px;cursor:pointer">Réessayer</button></sc-if>
+                      </div>
+                    </sc-if>
+                  </div>
+                  <div style="padding:8px 10px 9px;display:flex;align-items:center;gap:6px">
+                    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px">
+                      <span title="{{ c.name }}" style="font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</span>
+                      <span style="font-family:'JetBrains Mono';font-size:10px;color:#8f8797;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.meta }}</span>
+                    </div>
+                    <button onClick="{{ c.onRemove }}" aria-label="{{ c.removeLabel }}" style="flex:none;width:24px;height:24px;border-radius:6px;border:0;background:transparent;color:#8f8797;font-size:15px;cursor:pointer" style-hover="background:#2a272e;color:#fff">×</button>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ sec.isAudio }}" hint-placeholder-val="{{ false }}">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px">
+              <sc-for list="{{ sec.items }}" as="c" hint-placeholder-count="0">
+                <div role="button" tabIndex="0" aria-pressed="{{ c.sel }}" aria-label="{{ c.aria }}" onClick="{{ c.onClick }}" onKeyDown="{{ c.onKey }}" style="display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px;border-radius:12px;background:{{ c.rowBg }};border:1px solid {{ c.bd }};cursor:pointer;content-visibility:auto;contain-intrinsic-size:auto 88px;animation:mlIn .28s both;opacity:{{ c.op }};transform:{{ c.tf }};transition:opacity .18s,transform .18s,border-color .15s;outline:none" style-focus="box-shadow:0 0 0 2px #a06bff">
+                  <button onClick="{{ c.onPlay }}" aria-label="{{ c.playLabel }}" disabled="{{ c.noPlay }}" style="width:40px;height:40px;border-radius:50%;border:0;background:{{ c.playBg }};color:#111013;display:grid;place-items:center;cursor:pointer;font-size:12px" style-focus="outline:2px solid #a06bff;outline-offset:2px">{{ c.playIcon }}</button>
+                  <div style="min-width:0;display:flex;flex-direction:column;gap:6px">
+                    <div style="display:flex;align-items:center;gap:7px;min-width:0">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#c9b6ea" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="flex:none"><path d="{{ c.icon }}"></path></svg>
+                      <span title="{{ c.name }}" style="font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</span>
+                      <span style="flex:none;font-family:'JetBrains Mono';font-size:9px;letter-spacing:.1em;color:#c9b6ea;border:1px solid #3a3441;border-radius:4px;padding:1px 5px">AUDIO</span>
+                    </div>
+                    <div aria-hidden="true" style="height:26px;display:flex;align-items:center;gap:1.5px">
+                      <sc-for list="{{ c.bars }}" as="b" hint-placeholder-count="0"><span style="flex:1;min-width:0;height:{{ b.h }};border-radius:1px;background:{{ b.c }};transition:background .1s"></span></sc-for>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono';font-size:10px;color:#8f8797">
+                      <span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.meta }}</span>
+                      <span style="color:{{ c.stColor }}">{{ c.statusLabel }}</span>
+                    </div>
+                    <sc-if value="{{ c.busy }}" hint-placeholder-val="{{ false }}"><span style="height:2px;border-radius:2px;background:#2e2a33;overflow:hidden"><span style="display:block;height:100%;width:{{ c.pctW }};background:#fff;transition:width .12s linear"></span></span></sc-if>
+                  </div>
+                  <button onClick="{{ c.onRemove }}" aria-label="{{ c.removeLabel }}" style="align-self:start;width:24px;height:24px;border-radius:6px;border:0;background:transparent;color:#8f8797;font-size:15px;cursor:pointer" style-hover="background:#2a272e;color:#fff">×</button>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ sec.isDoc }}" hint-placeholder-val="{{ false }}">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px">
+              <sc-for list="{{ sec.items }}" as="c" hint-placeholder-count="0">
+                <div role="button" tabIndex="0" aria-pressed="{{ c.sel }}" aria-label="{{ c.aria }}" onClick="{{ c.onClick }}" onKeyDown="{{ c.onKey }}" style="display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px;border-radius:12px;background:{{ c.rowBg }};border:1px solid {{ c.bd }};cursor:pointer;content-visibility:auto;contain-intrinsic-size:auto 66px;animation:mlIn .28s both;opacity:{{ c.op }};transform:{{ c.tf }};transition:opacity .18s,transform .18s,border-color .15s;outline:none" style-focus="box-shadow:0 0 0 2px #a06bff">
+                  <span style="width:40px;height:40px;border-radius:10px;background:#241f29;border:1px solid #2e2a33;display:grid;place-items:center;color:{{ c.iconColor }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ c.icon }}"></path></svg></span>
+                  <div style="min-width:0;display:flex;flex-direction:column;gap:4px">
+                    <div style="display:flex;align-items:center;gap:7px;min-width:0">
+                      <span title="{{ c.name }}" style="font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</span>
+                      <span style="flex:none;font-family:'JetBrains Mono';font-size:9px;letter-spacing:.1em;color:#c9b6ea;border:1px solid #3a3441;border-radius:4px;padding:1px 5px">{{ c.badge }}</span>
+                    </div>
+                    <span style="font-family:'JetBrains Mono';font-size:10px;color:{{ c.metaColor }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.meta }}</span>
+                    <sc-if value="{{ c.busy }}" hint-placeholder-val="{{ false }}"><span style="font-family:'JetBrains Mono';font-size:10px;color:#c9b6ea">{{ c.statusLabel }}</span></sc-if>
+                  </div>
+                  <button onClick="{{ c.onRemove }}" aria-label="{{ c.removeLabel }}" style="width:24px;height:24px;border-radius:6px;border:0;background:transparent;color:#8f8797;font-size:15px;cursor:pointer" style-hover="background:#2a272e;color:#fff">×</button>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </sc-if>
+      </section>
+    </sc-for>
+
+    <sc-if value="{{ noMatch }}" hint-placeholder-val="{{ false }}">
+      <div style="margin:auto;font-size:13px;color:#8f8797">Aucun média ne correspond.</div>
+    </sc-if>
+  </div>
+
+  <sc-if value="{{ drag }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;background:rgba(17,16,19,.7);pointer-events:none;animation:mlFade .12s both">
+      <div style="position:absolute;inset:14px;border-radius:22px;border:1.5px solid #a06bff;box-shadow:0 0 0 4px rgba(160,107,255,.14),inset 0 0 60px rgba(160,107,255,.18);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;animation:mlDz .18s cubic-bezier(.2,.7,.2,1) both">
+        <span style="font-size:26px;font-weight:500;letter-spacing:-.02em">Drop your media here</span>
+        <span style="font-family:'JetBrains Mono';font-size:11px;letter-spacing:.14em;color:#c9b6ea">VIDEO · IMAGE · AUDIO · SUBTITLES</span>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ hasDup }}" hint-placeholder-val="{{ false }}">
+    <div role="dialog" aria-modal="true" aria-label="Already added" style="position:absolute;inset:0;background:rgba(17,16,19,.6);display:grid;place-items:center;animation:mlFade .15s both">
+      <div style="width:min(380px,90%);border-radius:16px;background:#1c1a1f;border:1px solid #2e2a33;padding:20px;display:flex;flex-direction:column;gap:12px;box-shadow:0 30px 60px -20px rgba(0,0,0,.6);animation:mlDz .18s both">
+        <span style="font-size:17px;font-weight:500">Already added</span>
+        <span style="font-size:13px;color:#b9b0c2;line-height:1.5">{{ dupText }}</span>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+          <button onClick="{{ dupCancel }}" style="height:34px;padding:0 14px;border-radius:9px;border:1px solid #3a363f;background:transparent;color:#fff;font-size:13px;cursor:pointer">Cancel</button>
+          <button onClick="{{ dupKeep }}" style="height:34px;padding:0 14px;border-radius:9px;border:0;background:#fff;color:#111013;font-size:13px;font-weight:600;cursor:pointer">Keep both</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position:absolute;left:50%;bottom:18px;transform:translateX(-50%);padding:9px 16px;border-radius:10px;background:#fff;color:#111013;font-size:13px;font-weight:500;white-space:nowrap;animation:mlIn .2s both">{{ toast }}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1000,&quot;height&quot;:820},&quot;onAdd&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(items: object[]) =&gt; void&quot;}}">
+const ICON = {
+  VIDEO: 'M3 6h13v12H3z M16 10l5-3v10l-5-3z',
+  IMAGE: 'M3 5h18v14H3z M3 16l5-5 4 4 3-3 6 6 M15.5 8.5h.01',
+  AUDIO: 'M4 10v4 M8 7v10 M12 4v16 M16 8v8 M20 11v2',
+  SUBTITLE: 'M3 5h18v14H3z M7 12h4 M13 12h4 M7 15.5h10',
+  TEXT: 'M5 5h14 M12 5v14 M9 19h6',
+  UNKNOWN: 'M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18z M9.6 9.2a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5 M12 16.5h.01'
+};
+const ORDER = ['VIDEO', 'IMAGE', 'AUDIO', 'SUBTITLE', 'TEXT', 'UNKNOWN'];
+const SEC_LABEL = { VIDEO: 'VIDEO', IMAGE: 'IMAGE', AUDIO: 'AUDIO', SUBTITLE: 'SUBTITLES', TEXT: 'TEXT', UNKNOWN: 'UNSUPPORTED' };
+const TYPE_NAME = { VIDEO: 'Vidéo', IMAGE: 'Image', AUDIO: 'Audio', SUBTITLE: 'Sous-titres', TEXT: 'Texte', UNKNOWN: 'Fichier non pris en charge' };
+const UNS = id => 'https://images.unsplash.com/photo-' + id + '?w=480&q=70&auto=format&fit=crop';
+const PHOTOS = ['1540959733332-eab4deabeeaf', '1503899036084-c55cdd92da26', '1554797589-7241bb691973', '1542051841857-5f90071e7989', '1528164344705-47542687000d', '1480796927426-f609979314bd', '1513407030348-c983a97b98d8', '1536098561742-ca998e48cbcc'];
+const pseudoWave = name => { let s = 0; for (const ch of name) s = (s * 31 + ch.charCodeAt(0)) % 99991; return Array.from({ length: 56 }, (_, i) => { s = (s * 9301 + 49297) % 233280; return 0.25 + 0.75 * Math.abs(Math.sin(i / 4 + s / 5e4)) * (0.5 + (s % 100) / 200); }); };
+function makeWav(sec) {
+  const sr = 22050, n = sr * sec, buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+  const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, sr, true); v.setUint32(28, sr * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * 2, true);
+  const notes = [220, 277.2, 329.6, 440, 329.6, 277.2];
+  for (let i = 0; i < n; i++) {
+    const t = i / sr, k = Math.floor(t * 1.5) % notes.length, lt = (t * 1.5) % 1, env = Math.exp(-lt * 3) * (0.6 + 0.4 * Math.sin(t * 0.8));
+    v.setInt16(44 + i * 2, Math.max(-1, Math.min(1, Math.sin(2 * Math.PI * notes[k] * t) * env * 0.5)) * 32767, true);
+  }
+  return new File([buf], 'ambiance_tokyo.wav', { type: 'audio/wav', lastModified: 1 });
+}
+const SRT = '1\n00:00:00,500 --> 00:00:02,800\nOn a quarante-huit heures pour tout voir.\n\n2\n00:00:03,000 --> 00:00:05,400\nPremière étape, le carrefour de Shibuya.\n\n3\n00:00:05,600 --> 00:00:08,200\nC’est encore plus impressionnant que dans les vidéos.\n\n4\n00:00:08,500 --> 00:00:11,000\nEt maintenant, on part chercher des ramen.\n';
+
+class Component extends DCLogic {
+  state = { items: [], filter: 'ALL', q: '', sort: 'date', closed: {}, sel: [], drag: false, dup: null, play: null, paused: false, playT: 0, hov: null, toast: '' };
+  inputRef = React.createRef();
+  componentDidMount() {
+    this.boot();
+    window.__plugLibStress = n => this.stress(n || 120);
+  }
+  boot() {
+    if (!window.PlugMedia) { this.bt = setTimeout(() => this.boot(), 60); return; }
+    this.PM = window.PlugMedia; this.forceUpdate();
+    this.PM.take().then(files => { if (files && files.length) { this.addFiles(files); this.flash(files.length + ' fichier(s) importé(s) depuis l’accueil'); } });
+  }
+  componentWillUnmount() {
+    clearTimeout(this.bt); clearInterval(this.tk); clearTimeout(this.tt);
+    if (this.audio) this.audio.pause();
+    this.state.items.forEach(i => this.revoke(i));
+  }
+  flash(m) { clearTimeout(this.tt); this.setState({ toast: m }); this.tt = setTimeout(() => this.setState({ toast: '' }), 2600); }
+  addFiles(list) {
+    const PM = this.PM; if (!PM) return;
+    const arr = Array.from(list || []); if (!arr.length) return;
+    const keys = new Set(this.state.items.map(i => i.key)), seen = new Set(), fresh = [], dups = [];
+    arr.forEach(f => { const it = PM.normalize(f); if (keys.has(it.key) || seen.has(it.key)) dups.push(it); else { seen.add(it.key); fresh.push(it); } });
+    if (fresh.length) this.ingest(fresh);
+    if (dups.length) this.setState(s => ({ dup: [...(s.dup || []), ...dups] }));
+  }
+  ingest(list) {
+    list.forEach(it => {
+      if (it.type === 'UNKNOWN') { it.status = 'ERROR'; it.error = 'Unsupported file type'; return; }
+      if (it.size > this.PM.MAX_SIZE) { it.status = 'ERROR'; it.error = 'Fichier trop volumineux (max 10 Go)'; return; }
+      if (!it.url && it.file && (it.type === 'VIDEO' || it.type === 'IMAGE' || it.type === 'AUDIO')) it.url = URL.createObjectURL(it.file);
+    });
+    this.setState(s => ({ items: [...list, ...s.items] }), () => this.ensureTick());
+  }
+  ensureTick() { if (!this.tk) this.tk = setInterval(() => this.step(), 120); }
+  step() {
+    let any = false; const done = [];
+    this.setState(s => ({
+      items: s.items.map(it => {
+        if (it.status !== 'UPLOADING') return it;
+        any = true;
+        const p = Math.min(100, it.uploadProgress + Math.max(2, 34 / (1 + it.size / 15e6)) * (0.6 + Math.random() * 0.8));
+        if (p >= 100) { done.push(it.id); return { ...it, uploadProgress: 100, status: 'PROCESSING' }; }
+        return { ...it, uploadProgress: p };
+      })
+    }), () => { done.forEach(id => this.enqueue(id)); if (!any) { clearInterval(this.tk); this.tk = 0; } });
+  }
+  enqueue(id) { (this.q = this.q || []).push(id); this.pump(); }
+  pump() {
+    this.running = this.running || 0;
+    while (this.running < 3 && this.q.length) {
+      const id = this.q.shift(), it = this.state.items.find(i => i.id === id); if (!it) continue;
+      this.running++;
+      Promise.resolve().then(() => this.PM.process(it))
+        .then(meta => this.patch(id, { ...meta, thumbnail: meta.thumbnail || it.preset || null, status: 'READY' }))
+        .catch(e => this.patch(id, { status: 'ERROR', error: (e && e.message) || 'Fichier corrompu' }))
+        .finally(() => { this.running--; this.pump(); });
+    }
+  }
+  patch(id, p) {
+    if (!this.state.items.some(i => i.id === id)) { if (p.thumbnail && p.thumbnail.startsWith('blob:')) URL.revokeObjectURL(p.thumbnail); return; }
+    this.setState(s => ({ items: s.items.map(i => i.id === id ? { ...i, ...p } : i) }));
+  }
+  revoke(i) {
+    if (i.url && i.url.startsWith('blob:')) URL.revokeObjectURL(i.url);
+    if (i.thumbnail && i.thumbnail.startsWith('blob:') && i.thumbnail !== i.url) URL.revokeObjectURL(i.thumbnail);
+  }
+  remove(ids) {
+    const set = new Set(ids);
+    if (set.has(this.state.play) && this.audio) this.audio.pause();
+    this.setState(s => ({ items: s.items.map(i => set.has(i.id) ? { ...i, removing: true } : i), sel: s.sel.filter(x => !set.has(x)), play: set.has(s.play) ? null : s.play }));
+    setTimeout(() => {
+      this.state.items.filter(i => set.has(i.id)).forEach(i => this.revoke(i));
+      this.setState(s => ({ items: s.items.filter(i => !set.has(i.id)) }));
+    }, 180);
+  }
+  retry(id) { this.setState(s => ({ items: s.items.map(i => i.id === id ? { ...i, status: 'UPLOADING', uploadProgress: 0, error: null } : i) }), () => this.ensureTick()); }
+  toggleSel(id) { this.setState(s => ({ sel: s.sel.includes(id) ? s.sel.filter(x => x !== id) : [...s.sel, id] })); }
+  togglePlay(id) {
+    const it = this.state.items.find(i => i.id === id);
+    if (!it || it.status !== 'READY' || !it.url) { this.flash('Aperçu audio indisponible'); return; }
+    const a = this.audio || (this.audio = new Audio());
+    if (!this.aInit) {
+      this.aInit = true;
+      a.ontimeupdate = () => this.setState({ playT: a.duration ? a.currentTime / a.duration : 0 });
+      a.onended = () => this.setState({ play: null, playT: 0 });
+      a.onerror = () => { if (this.state.play) { this.setState({ play: null }); this.flash('Lecture impossible'); } };
+    }
+    if (this.state.play === id) { if (a.paused) { a.play().catch(() => {}); this.setState({ paused: false }); } else { a.pause(); this.setState({ paused: true }); } return; }
+    a.pause(); a.src = it.url; a.play().catch(() => {}); this.setState({ play: id, playT: 0, paused: false });
+  }
+  loadSamples() {
+    const PM = this.PM; if (!PM) return;
+    const remote = [
+      ['tokyo_rue_nuit.mp4', 'VIDEO', 'video/mp4', 48.2e6, 'https://assets.mixkit.co/videos/4231/4231-720.mp4', 'https://assets.mixkit.co/videos/4231/4231-thumb-720-0.jpg'],
+      ['shibuya_crossing.mp4', 'VIDEO', 'video/mp4', 31.6e6, 'https://assets.mixkit.co/videos/4383/4383-720.mp4', UNS(PHOTOS[6])],
+      ['akihabara.jpg', 'IMAGE', 'image/jpeg', 3.4e6, UNS(PHOTOS[0])],
+      ['ramen_shinjuku.jpg', 'IMAGE', 'image/jpeg', 2.1e6, UNS(PHOTOS[2])],
+      ['senso-ji.jpg', 'IMAGE', 'image/jpeg', 2.8e6, UNS(PHOTOS[4])],
+      ['tokyo_tower.jpg', 'IMAGE', 'image/jpeg', 1.9e6, UNS(PHOTOS[5])]
+    ].map(([name, type, mimeType, size, url, preset], k) => ({ ...PM.normalize({ name, type: mimeType, size, lastModified: 100 + k }), type, url, preset: preset || url, file: null }));
+    remote.forEach(it => { if (it.type === 'IMAGE') it.preset = it.url; });
+    this.ingest(remote);
+    this.addFiles([makeWav(8), new File([SRT], 'tokyo_vlog.fr.srt', { type: 'application/x-subrip', lastModified: 2 }), new File(['plug'], 'notes_montage.psd', { type: 'image/vnd.adobe.photoshop', lastModified: 3 })]);
+  }
+  stress(n) {
+    const PM = this.PM; if (!PM) return;
+    const types = ['VIDEO', 'IMAGE', 'IMAGE', 'VIDEO', 'AUDIO', 'SUBTITLE'];
+    const list = Array.from({ length: n }, (_, k) => {
+      const type = types[k % types.length], ext = { VIDEO: 'mp4', IMAGE: 'jpg', AUDIO: 'mp3', SUBTITLE: 'srt' }[type];
+      const it = PM.normalize({ name: type.toLowerCase() + '_' + String(k + 1).padStart(3, '0') + '.' + ext, type: '', size: 1e6 + (k * 7919 % 90) * 1e6, lastModified: 1000 + k });
+      return { ...it, type, status: 'READY', uploadProgress: 100, thumbnail: type === 'VIDEO' || type === 'IMAGE' ? UNS(PHOTOS[k % PHOTOS.length]) : null, duration: type === 'VIDEO' || type === 'AUDIO' ? 5 + (k * 37) % 600 : null, width: 1920, height: 1080, cues: type === 'SUBTITLE' ? 40 + k : null, file: null };
+    });
+    this.setState(s => ({ items: [...list, ...s.items] }));
+    return n;
+  }
+  renderVals() {
+    const s = this.state, PM = this.PM;
+    const fmtSize = PM ? PM.fmtSize : b => b + ' o', fmtDur = PM ? PM.fmtDur : () => '--:--';
+    const counts = {}; ORDER.forEach(t => counts[t] = 0); s.items.forEach(i => counts[i.type]++);
+    const names = {}; s.items.forEach(i => { names[i.name] = (names[i.name] || 0) + 1; });
+    const q = s.q.trim().toLowerCase();
+    const inFilter = i => s.filter === 'ALL' || i.type === s.filter || (s.filter === 'SUBTITLE' && i.type === 'TEXT');
+    const cmp = {
+      date: (a, b) => b.addedAt - a.addedAt,
+      name: (a, b) => a.name.localeCompare(b.name, 'fr', { numeric: true }),
+      type: (a, b) => ORDER.indexOf(a.type) - ORDER.indexOf(b.type),
+      duration: (a, b) => (b.duration || 0) - (a.duration || 0),
+      size: (a, b) => b.size - a.size
+    }[s.sort];
+    const vis = s.items.filter(i => inFilter(i) && (!q || i.name.toLowerCase().includes(q))).sort(cmp);
+    const anySel = s.sel.length > 0;
+    const card = i => {
+      const sel = s.sel.includes(i.id), hov = s.hov === i.id, busy = i.status === 'UPLOADING' || i.status === 'PROCESSING', err = i.status === 'ERROR';
+      const statusLabel = i.status === 'UPLOADING' ? 'Uploading… ' + Math.round(i.uploadProgress) + '%' : i.status === 'PROCESSING' ? 'Processing…' : i.status;
+      const parts = [];
+      if (i.type === 'VIDEO' || i.type === 'AUDIO') { if (i.duration != null) parts.push(fmtDur(i.duration)); }
+      if (i.type === 'IMAGE' && i.width) parts.push(i.width + ' × ' + i.height);
+      if (i.type === 'SUBTITLE' && i.cues != null) parts.push(i.cues + ' cues');
+      if (i.type === 'SUBTITLE' && i.lang) parts.push(i.lang);
+      if (i.type === 'TEXT' && i.cues != null) parts.push(i.cues + ' mots');
+      parts.push(fmtSize(i.size));
+      if (names[i.name] > 1) parts.push('nom en double');
+      const playing = s.play === i.id && !s.paused;
+      const wf = i.waveform || pseudoWave(i.name), ready = i.status === 'READY';
+      return {
+        id: i.id, name: i.name, badge: i.type === 'UNKNOWN' ? 'UNSUPPORTED' : i.type === 'SUBTITLE' ? 'SUBTITLE' : i.type, icon: ICON[i.type],
+        isVideo: i.type === 'VIDEO', thumb: i.thumbnail, hasThumb: !!i.thumbnail, noThumb: !i.thumbnail,
+        zoom: hov ? 1.06 : 1, hovOp: hov && !busy && !err ? 1 : 0, dur: fmtDur(i.duration), showDur: ready && i.duration != null,
+        sel, bd: sel ? '#a06bff' : err ? '#4a2a33' : '#2a272e', rowBg: sel ? '#221d29' : '#1c1a1f',
+        chk: sel ? '✓' : '', chkBg: sel ? '#a06bff' : 'rgba(17,16,19,.4)', chkBd: sel ? '#a06bff' : 'rgba(255,255,255,.7)', chkOp: sel || hov || anySel ? 1 : 0,
+        op: i.removing ? 0 : 1, tf: i.removing ? 'scale(.96)' : 'none',
+        busy, isErr: err, errMsg: i.error, canRetry: err && !!i.file && i.type !== 'UNKNOWN' && i.error !== 'Unsupported file type' && !/volumineux/.test(i.error || ''),
+        statusLabel, stColor: ready ? '#7fe0b0' : err ? '#ff9ea0' : '#c9b6ea', pctW: (i.status === 'UPLOADING' ? i.uploadProgress : busy ? 100 : 0) + '%',
+        meta: err && i.type !== 'VIDEO' && i.type !== 'IMAGE' ? i.error + ' · ' + fmtSize(i.size) : parts.join(' · '),
+        metaColor: err ? '#ff9ea0' : '#8f8797', iconColor: err ? '#ff9ea0' : '#c9b6ea',
+        aria: TYPE_NAME[i.type] + ', ' + i.name + ', ' + (err ? i.error : statusLabel) + (sel ? ', sélectionné' : ''),
+        removeLabel: 'Retirer ' + i.name,
+        bars: wf.map((v, k) => ({ h: Math.max(10, v * 100).toFixed(0) + '%', c: s.play === i.id && k / wf.length < s.playT ? '#fff' : ready ? (i.waveform ? '#8a72c4' : '#5a4d78') : '#34303a' })),
+        playIcon: playing ? '❚❚' : '▶', playLabel: (playing ? 'Pause ' : 'Écouter ') + i.name, noPlay: !ready, playBg: ready ? '#fff' : '#3a363f',
+        onClick: () => this.toggleSel(i.id),
+        onKey: e => { if (e.target !== e.currentTarget) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.toggleSel(i.id); } else if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); this.remove([i.id]); } },
+        onEnter: () => this.setState({ hov: i.id }), onLeave: () => this.setState(st => st.hov === i.id ? { hov: null } : null),
+        onRemove: e => { e.stopPropagation(); this.remove([i.id]); },
+        onRetry: e => { e.stopPropagation(); this.retry(i.id); },
+        onPlay: e => { e.stopPropagation(); this.togglePlay(i.id); }
+      };
+    };
+    const groups = ORDER.map(t => ({ t, items: vis.filter(i => i.type === t) })).filter(g => g.items.length);
+    const sections = groups.map(({ t, items }) => {
+      const open = !s.closed[t];
+      return {
+        label: SEC_LABEL[t], count: items.length, icon: ICON[t], open, rot: open ? '90deg' : '0deg', aria: SEC_LABEL[t] + ', ' + items.length + ' fichiers',
+        isVisual: t === 'VIDEO' || t === 'IMAGE', isAudio: t === 'AUDIO', isDoc: t === 'SUBTITLE' || t === 'TEXT' || t === 'UNKNOWN',
+        items: open ? items.map(card) : [],
+        toggle: () => this.setState(st => ({ closed: { ...st.closed, [t]: open } }))
+      };
+    });
+    const pl = (n, one, many) => n + ' ' + (n > 1 ? many : one);
+    const cl = [counts.VIDEO && pl(counts.VIDEO, 'Video', 'Videos'), counts.IMAGE && pl(counts.IMAGE, 'Image', 'Images'), counts.AUDIO && counts.AUDIO + ' Audio', (counts.SUBTITLE + counts.TEXT) && pl(counts.SUBTITLE + counts.TEXT, 'Subtitle', 'Subtitles'), counts.UNKNOWN && counts.UNKNOWN + ' Unsupported'].filter(Boolean);
+    const F = [['ALL', 'ALL', s.items.length], ['VIDEO', 'VIDEO', counts.VIDEO], ['IMAGE', 'IMAGE', counts.IMAGE], ['AUDIO', 'AUDIO', counts.AUDIO], ['SUBTITLE', 'SUBTITLE', counts.SUBTITLE + counts.TEXT]];
+    const dup = s.dup || [];
+    return {
+      accept: PM ? PM.ACCEPT : '', inputRef: this.inputRef,
+      counterLine: cl.length ? cl.join(' · ') : 'Aucun média',
+      q: s.q, onSearch: e => this.setState({ q: e.target.value }),
+      sort: s.sort, onSort: e => this.setState({ sort: e.target.value }),
+      onBrowse: () => this.inputRef.current && this.inputRef.current.click(),
+      onFile: e => { this.addFiles(e.target.files); e.target.value = ''; },
+      filters: F.map(([id, label, count]) => ({ label, count, active: s.filter === id, bg: s.filter === id ? '#fff' : 'transparent', fg: s.filter === id ? '#111013' : '#fff', bd: s.filter === id ? '#fff' : '#2e2a33', on: () => this.setState({ filter: id }) })),
+      hasSel: anySel, selLabel: s.sel.length + ' sélectionné' + (s.sel.length > 1 ? 's' : ''),
+      selAll: () => this.setState({ sel: vis.map(i => i.id) }), clearSel: () => this.setState({ sel: [] }),
+      removeSel: () => this.remove(s.sel),
+      addSel: () => {
+        const chosen = s.items.filter(i => s.sel.includes(i.id)), ok = chosen.filter(i => i.status === 'READY');
+        if (!ok.length) { this.flash('Aucun média prêt dans la sélection'); return; }
+        if (this.props.onAdd) this.props.onAdd(ok.map(({ file, ...r }) => r));
+        this.flash(ok.length + ' média' + (ok.length > 1 ? 's' : '') + ' ajouté' + (ok.length > 1 ? 's' : '') + ' au montage' + (chosen.length > ok.length ? ' · ' + (chosen.length - ok.length) + ' pas encore prêt(s)' : ''));
+        this.setState({ sel: [] });
+      },
+      isEmpty: s.items.length === 0, noMatch: s.items.length > 0 && vis.length === 0,
+      typeIcons: [ICON.VIDEO, ICON.IMAGE, ICON.AUDIO, ICON.SUBTITLE],
+      loadSamples: () => this.loadSamples(),
+      sections, drag: s.drag, bodyOp: s.drag ? 0.35 : 1,
+      onDragEnter: e => { e.preventDefault(); this.dc = (this.dc || 0) + 1; if (!s.drag && e.dataTransfer && Array.from(e.dataTransfer.types || []).includes('Files')) this.setState({ drag: true }); },
+      onDragOver: e => { e.preventDefault(); if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy'; },
+      onDragLeave: () => { this.dc = Math.max(0, (this.dc || 0) - 1); if (!this.dc) this.setState({ drag: false }); },
+      onDrop: e => { e.preventDefault(); this.dc = 0; this.setState({ drag: false }); this.addFiles(e.dataTransfer && e.dataTransfer.files); },
+      hasDup: dup.length > 0,
+      dupText: dup.length === 1 ? '« ' + dup[0].name + ' » est déjà dans la médiathèque.' : dup.length + ' fichiers sont déjà dans la médiathèque : ' + dup.slice(0, 3).map(d => d.name).join(', ') + (dup.length > 3 ? '…' : '') + '.',
+      dupKeep: () => { const d = s.dup; this.setState({ dup: null }); this.ingest(d.map(x => ({ ...x, key: x.key + '#' + x.id }))); },
+      dupCancel: () => this.setState({ dup: null }),
+      toast: s.toast
+    };
+  }
+}
+</script>
+</body>
+</html>
