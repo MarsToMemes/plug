@@ -15,7 +15,7 @@ npm run fetch-media  # télécharge les photos/vidéos d'exemple dans public/med
 | Route | Maquette |
 |---|---|
 | `/` | `Plug Accueil.dc.html` (hero animé, dépôt de fichiers, démo éditeur, tarifs) |
-| `/editeur` | `Plug Editeur.dc.html` + `Mediatheque.dc.html` (icône Médias) |
+| `/editeur` | Studio réel, branché sur l'API (`../server`) : script, voix off, médias, plan style Apple, planche de contrôle, rendu MP4 |
 | `/tarifs` (`#packs`) | `Plug Tarifs.dc.html` |
 | `/inscription` (`?plan=creator`, `?mode=login`) | `Plug Inscription.dc.html` |
 
@@ -25,15 +25,15 @@ npm run fetch-media  # télécharge les photos/vidéos d'exemple dans public/med
 
 - **Médias d'exemple** : `src/media/catalog.ts` (un seul endroit). Les rushes du hero : `src/components/home/demoClips.ts`.
 - **Animations** : `heroDemo.ts` (hero, boucle 12,8 s) et `editorDemo.ts` (section éditeur, 13,6 s). Ce sont des moteurs rAF qui n'écrivent que `transform`/`opacity`/`clip-path`, se mettent en pause hors écran et respectent `prefers-reduced-motion`.
-- **Médiathèque** : `src/components/editor/Mediatheque.tsx`, logique fichiers dans `src/lib/plugMedia.ts`.
+- **Éditeur** : `src/pages/Editeur.tsx`, client de l'API dans `src/lib/api.ts`. En développement, Vite relaie `/api` vers `http://127.0.0.1:8787` (`PLUG_API` pour changer) ; en production, `VITE_API_URL` au build si l'API est sur un autre domaine.
 - **Polices** : auto-hébergées via `@fontsource` (aucun appel à Google Fonts).
 
-## Ce qui est simulé (pas de backend)
+## Ce qui est réel, ce qui est simulé
 
-- Upload (progression minutée), montage IA, export, Shorts, outils IA, packs → toasts de confirmation.
+- **Réel** : l'éditeur (`/editeur`) monte de vraies vidéos via le serveur `../server` et studio-engine. Voir `../server/README.md`.
+- **Simulé** : le dépôt de fichiers de l'accueil (progression minutée, les fichiers ne sont pas envoyés à l'éditeur), les démos animées de l'accueil.
 - Connexion Google (sélecteur de comptes fictif) et création de compte.
 - Les métadonnées de fichiers sont réelles : vignettes vidéo, dimensions, durées, waveforms, nombre de répliques.
-- Transfert accueil → éditeur : les fichiers déposés passent par IndexedDB ; « Ajouter au montage » enregistre la sélection dans `localStorage` (`plug_timeline_media`), aucune timeline ne les affiche encore.
 
 ## Médias
 

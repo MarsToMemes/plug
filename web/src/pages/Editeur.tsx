@@ -1,357 +1,423 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import Mediatheque, { type LibraryItem } from '../components/editor/Mediatheque';
-import { photo, video, videoPoster, type PhotoKey } from '../media/catalog';
-import { readUpload, TIMELINE_KEY, writeUpload } from '../lib/plugMedia';
+import { api, jobActive, type Health, type Pacing, type Plan, type PlanShot, type Project, type ProjectMedia, type ProjectPatch, type VoiceMode } from '../lib/api';
 import './editeur.css';
 
-const BGS = [
-  'radial-gradient(70% 60% at 30% 25%,#ff9ec8 0%,rgba(255,158,200,0) 60%),radial-gradient(60% 60% at 80% 80%,#7c4dff 0%,rgba(124,77,255,0) 70%),linear-gradient(160deg,#5b2fb8,#c04c8a)',
-  'radial-gradient(60% 60% at 70% 30%,#ffd29a 0%,rgba(255,210,154,0) 60%),linear-gradient(160deg,#b0356f,#4d1636)',
-  'radial-gradient(60% 60% at 30% 70%,#8fb6ff 0%,rgba(143,182,255,0) 60%),linear-gradient(160deg,#2a1540,#6b4fa8)',
-  'radial-gradient(60% 60% at 60% 40%,#ff8f8f 0%,rgba(255,143,143,0) 60%),linear-gradient(160deg,#3b1a5c,#ff6fb0)',
-  'radial-gradient(60% 60% at 40% 30%,#c9f0ff 0%,rgba(201,240,255,0) 55%),linear-gradient(160deg,#0f3340,#8a5cff)'
-];
-const NEW_IMGS: PhotoKey[] = ['city', 'food', 'tower', 'street', 'alley'];
-const TITLES = ['[48 HEURES] À TOKYO', 'LE [VRAI] PRIX DU RAMEN', 'CE QUE [PERSONNE] NE MONTRE', '[3 QUARTIERS] EN UNE NUIT', 'LA [FIN] DU VOYAGE'];
-const STYLES = ['Vlog', 'Tuto', 'Podcast', 'Gaming', 'Documentaire'];
-const FORMATS = ['16:9 YouTube', '9:16 Shorts', '1:1'];
-const MUSIC = ['Lo-fi', 'Cinématique', 'Électro', 'Sans musique'];
-const GEN_STEPS = ['Analyse des rushes…', 'Détection des temps morts…', 'Choix des meilleures prises…', 'Montage et rythme…', 'Sous-titres…'];
-const ICONS = {
-  montage: 'M4 5h16v14H4z M4 9h16 M9 5v4 M15 5v4 M10 13l4 2-4 2z',
-  shorts: 'M8 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z M11 10l3 2-3 2z',
-  texte: 'M4 20h4L19 9l-4-4L4 16z M14 6l4 4',
+const PROJECT_KEY = 'plug.project';
+const EXAMPLE_SCRIPT = `# Le vrai business de McDonald's
+? Comment McDonald's gagne-t-il vraiment de l'argent ?
+McDonald's n'est pas une entreprise de burgers.
+Derrière chaque comptoir, il y a autre chose.
+Plus de 60 % de ses revenus viennent des franchisés.
+# L'empire immobilier
+? Jusqu'où va-t-il ?
+Ils possèdent le terrain sous plus de la moitié de leurs restaurants.
+Derrière les burgers, c'est un propriétaire.`;
+
+type Rail = 'script' | 'voix' | 'medias' | 'plan';
+type View = 'video' | 'stills';
+
+const ICONS: Record<Rail, string> = {
+  script: 'M4 20h4L19 9l-4-4L4 16z M14 6l4 4',
+  voix: 'M12 3a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3z M5 11a7 7 0 0 0 14 0 M12 18v3',
   medias: 'M7 7h13v13H7z M4 17V4h13 M10 16l3-3 2 2 2-2 3 3',
-  packs: 'M12 3.5l2.5 5.2 5.6.8-4 4 1 5.6-5.1-2.7-5.1 2.7 1-5.6-4-4 5.6-.8z'
+  plan: 'M9 6h11 M9 12h11 M9 18h11 M4 6l1 1 2-2 M4 12l1 1 2-2 M4 18l1 1 2-2'
 };
-const RAIL: [Rail, string][] = [['montage', 'Montage'], ['shorts', 'Shorts'], ['texte', 'Titres & sous-titres'], ['medias', 'Médias'], ['packs', 'Packs']];
-const TABS: [Tab, string][] = [['video', 'Montage vidéo'], ['shorts', 'Shorts'], ['tools', 'Outils IA']];
-const MOMENTS: [string, string, PhotoKey][] = [['Arrivée à Shibuya', '02:14 – 02:44', 'city'], ['Ramen à Shinjuku', '11:05 – 11:35', 'food'], ['Vue depuis la tour', '24:40 – 25:10', 'tokyo'], ['Temple Senso-ji', '33:02 – 33:32', 'temple']];
-const SUB_STYLES: [string, string, string, 'uppercase' | 'none'][] = [['Karaoké', 'Poppins', '#FFD35C', 'uppercase'], ['Minimal', "'DM Sans', Manrope, sans-serif", '#fff', 'none'], ['Néon', 'Poppins', '#ff8fb9', 'uppercase'], ['Classique', 'Georgia', '#fff', 'none']];
-const PACKS: [string, string, PhotoKey][] = [['Motion Pop', 'Transitions et zooms punchy', 'concert'], ['Cinéma', 'Étalonnage et barres cinéma', 'cinema'], ['Vlog Voyage', 'Cartes, titres et lower thirds', 'travel'], ['Néon Night', 'Glow et textes lumineux', 'neon']];
-const TOOLS: [string, string][] = [['Suppression des silences', 'Coupe les blancs et hésitations'], ['Recadrage automatique', 'Suit le visage en 9:16'], ['Amélioration audio', 'Réduit le bruit, égalise la voix'], ['Traduction des sous-titres', 'Anglais, espagnol, allemand'], ['Miniature IA', '3 propositions de miniatures']];
+const RAIL: [Rail, string][] = [['script', 'Script'], ['voix', 'Voix off'], ['medias', 'Médias'], ['plan', 'Plan et contrôle']];
+const PACINGS: [Pacing, string][] = [['calm', 'Posé'], ['standard', 'Équilibré'], ['dynamic', 'Nerveux']];
+const VOICES: [VoiceMode, string][] = [['tts', 'Voix IA'], ['upload', 'Ma voix'], ['none', 'Sans voix']];
+const JOB_LABEL = { direct: 'Montage', stills: 'Planche de contrôle', render: 'Rendu' } as const;
+const TIMING_LABEL = { tts: 'timings fournis par la voix IA', stt: 'transcription ElevenLabs', aligned: 'alignement local (±0,15 s par mot)' } as const;
 
-type Rail = 'montage' | 'shorts' | 'texte' | 'medias' | 'packs' | 'outils';
-type Tab = 'video' | 'shorts' | 'tools';
-interface Version { name: string; desc: string; dur: string; bg: string; title: string; img: string; vid?: string }
+const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`;
+const mb = (b: number) => (b > 1e9 ? `${(b / 1e9).toFixed(1)} Go` : `${Math.max(0.1, b / 1e6).toFixed(1)} Mo`);
 
-/** "[mot]" in a title is highlighted in yellow, per the video charter. */
-const segs = (t: string) => t.split(/(\[[^\]]*\])/).filter(Boolean).map(p => (p[0] === '[' ? { t: p.slice(1, -1), c: '#FFD35C' } : { t: p, c: '#fff' }));
-const toggleIn = (list: number[], i: number) => (list.includes(i) ? list.filter(x => x !== i) : [...list, i]);
-
-function Toggle({ on, onClick, label }: { on: boolean; onClick: () => void; label: string }) {
-  return <button type="button" role="switch" aria-checked={on} aria-label={label} className={'ed-switch' + (on ? ' is-on' : '')} onClick={onClick}><span /></button>;
+function Toggle({ on, onClick, label, disabled }: { on: boolean; onClick: () => void; label: string; disabled?: boolean }) {
+  return <button type="button" role="switch" aria-checked={on} aria-label={label} disabled={disabled} className={'ed-switch' + (on ? ' is-on' : '')} onClick={onClick}><span /></button>;
 }
 
-function Seg({ options, value, onPick }: { options: string[]; value: number; onPick: (i: number) => void }) {
+function Seg<T extends string>({ options, value, onPick }: { options: [T, string][]; value: T; onPick: (v: T) => void }) {
   return (
     <div className="ed-seg">
-      {options.map((o, i) => <button key={o} type="button" aria-pressed={value === i} className={value === i ? 'is-on' : ''} onClick={() => onPick(i)}>{o}</button>)}
+      {options.map(([v, label]) => <button key={v} type="button" aria-pressed={value === v} className={value === v ? 'is-on' : ''} onClick={() => onPick(v)}>{label}</button>)}
     </div>
+  );
+}
+
+function Drop({ accept, multiple, onFiles, children }: { accept: string; multiple?: boolean; onFiles: (f: File[]) => void; children: ReactNode }) {
+  const [over, setOver] = useState(false);
+  return (
+    <label className={'ed-drop' + (over ? ' is-over' : '')}
+      onDragOver={e => { e.preventDefault(); setOver(true); }} onDragLeave={() => setOver(false)}
+      onDrop={e => { e.preventDefault(); setOver(false); onFiles([...e.dataTransfer.files]); }}>
+      <input type="file" accept={accept} multiple={multiple} onChange={e => { onFiles([...(e.target.files ?? [])]); e.target.value = ''; }} />
+      {children}
+    </label>
   );
 }
 
 export default function Editeur() {
   const [scale, setScale] = useState(1);
-  const [tab, setTab] = useState<Tab>('video');
-  const [rail, setRail] = useState<Rail>('montage');
-  const [ai, setAi] = useState(true);
-  const [open, setOpen] = useState<string | null>(null);
-  const [style, setStyle] = useState(0), [format, setFormat] = useState(0), [music, setMusic] = useState(0);
-  const [rythme, setRythme] = useState(62);
-  const [prompt, setPrompt] = useState('Vlog de voyage dynamique. Garde les réactions spontanées, coupe les silences et les hésitations, accroche forte dans les 5 premières secondes, sous-titres animés.');
-  const [versions, setVersions] = useState<Version[]>(() => [
-    { name: 'Version C', desc: 'Nerveux · 38 coupes', dur: '09:12', bg: BGS[1], title: TITLES[1], img: videoPoster('nightStreet'), vid: video('nightStreet') },
-    { name: 'Version B', desc: 'Équilibré · 31 coupes', dur: '10:04', bg: BGS[2], title: TITLES[3], img: photo('crossing', 1400), vid: video('crossing') },
-    { name: 'Version A', desc: 'Posé · 24 coupes', dur: '11:47', bg: BGS[0], title: TITLES[0], img: photo('tokyo', 1400), vid: video('tokyo') }
-  ]);
-  const [sel, setSel] = useState(0);
-  const [gen, setGen] = useState<number | null>(null);
-  const [playing, setPlaying] = useState(false);
-  const [t, setT] = useState(0.18);
+  const [rail, setRail] = useState<Rail>('script');
+  const [view, setView] = useState<View>('video');
+  const [health, setHealth] = useState<Health | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [p, setP] = useState<Project | null>(null);
+  const [plan, setPlan] = useState<Plan | null>(null);
+  const [draft, setDraft] = useState<{ title: string; script: string } | null>(null);
+  const [error, setError] = useState('');
   const [toast, setToast] = useState('');
-  const [file, setFile] = useState('tokyo_vlog_rush.mp4');
-  const [shDur, setShDur] = useState(1), [moms, setMoms] = useState([0, 2]);
-  const [subSt, setSubSt] = useState(0), [subPos, setSubPos] = useState(1), [kw, setKw] = useState(true);
-  const [pack, setPack] = useState(0), [tools, setTools] = useState([0, 2]);
-
-  const vidRef = useRef<HTMLVideoElement>(null);
-  const timers = useRef({ iv: 0, giv: 0, tt: 0 });
+  const [uploading, setUploading] = useState('');
+  const toastTimer = useRef(0);
+  const saveTimer = useRef(0);
 
   const flash = (m: string) => {
-    clearTimeout(timers.current.tt); setToast(m);
-    timers.current.tt = window.setTimeout(() => setToast(''), 2400);
+    clearTimeout(toastTimer.current); setToast(m);
+    toastTimer.current = window.setTimeout(() => setToast(''), 2600);
   };
+  const fail = (e: unknown) => setError((e as Error).message);
 
   // Fixed 1440×900 app frame, scaled down to fit the window.
   useEffect(() => {
     const fit = () => setScale(Math.min(1, (window.innerWidth - 24) / 1440, (window.innerHeight - 24) / 900));
     fit(); window.addEventListener('resize', fit);
-    const tm = timers.current;
-    return () => { window.removeEventListener('resize', fit); clearInterval(tm.iv); clearInterval(tm.giv); clearTimeout(tm.tt); };
+    return () => window.removeEventListener('resize', fit);
   }, []);
 
-  // Upload handed over from the homepage.
-  useEffect(() => {
-    const up = readUpload(); if (!up) return;
-    setFile(up.name);
-    if (up.count > 1) setRail('medias');
-    if (up.fresh !== false) { flash('Import terminé · 3 versions proposées'); writeUpload({ ...up, fresh: false }); }
+  const open = useCallback((project: Project) => {
+    setP(project); setDraft({ title: project.title, script: project.script }); setPlan(null); setError('');
+    try { localStorage.setItem(PROJECT_KEY, project.id); } catch { /* storage disabled */ }
+    if (project.plan) api.plan(project.id).then(setPlan).catch(() => setPlan(null));
+    setView(project.render ? 'video' : 'stills');
   }, []);
 
-  const cur = versions[sel];
-
+  // Start: capabilities, projects, last project (or a new one with the example script).
+  // Once only, even when StrictMode runs effects twice: it may create a project.
+  const started = useRef(false);
   useEffect(() => {
-    const v = vidRef.current; if (!v) return;
-    if (playing && v.paused) v.play().catch(() => {});
-    if (!playing && !v.paused) v.pause();
-  });
+    if (started.current) return;
+    started.current = true;
+    api.health().then(setHealth).catch(fail);
+    (async () => {
+      const list = await api.list();
+      setProjects(list);
+      let last: string | null = null;
+      try { last = localStorage.getItem(PROJECT_KEY); } catch { /* storage disabled */ }
+      const found = list.find(x => x.id === last) ?? list[0];
+      open(found ?? (await api.create({ title: 'Mon premier épisode', script: EXAMPLE_SCRIPT })));
+    })().catch(fail);
+  }, [open]);
 
-  const togglePlay = () => {
-    if (playing) { clearInterval(timers.current.iv); setPlaying(false); return; }
-    setPlaying(true);
-    timers.current.iv = window.setInterval(() => setT(x => {
-      const n = x + 0.002;
-      if (n >= 1) { clearInterval(timers.current.iv); setPlaying(false); return 1; }
-      return n;
-    }), 60);
+  // Follow the running job.
+  const active = jobActive(p ?? undefined);
+  useEffect(() => {
+    if (!p || !active) return;
+    const iv = window.setInterval(async () => {
+      try {
+        const next = await api.get(p.id);
+        setP(next);
+        if (!jobActive(next)) {
+          const j = next.job!;
+          if (j.status === 'failed') setError(`${JOB_LABEL[j.kind]} : ${j.error ?? 'échec'}`);
+          else {
+            flash(`${JOB_LABEL[j.kind]} terminé`);
+            if (j.kind === 'direct') { api.plan(next.id).then(setPlan).catch(() => {}); setRail('plan'); }
+            if (j.kind === 'stills') setView('stills');
+            if (j.kind === 'render') setView('video');
+          }
+        }
+      } catch (e) { fail(e); }
+    }, 1000);
+    return () => clearInterval(iv);
+    // Only the project and whether a job runs restart the polling.
+  }, [p?.id, active]);
+
+  const patch = async (fields: ProjectPatch) => {
+    if (!p) return;
+    try { setP(await api.update(p.id, fields)); } catch (e) { fail(e); }
+  };
+  // Title and script are saved 600 ms after the last keystroke.
+  const edit = (fields: { title?: string; script?: string }) => {
+    if (!draft) return;
+    const next = { ...draft, ...fields };
+    setDraft(next);
+    clearTimeout(saveTimer.current);
+    saveTimer.current = window.setTimeout(() => patch(fields), 600);
+  };
+  const flush = async () => {
+    clearTimeout(saveTimer.current);
+    if (p && draft && (draft.title !== p.title || draft.script !== p.script)) await patch(draft);
   };
 
-  // Simulated AI edit: progress, then a new version is prepended and selected.
-  const versionsRef = useRef(versions); versionsRef.current = versions;
-  const generate = () => {
-    if (gen !== null) return;
-    let g = 0; setGen(0);
-    timers.current.giv = window.setInterval(() => {
-      g += 1.5 + Math.random() * 3;
-      if (g < 100) { setGen(g); return; }
-      clearInterval(timers.current.giv);
-      const n = versionsRef.current.length, cuts = Math.round(18 + rythme * 0.3);
-      const v: Version = {
-        name: 'Version ' + String.fromCharCode(65 + n), desc: STYLES[style] + ' · ' + cuts + ' coupes',
-        dur: String(Math.round(13 - rythme / 14)).padStart(2, '0') + ':' + String(10 + (n * 17) % 49).padStart(2, '0'),
-        bg: BGS[n % 5], title: TITLES[n % 5], img: photo(NEW_IMGS[(n - 3) % NEW_IMGS.length], 1400)
-      };
-      setVersions(vs => [v, ...vs]);
-      setGen(null); setSel(0); setT(0);
-      flash(v.name + ' prête');
-    }, 110);
+  const start = async (kind: 'direct' | 'stills' | 'preview' | 'final') => {
+    if (!p || active) return;
+    setError('');
+    try {
+      await flush();
+      const job = kind === 'direct' ? await api.direct(p.id) : kind === 'stills' ? await api.stills(p.id) : await api.render(p.id, kind);
+      setP({ ...p, job });
+    } catch (e) { fail(e); }
   };
 
-  const onLibAdd = (items: LibraryItem[]) => {
-    try { localStorage.setItem(TIMELINE_KEY, JSON.stringify(items.map(i => ({ id: i.id, name: i.name, type: i.type, duration: i.duration })))); } catch { /* storage disabled */ }
+  const upload = async (files: File[], role: 'visual' | 'voice' | 'music') => {
+    if (!p) return;
+    setError('');
+    let cur = p;
+    for (const [i, f] of files.entries()) {
+      setUploading(`Import ${files.length > 1 ? `${i + 1}/${files.length} ` : ''}: ${f.name}`);
+      try { cur = await api.upload(cur.id, f, role); setP(cur); } catch (e) { fail(e); break; }
+    }
+    setUploading('');
   };
 
-  const pickRail = (id: Rail) => { setRail(id); setTab(id === 'shorts' ? 'shorts' : 'video'); };
-  const pickTab = (id: Tab) => { setTab(id); setRail(({ video: 'montage', shorts: 'shorts', tools: 'outils' } as const)[id]); };
+  const newProject = async () => {
+    try {
+      await flush();
+      const created = await api.create({ title: 'Nouvel épisode', script: '' });
+      setProjects(await api.list()); open(created); setRail('script');
+    } catch (e) { fail(e); }
+  };
+  const switchProject = async (id: string) => {
+    await flush();
+    try { open(await api.get(id)); setProjects(await api.list()); } catch (e) { fail(e); }
+  };
 
-  const [mm, ss] = cur.dur.split(':').map(Number), tot = mm * 60 + ss, now = Math.round(tot * t);
-  const tcNow = String(Math.floor(now / 60)).padStart(2, '0') + ':' + String(now % 60).padStart(2, '0');
-  let seed = sel * 7 + 3;
-  const clips = Array.from({ length: 22 }, (_, i) => { seed = (seed * 9301 + 49297) % 233280; return { f: 1 + (seed % 5), h: 14 + (seed % 16), done: i / 22 < t }; });
-  const rv = rythme < 34 ? 'Posé' : rythme < 67 ? 'Équilibré' : 'Nerveux';
-  const rows: [string, string, string[], number, (i: number) => void, string][] = [
-    ['style', 'Style de montage', STYLES, style, setStyle, 'linear-gradient(135deg,#ff9ec8,#7c4dff)'],
-    ['format', 'Format', FORMATS, format, setFormat, 'linear-gradient(135deg,#8fb6ff,#5b2fb8)'],
-    ['music', 'Musique', MUSIC, music, setMusic, 'linear-gradient(135deg,#ffd29a,#f07aa8)']
-  ];
-  const isMedias = rail === 'medias';
-  const CTA = ({ children, onClick, glow }: { children: string; onClick: () => void; glow?: boolean }) => (
-    <><div className="ed-spacer" /><button type="button" className={'ed-cta' + (glow ? ' ed-cta--glow' : '')} onClick={onClick}>{children}</button></>
+  if (!p || !draft) {
+    return <div className="ed-screen"><div className="ed-loading">{error || 'Chargement du studio…'}</div></div>;
+  }
+
+  const visuals = p.media.filter(m => m.role === 'visual');
+  const voiceFile = p.media.find(m => m.role === 'voice');
+  const music = p.media.find(m => m.role === 'music');
+  const planStale = !!p.plan && (draft.script !== p.script);
+  const renderStale = !!p.render && !!p.plan && p.render.planCreatedAt !== p.plan.createdAt;
+  const stillsStale = !!p.stills && !!p.plan && p.stills.planCreatedAt !== p.plan.createdAt;
+  const totalFrames = plan?.shots.reduce((s, x) => s + x.durationInFrames, 0) ?? 0;
+  const needsRights = p.media.some(m => m.role !== 'voice') && !p.rightsConfirmed;
+  const version = (s?: { createdAt: string }) => s?.createdAt;
+  const showVideo = view === 'video' && p.render;
+  const showStills = view === 'stills' && p.stills;
+  const CTA = ({ children, onClick, disabled }: { children: ReactNode; onClick: () => void; disabled?: boolean }) => (
+    <><div className="ed-spacer" /><button type="button" className="ed-cta ed-cta--glow" disabled={disabled} onClick={onClick}>{children}</button></>
   );
 
   return (
     <div className="ed-screen">
       <div className="ed" style={{ transform: `scale(${scale})` }} data-screen-label="Éditeur">
         <Link to="/" className="ed-logo" aria-label="Plug, accueil"><span><span /></span></Link>
-        <div className="ed-tabs" role="tablist">
-          {TABS.map(([id, label]) => <button key={id} type="button" role="tab" aria-selected={tab === id} className={tab === id ? 'is-on' : ''} onClick={() => pickTab(id)}>{label}</button>)}
+        <div className="ed-project">
+          <select value={p.id} onChange={e => switchProject(e.target.value)} aria-label="Projet">
+            {(projects.some(x => x.id === p.id) ? projects : [p, ...projects]).map(x => <option key={x.id} value={x.id}>{x.id === p.id ? draft.title || 'Sans titre' : x.title}</option>)}
+          </select>
+          <button type="button" onClick={newProject}>+ Nouveau</button>
         </div>
         <div className="ed-top">
-          <span className="ed-top__label">Montage IA restant</span>
-          <span className="ed-top__quota">3h06</span>
-          <Link to="/tarifs" className="ed-top__pro">Passer Pro</Link>
-          <button type="button" className="ed-top__export" onClick={() => flash('Export 1080p lancé · ' + cur.name)}>Exporter</button>
-          <span className="ed-top__avatar" aria-label="Compte SN">SN</span>
+          {health && (
+            <>
+              <span className={'ed-cap' + (health.elevenLabs ? ' is-on' : '')} title="ELEVENLABS_API_KEY sur le serveur">Voix IA</span>
+              <span className={'ed-cap' + (health.anthropic ? ' is-on' : '')} title="ANTHROPIC_API_KEY sur le serveur">Claude</span>
+              {!health.studioBlocks && <span className="ed-cap is-warn" title="npm run setup-engine dans server/">Blocs Apple absents</span>}
+            </>
+          )}
+          {p.render && !p.render.draft && p.render.scale >= 1 && !renderStale
+            ? <a className="ed-top__export" href={api.fileUrl(p.id, 'video.mp4', version(p.render))} download={`${draft.title || 'episode'}.mp4`}>Télécharger le MP4</a>
+            : <button type="button" className="ed-top__export" disabled={!p.plan || active} onClick={() => start('final')}>Exporter en 1080p</button>}
         </div>
 
-        <nav className="ed-rail" aria-label="Outils">
+        <nav className="ed-rail" aria-label="Étapes">
           {RAIL.map(([id, label]) => (
-            <button key={id} type="button" title={label} aria-label={label} aria-pressed={rail === id} className={rail === id ? 'is-on' : ''} onClick={() => pickRail(id)}>
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={ICONS[id as keyof typeof ICONS]} /></svg>
+            <button key={id} type="button" title={label} aria-label={label} aria-pressed={rail === id} className={rail === id ? 'is-on' : ''} onClick={() => setRail(id)}>
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={ICONS[id]} /></svg>
             </button>
           ))}
         </nav>
 
-        <section className="ed-panel" hidden={isMedias} data-screen-label="Réglages">
-          {rail === 'shorts' && (
+        <section className="ed-panel" data-screen-label="Réglages">
+          {rail === 'script' && (
             <>
-              <h1>Créer des Shorts</h1>
-              <div className="ed-box"><span className="ed-box__label">Durée</span><Seg options={['15 s', '30 s', '60 s']} value={shDur} onPick={setShDur} /></div>
-              <div className="ed-hint">Moments forts détectés</div>
-              {MOMENTS.map(([label, tc, img], i) => {
-                const on = moms.includes(i);
-                return (
-                  <button key={label} type="button" aria-pressed={on} className={'ed-moment' + (on ? ' is-on' : '')} onClick={() => setMoms(m => toggleIn(m, i))}>
-                    <img src={photo(img, 360)} alt="" />
-                    <div><span>{label}</span><span className="ed-mono">{tc}</span></div>
-                    <span className="ed-moment__dot" />
-                  </button>
-                );
-              })}
-              <CTA onClick={() => flash(moms.length ? moms.length + ' Shorts en préparation' : 'Sélectionnez au moins un moment')}>{'Générer ' + moms.length + ' Short' + (moms.length > 1 ? 's' : '')}</CTA>
-            </>
-          )}
-          {rail === 'texte' && (
-            <>
-              <h1>Titres &amp; sous-titres</h1>
-              <div className="ed-substyles">
-                {SUB_STYLES.map(([label, font, c, tt], i) => (
-                  <button key={label} type="button" aria-pressed={subSt === i} className={subSt === i ? 'is-on' : ''} onClick={() => setSubSt(i)}>
-                    <span style={{ fontFamily: font, color: c, textTransform: tt }}>Bonjour Tokyo</span>
-                    <span>{label}</span>
-                  </button>
-                ))}
-              </div>
-              <div className="ed-box"><span className="ed-box__label">Position</span><Seg options={['Haut', 'Centre', 'Bas']} value={subPos} onPick={setSubPos} /></div>
-              <div className="ed-box ed-box--row"><span className="ed-box__label ed-grow">Mots-clés en couleur</span><Toggle on={kw} onClick={() => setKw(!kw)} label="Mots-clés en couleur" /></div>
-              <CTA onClick={() => flash('Sous-titres « ' + SUB_STYLES[subSt][0] + ' » appliqués')}>Appliquer aux sous-titres</CTA>
-            </>
-          )}
-          {rail === 'packs' && (
-            <>
-              <h1>Packs</h1>
-              {PACKS.map(([name, desc, img], i) => (
-                <button key={name} type="button" aria-pressed={pack === i} className={'ed-pack' + (pack === i ? ' is-on' : '')} onClick={() => setPack(i)}>
-                  <img src={photo(img, 360)} alt="" />
-                  <div><span>{name}</span><span className="ed-sub">{desc}</span></div>
-                  <span className="ed-pack__state">{pack === i ? 'Sélectionné' : ''}</span>
-                </button>
-              ))}
-              <Link to="/tarifs#packs" className="ed-link">Voir tous les packs →</Link>
-              <CTA onClick={() => flash('Pack ' + PACKS[pack][0] + ' appliqué')}>Appliquer le pack</CTA>
-            </>
-          )}
-          {rail === 'outils' && (
-            <>
-              <h1>Outils IA</h1>
-              {TOOLS.map(([label, desc], i) => (
-                <div key={label} className="ed-tool">
-                  <div><span>{label}</span><span className="ed-sub">{desc}</span></div>
-                  <Toggle on={tools.includes(i)} onClick={() => setTools(x => toggleIn(x, i))} label={label} />
-                </div>
-              ))}
-              <CTA onClick={() => flash(tools.length ? tools.length + ' outil(s) IA en cours' : 'Activez au moins un outil')}>{'Lancer ' + tools.length + ' outil' + (tools.length > 1 ? 's' : '')}</CTA>
-            </>
-          )}
-          {rail === 'montage' && (
-            <>
-              <h1>Monter la vidéo</h1>
+              <h1>Script</h1>
+              <input className="ed-title" value={draft.title} onChange={e => edit({ title: e.target.value })} placeholder="Titre de l'épisode" aria-label="Titre de l'épisode" />
               <div className="ed-brief">
-                <div className="ed-brief__file">
-                  <img src={photo('tokyo', 360)} alt="" />
-                  <div><div className="ed-ellipsis">{file}</div><div className="ed-sub ed-mono">rush · 42:18</div></div>
-                  <Link to="/#upload">Changer</Link>
-                </div>
-                <div className="ed-brief__sep" />
-                <textarea value={prompt} onChange={e => setPrompt(e.target.value)} rows={5} placeholder="Décrivez le montage souhaité" aria-label="Consigne de montage" />
-                <div className="ed-brief__ai">
-                  <Toggle on={ai} onClick={() => setAi(!ai)} label="Suggestions IA" />
-                  <span>Suggestions IA</span>
-                  <button type="button" title="Améliorer la consigne" aria-label="Améliorer la consigne" onClick={() => { setPrompt(p => p.replace(/\s*$/, '') + ' Ajoute des zooms punchy sur les moments forts et une fin avec appel à s’abonner.'); flash('Consigne enrichie par l’IA'); }}>✦</button>
-                </div>
+                <textarea value={draft.script} onChange={e => edit({ script: e.target.value })} rows={11} placeholder={'# Chapitre\n? Question du chapitre\nUne phrase par ligne.'} aria-label="Script" spellCheck />
               </div>
-              {rows.map(([id, label, list, value, set, sw]) => {
-                const isOpen = open === id;
-                return (
-                  <div key={id} className="ed-row">
-                    <button type="button" aria-expanded={isOpen} className="ed-row__head" onClick={() => setOpen(isOpen ? null : id)}>
-                      <span className="ed-row__sw" style={{ background: sw }} />
-                      <span className="ed-grow">{label}</span>
-                      <span className="ed-row__val">{list[value]}</span>
-                      <span className="ed-row__chev" style={{ transform: `rotate(${isOpen ? 90 : 0}deg)` }}>›</span>
-                    </button>
-                    {isOpen && (
-                      <div className="ed-row__opts">
-                        {list.map((o, i) => <button key={o} type="button" aria-pressed={value === i} className={value === i ? 'is-on' : ''} onClick={() => { set(i); setOpen(null); }}>{o}</button>)}
-                      </div>
-                    )}
+              <div className="ed-hint"><span className="ed-mono">#</span> chapitre · <span className="ed-mono">?</span> question du chapitre · une phrase par ligne. Les chiffres s'écrivent en chiffres (« 60 % »).</div>
+              <div className="ed-box"><span className="ed-box__label">Rythme</span><Seg options={PACINGS} value={p.pacing} onPick={v => patch({ pacing: v })} /></div>
+              <div className="ed-box ed-box--row"><span className="ed-box__label ed-grow">Sous-titres</span><Toggle on={p.captions} onClick={() => patch({ captions: !p.captions })} label="Sous-titres" /></div>
+              <div className="ed-box ed-box--row">
+                <div className="ed-grow"><div className="ed-box__label">Réalisation par Claude</div><div className="ed-sub">{health?.anthropic ? 'Claude écrit l’analyse, les règles de la bible la vérifient' : 'Clé ANTHROPIC_API_KEY absente : cerveau heuristique'}</div></div>
+                <Toggle on={p.llm && !!health?.anthropic} disabled={!health?.anthropic} onClick={() => patch({ llm: !p.llm })} label="Réalisation par Claude" />
+              </div>
+              <CTA disabled={active || !draft.script.trim()} onClick={() => start('direct')}>{p.plan ? 'Refaire le montage' : 'Monter l’épisode'}</CTA>
+            </>
+          )}
+
+          {rail === 'voix' && (
+            <>
+              <h1>Voix off</h1>
+              <div className="ed-box"><Seg options={VOICES} value={p.voice.mode} onPick={v => patch({ voice: { mode: v, ...(p.voice.voiceId ? { voiceId: p.voice.voiceId } : {}) } })} /></div>
+              {p.voice.mode === 'tts' && (
+                <div className="ed-box">
+                  <span className="ed-box__label">Voix ElevenLabs</span>
+                  <input className="ed-input" defaultValue={p.voice.voiceId ?? ''} placeholder="ID de voix (vide : voix par défaut)" aria-label="ID de voix ElevenLabs"
+                    onBlur={e => { const v = e.target.value.trim(); if (v !== (p.voice.voiceId ?? '')) patch({ voice: { mode: 'tts', ...(v ? { voiceId: v } : {}) } }); }} />
+                  <div className="ed-sub">{health?.elevenLabs ? 'La voix est générée à partir du script, puis réutilisée tant que le texte ne change pas.' : 'Clé ELEVENLABS_API_KEY absente sur le serveur : importez votre voix.'}</div>
+                </div>
+              )}
+              {p.voice.mode === 'upload' && (
+                <>
+                  <Drop accept=".wav,.mp3,.m4a,.aac,.flac,.ogg,audio/*" onFiles={f => f[0] && upload([f[0]], 'voice')}>
+                    <strong>{voiceFile ? 'Remplacer la voix off' : 'Importer la voix off'}</strong>
+                    <span>WAV, MP3, M4A · lue mot à mot sur le script</span>
+                  </Drop>
+                  {voiceFile && <div className="ed-file"><span className="ed-ellipsis">{voiceFile.originalName}</span><span className="ed-sub ed-mono">{fmt(voiceFile.durationInSeconds ?? 0)} · {mb(voiceFile.bytes)}</span></div>}
+                  <div className="ed-hint">{health?.elevenLabs ? 'La voix est transcrite par ElevenLabs pour caler chaque mot.' : 'Sans clé ElevenLabs, le script est aligné sur les pauses de la voix : lisez-le tel quel.'}</div>
+                </>
+              )}
+              {p.voice.mode === 'none' && <div className="ed-hint">Sans voix off, les durées sont estimées et la vidéo est muette (hors musique).</div>}
+              {p.voiceTrack && <div className="ed-box"><span className="ed-box__label">Voix prête</span><span className="ed-sub">{fmt(p.voiceTrack.durationInSeconds)} · {p.voiceTrack.words} mots · {TIMING_LABEL[p.voiceTrack.timing]} · −16 LUFS</span></div>}
+
+              <div className="ed-hint">Musique de fond</div>
+              <Drop accept=".wav,.mp3,.m4a,.aac,.flac,.ogg,audio/*" onFiles={f => f[0] && upload([f[0]], 'music')}>
+                <strong>{music ? 'Remplacer la musique' : 'Importer une musique'}</strong>
+                <span>Baissée sous la voix, relancée dans les pauses</span>
+              </Drop>
+              {music && <MediaRow m={music} project={p} onChange={setP} onError={fail} />}
+            </>
+          )}
+
+          {rail === 'medias' && (
+            <>
+              <h1>Médias</h1>
+              <Drop accept=".jpg,.jpeg,.png,.webp,.mp4,.webm,.mov,image/*,video/*" multiple onFiles={f => upload(f, 'visual')}>
+                <strong>Ajouter des images ou des vidéos</strong>
+                <span>Décrivez chacune : le monteur les place sur la phrase qui en parle</span>
+              </Drop>
+              {visuals.length === 0 && <div className="ed-hint">Sans média, le style Apple monte l’épisode en typographie, chiffres et graphiques.</div>}
+              {visuals.map(m => <MediaRow key={m.id} m={m} project={p} onChange={setP} onError={fail} />)}
+              <label className="ed-rights">
+                <input type="checkbox" checked={p.rightsConfirmed} onChange={e => patch({ rightsConfirmed: e.target.checked })} />
+                <span>Je détiens les droits de ces médias (ou une licence qui autorise l’usage commercial).</span>
+              </label>
+            </>
+          )}
+
+          {rail === 'plan' && (
+            <>
+              <h1>Plan et contrôle</h1>
+              {!p.plan && <div className="ed-hint">Aucun plan pour l’instant : écrivez le script, puis « Monter l’épisode ».</div>}
+              {p.plan && (
+                <>
+                  <div className="ed-box">
+                    <span className="ed-box__label">{p.plan.shots} plans · {fmt(p.plan.durationInSeconds)}</span>
+                    <span className="ed-sub">Style Apple · {p.plan.brain === 'llm' ? 'réalisé par Claude' : 'cerveau heuristique'} · {p.plan.valid ? 'validation finale OK' : 'validation finale : à corriger'}</span>
+                    {planStale && <span className="ed-warn">Le script a changé depuis ce plan : refaites le montage.</span>}
                   </div>
-                );
-              })}
-              <div className="ed-box">
-                <div className="ed-rythme__head"><span>Rythme des coupes</span><span className="ed-mono">{rv}</span></div>
-                <div className="ed-range">
-                  <div className="ed-range__track" />
-                  <div className="ed-range__fill" style={{ width: rythme + '%' }} />
-                  <input type="range" min={0} max={100} value={rythme} onChange={e => setRythme(+e.target.value)} aria-label="Rythme des coupes" />
-                </div>
-                <div className="ed-rythme__scale"><span>Posé</span><span>Équilibré</span><span>Nerveux</span></div>
-              </div>
-              <CTA glow onClick={generate}>{gen !== null ? 'Montage en cours… ' + Math.round(gen) + '%' : 'Lancer le montage IA'}</CTA>
+                  <Issues title="À corriger" items={p.plan.errors.map(e => (e.rule ? `[${e.rule}] ` : '') + e.message)} tone="err" />
+                  <Issues title="Il manque" items={p.plan.assetRequests.map(r => r.description)} tone="warn" />
+                  <Issues title="Avertissements" items={p.plan.warnings.map(e => (e.rule ? `[${e.rule}] ` : '') + e.message)} tone="warn" collapsed />
+                  <Issues title="Choix du monteur" items={[...p.plan.notes, ...p.plan.decisions]} tone="info" collapsed />
+                </>
+              )}
+              {p.render?.qc && (
+                <Issues title={p.render.qc.pass ? 'Contrôle qualité : réussi' : 'Contrôle qualité : échec'} items={[...p.render.qc.failed, ...p.render.qc.warnings]} tone={p.render.qc.pass ? 'info' : 'err'} collapsed={p.render.qc.pass} />
+              )}
             </>
           )}
         </section>
 
-        <section className="ed-preview" hidden={isMedias} style={{ background: cur.bg }} data-screen-label="Aperçu">
-          <img src={cur.img} alt="" />
-          {cur.vid && <video key={cur.vid} ref={vidRef} src={cur.vid} poster={cur.img} muted loop playsInline />}
-          <div className="ed-preview__shade" />
-          <div className="ed-preview__top">
-            <span>{cur.name}</span>
-            <span className="ed-mono">{tcNow} / {cur.dur}</span>
-          </div>
-          <div className="ed-preview__title"><div>{segs(cur.title).map((s, i) => <span key={i} style={{ color: s.c }}>{s.t}</span>)}</div></div>
-          <button type="button" className="ed-preview__play" onClick={togglePlay} aria-label={playing ? 'Pause' : 'Lecture'}>{playing ? '❚❚' : '▶'}</button>
-          <div className="ed-preview__bottom">
-            <div className="ed-chips">{[FORMATS[format].split(' ')[0], STYLES[style], '1080p'].map(c => <span key={c}>{c}</span>)}</div>
-            <div className="ed-preview__prompt">{prompt}</div>
-            <div className="ed-scrub" onClick={e => { const r = e.currentTarget.getBoundingClientRect(); setT(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width))); }}
-              role="slider" tabIndex={0} aria-label="Position de lecture" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(t * 100)}
-              onKeyDown={e => { if (e.key === 'ArrowRight') setT(x => Math.min(1, x + 0.02)); if (e.key === 'ArrowLeft') setT(x => Math.max(0, x - 0.02)); }}>
-              {clips.map((k, i) => <div key={i} style={{ flex: `${k.f} 1 0`, height: k.h, background: k.done ? 'rgba(255,255,255,.95)' : 'rgba(255,255,255,.35)' }} />)}
-              <div className="ed-scrub__head" style={{ left: (t * 100).toFixed(2) + '%' }} />
+        <section className="ed-preview ed-stage" data-screen-label="Aperçu">
+          {showVideo && <video key={version(p.render)} src={api.fileUrl(p.id, 'video.mp4', version(p.render))} controls playsInline />}
+          {showStills && <div className="ed-sheet"><img src={api.fileUrl(p.id, 'stills.jpg', version(p.stills))} alt="Planche de contrôle : trois images par plan" /></div>}
+          {!showVideo && !showStills && (
+            <div className="ed-empty">
+              <ol>
+                <li className={p.plan ? 'is-done' : ''}><span>1</span>Script et voix off, puis « Monter l’épisode »</li>
+                <li className={p.stills ? 'is-done' : ''}><span>2</span>Planche de contrôle : 3 images par plan, en une minute</li>
+                <li className={p.render ? 'is-done' : ''}><span>3</span>Aperçu 540p, puis export 1080p masterisé</li>
+              </ol>
             </div>
+          )}
+          <div className="ed-stage__top">
+            <div className="ed-seg ed-seg--glass">
+              <button type="button" className={view === 'video' ? 'is-on' : ''} disabled={!p.render} onClick={() => setView('video')}>Vidéo</button>
+              <button type="button" className={view === 'stills' ? 'is-on' : ''} disabled={!p.stills} onClick={() => setView('stills')}>Planche</button>
+            </div>
+            {view === 'video' && p.render && <span className="ed-pill">{p.render.scale >= 1 ? '1080p' : 'Aperçu 540p'} · {fmt(p.render.durationInSeconds)}{p.render.loudness ? ` · ${p.render.loudness.integrated.toFixed(1)} LUFS` : ''}{renderStale ? ' · plan plus ancien' : ''}</span>}
+            {view === 'stills' && stillsStale && <span className="ed-pill">Planche d’un plan plus ancien</span>}
+          </div>
+          {(active || uploading) && (
+            <div className="ed-job" role="status">
+              <div className="ed-job__label">{uploading || `${JOB_LABEL[p.job!.kind]} · ${p.job!.message}`}</div>
+              {!uploading && <div className="ed-job__bar"><div style={{ width: `${Math.round((p.job!.progress || 0) * 100)}%` }} /></div>}
+            </div>
+          )}
+        </section>
+
+        <section className="ed-shots" data-screen-label="Plans">
+          <div className="ed-shots__head"><span>Plans</span>{plan && <span className="ed-mono">{plan.shots.length} · {fmt(totalFrames / plan.fps)}</span>}</div>
+          <div className="ed-shots__list">
+            {!plan && <div className="ed-sub">Le plan de montage s’affichera ici.</div>}
+            {plan?.shots.map((s, i) => (
+              <div key={s.id} className="ed-shot" title={Object.values(s.reasons ?? {}).join('\n')}>
+                <span className="ed-shot__n ed-mono">{String(i + 1).padStart(2, '0')}</span>
+                <div>
+                  <span className="ed-ellipsis">{shotLabel(s, p)}</span>
+                  <span className="ed-sub">{s.block?.item.replace(/^studio-/, '') ?? s.type}{s.editorialIntent ? ` · ${s.editorialIntent}` : ''}</span>
+                </div>
+                <span className="ed-shot__d ed-mono">{(s.durationInFrames / plan.fps).toFixed(1)} s</span>
+              </div>
+            ))}
+          </div>
+          <div className="ed-actions">
+            <button type="button" disabled={!p.plan || active} onClick={() => start('stills')}>Planche de contrôle</button>
+            <button type="button" disabled={!p.plan || active || needsRights} onClick={() => start('preview')}>Aperçu 540p</button>
           </div>
         </section>
 
-        <section className="ed-lib" hidden={!isMedias} data-screen-label="Médiathèque">
-          <Mediatheque onAdd={onLibAdd} />
-        </section>
-
-        <section className="ed-versions" data-screen-label="Versions">
-          <button type="button" className="ed-new" onClick={generate}>
-            {gen !== null ? (
-              <><span className="ed-new__pct">{Math.round(gen) + '%'}</span><span>{GEN_STEPS[Math.min(4, Math.floor(gen / 20))]}</span></>
-            ) : (
-              <>
-                <svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.3" strokeLinejoin="round" aria-hidden="true"><path d="M12 3.5l2.5 5.2 5.6.8-4 4 1 5.6-5.1-2.7-5.1 2.7 1-5.6-4-4 5.6-.8z" /><path d="M4 3v3M2.5 4.5h3M20 2v3M18.5 3.5h3" strokeLinecap="round" /></svg>
-                <span>Nouvelle version</span>
-              </>
-            )}
-          </button>
-          {versions.slice(0, 3).map((v, i) => (
-            <button key={v.name} type="button" aria-pressed={i === sel} className={'ed-ver' + (i === sel ? ' is-on' : '')} style={{ background: v.bg }} onClick={() => { setSel(i); setT(0); }}>
-              <img src={v.img} alt="" />
-              {v.vid && <span className="ed-ver__vid">VIDÉO</span>}
-              <span className="ed-ver__shade" />
-              <span className="ed-ver__dur">{v.dur}</span>
-              <span className="ed-ver__txt"><span>{v.name}</span><span>{v.desc}</span></span>
-            </button>
-          ))}
-          <Link to="/tarifs#packs" className="ed-promo">
-            <div className="ed-promo__head"><span>Packs Motion &amp; Style</span><span className="ed-promo__arrow">→</span></div>
-            <div className="ed-promo__art">
-              <img src={photo('concert', 360)} alt="" className="ed-promo__a" />
-              <img src={photo('studio', 360)} alt="" className="ed-promo__b" />
-              <span className="ed-promo__badge"><span>40</span><span>presets</span></span>
-            </div>
-          </Link>
-        </section>
-
+        {error && <div className="ed-error" role="alert"><span>{error}</span><button type="button" onClick={() => setError('')} aria-label="Fermer">×</button></div>}
         {toast && <div className="ed-toast" role="status">{toast}</div>}
       </div>
+    </div>
+  );
+}
+
+/** What a shot shows: its text, the text or figure of its studio block, its media, else its type. */
+function shotLabel(s: PlanShot, p: Project): string {
+  const v = s.block?.variables ?? {};
+  const blockText = typeof v.text === 'string' ? v.text.replace(/[|*]/g, ' ').replace(/\s+/g, ' ').trim() : '';
+  const figure = v.to !== undefined ? `${v.prefix ?? ''}${v.to}${v.suffix ?? ''}` : '';
+  return s.text || blockText || figure || (s.media ? p.media.find(m => m.id === s.media)?.description ?? '' : '') || s.type;
+}
+
+function Issues({ title, items, tone, collapsed }: { title: string; items: string[]; tone: 'err' | 'warn' | 'info'; collapsed?: boolean }) {
+  const [open, setOpen] = useState(!collapsed);
+  if (!items.length) return null;
+  return (
+    <div className={`ed-issues ed-issues--${tone}`}>
+      <button type="button" aria-expanded={open} onClick={() => setOpen(!open)}><span className="ed-grow">{title}</span><span className="ed-mono">{items.length}</span><span className="ed-row__chev" style={{ transform: `rotate(${open ? 90 : 0}deg)` }}>›</span></button>
+      {open && <ul>{items.map((t, i) => <li key={i}>{t}</li>)}</ul>}
+    </div>
+  );
+}
+
+function MediaRow({ m, project, onChange, onError }: { m: ProjectMedia; project: Project; onChange: (p: Project) => void; onError: (e: unknown) => void }) {
+  const url = api.mediaUrl(project.id, m.file);
+  return (
+    <div className="ed-media">
+      {m.kind === 'image' && <img src={url} alt="" />}
+      {m.kind === 'video' && <video src={url} muted preload="metadata" />}
+      {m.kind === 'audio' && <span className="ed-media__audio">♪</span>}
+      <div>
+        {m.role === 'visual'
+          ? <input className="ed-input" defaultValue={m.description} placeholder="Ce que montre ce média" aria-label={`Description de ${m.originalName}`}
+              onBlur={e => { if (e.target.value !== m.description) api.updateMedia(project.id, m.id, { description: e.target.value }).then(onChange, onError); }} />
+          : <span className="ed-ellipsis">{m.originalName}</span>}
+        <span className="ed-sub ed-mono">{m.width ? `${m.width}×${m.height}` : ''}{m.durationInSeconds ? ` · ${fmt(m.durationInSeconds)}` : ''} · {mb(m.bytes)}</span>
+        {m.role === 'visual' && (
+          <label className="ed-media__ai"><input type="checkbox" checked={!!m.synthetic} onChange={e => api.updateMedia(project.id, m.id, { synthetic: e.target.checked }).then(onChange, onError)} /> Généré par IA</label>
+        )}
+      </div>
+      <button type="button" className="ed-media__del" aria-label={`Retirer ${m.originalName}`} onClick={() => api.removeMedia(project.id, m.id).then(onChange, onError)}>×</button>
     </div>
   );
 }

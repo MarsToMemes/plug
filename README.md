@@ -1,25 +1,20 @@
-# CODING AGENTS: READ THIS FIRST
+# Plug
 
-This is a **handoff bundle** from Claude Design (claude.ai/design).
+Plug monte des vidéos documentaires à partir d'un **script** et d'une **voix off** : le moteur `studio-engine` découpe le récit en plans, les cale sur la voix au mot près et les rend en style Apple (typographie, chiffres, images, musique qui respire autour de la voix).
 
-A user mocked up designs in HTML/CSS/JS using an AI design tool, then exported this bundle so a coding agent can implement the designs for real.
+```
+web/      site et éditeur (Vite + React), voir web/README.md
+server/   API : voix, plan de montage, planche de contrôle, rendu MP4, voir server/README.md
+engine/   studio-engine (sous-module git, MarsToMemes/studio-engine)
+project/  maquettes Claude Design d'origine (HTML), chats/ : leurs échanges
+```
 
-## What you should do — IMPORTANT
+## Démarrer
 
-**Read the chat transcripts first.** There are 2 chat transcript(s) in `chats/`. The transcripts show the full back-and-forth between the user and the design assistant — they tell you **what the user actually wants** and **where they landed** after iterating. Don't skip them. The final HTML files are the output, but the chat is where the intent lives.
+```bash
+git submodule update --init
+cd server && npm install && npm run setup-engine && npm start     # API sur :8787
+cd web && npm install && npm run dev                               # http://localhost:5173/editeur
+```
 
-**Read `project/Plug Accueil.dc.html` in full.** The user had this file open when they triggered the handoff, so it's almost certainly the primary design they want built. Read it top to bottom — don't skim. Then **follow its imports**: open every file it pulls in (shared components, CSS, scripts) so you understand how the pieces fit together before you start implementing.
-
-**If anything is ambiguous, ask the user to confirm before you start implementing.** It's much cheaper to clarify scope up front than to build the wrong thing.
-
-## About the design files
-
-The design medium is **HTML/CSS/JS** — these are prototypes, not production code. Your job is to **recreate them pixel-perfectly** in whatever technology makes sense for the target codebase (React, Vue, native, whatever fits). Match the visual output; don't copy the prototype's internal structure unless it happens to fit.
-
-**Don't render these files in a browser or take screenshots unless the user asks you to.** Everything you need — dimensions, colors, layout rules — is spelled out in the source. Read the HTML and CSS directly; a screenshot won't tell you anything they don't.
-
-## Bundle contents
-
-- `README.md` — this file
-- `chats/` — conversation transcripts (read these!)
-- `project/` — the `Plateforme éditing vidéo YouTube` project files (HTML prototypes, assets, components)
+Clés facultatives côté serveur : `ELEVENLABS_API_KEY` (voix IA, transcription) et `ANTHROPIC_API_KEY` (réalisation par Claude).
