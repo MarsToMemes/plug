@@ -38,7 +38,8 @@ for _ in $(seq 1 30); do
   sleep 1
 done
 
-open "http://localhost:5173/editeur"
+# Chrome rather than the default browser: older Safari versions show a blank page.
+open -a "Google Chrome" "http://localhost:5173/editeur" 2>/dev/null || open -a Chromium "http://localhost:5173/editeur" 2>/dev/null || open "http://localhost:5173/editeur"
 echo
 echo "Plug tourne : http://localhost:5173/editeur"
 echo "Laissez cette fenêtre ouverte. Pour arrêter : Ctrl+C ou fermez la fenêtre."

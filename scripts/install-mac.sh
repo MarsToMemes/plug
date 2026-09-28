@@ -112,7 +112,7 @@ EOF
 chmod +x "$LAUNCHER" "$PLUG_DIR/scripts/start-mac.sh"
 
 say "Plug est installé"
-echo "Double-cliquez sur « Plug » sur votre Bureau pour le lancer."
+echo "Double-cliquez sur « Plug » sur votre Bureau pour le lancer (l’éditeur s’ouvre dans Google Chrome)."
 echo "Clés facultatives (voix IA, Claude) : ajoutez-les dans $PLUG_DIR/server/.env, par exemple :"
 echo "  ELEVENLABS_API_KEY=..."
 echo "  ANTHROPIC_API_KEY=..."
