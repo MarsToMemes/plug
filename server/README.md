@@ -35,7 +35,7 @@ Puis, dans `../web` : `npm run dev` et ouvrez http://localhost:5173/editeur.
 | `PORT`, `HOST` | Écoute (défaut `127.0.0.1:8787`). |
 | `MEDIA_BASE_URL` | URL à laquelle le navigateur de rendu joint ce serveur (défaut `http://127.0.0.1:$PORT`). |
 | `DATA_DIR` | Projets, médias, plans, rendus (défaut `server/data`). |
-| `REMOTION_BROWSER` | Chrome / Chromium Headless Shell pour le rendu et la planche. |
+| `REMOTION_BROWSER` | Chrome / Chromium pour le rendu et la planche (trouvé seul sur Mac dans /Applications). |
 | `FFMPEG`, `FFPROBE` | Chemins de FFmpeg si besoin. |
 | `CORS_ORIGINS` | Origines autorisées (défaut : Vite en local). |
 

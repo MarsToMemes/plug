@@ -9,7 +9,17 @@ engine/   studio-engine (sous-module git, MarsToMemes/studio-engine)
 project/  maquettes Claude Design d'origine (HTML), chats/ : leurs échanges
 ```
 
-## Démarrer
+## Installer sur Mac (une commande)
+
+Dans le Terminal (Intel ou Apple Silicon, macOS 12 ou plus récent, Google Chrome installé) :
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/MarsToMemes/plug/main/scripts/install-mac.sh | bash
+```
+
+Le script installe ce qui manque (Git, Node.js 22, FFmpeg), prépare Plug dans `~/plug` et met un lanceur **Plug** sur le Bureau : un double-clic démarre le serveur et le site, et ouvre l'éditeur. Clés facultatives dans `~/plug/server/.env` (`ELEVENLABS_API_KEY=…`, `ANTHROPIC_API_KEY=…`).
+
+## Démarrer à la main
 
 ```bash
 git submodule update --init

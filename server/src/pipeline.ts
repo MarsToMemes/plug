@@ -264,6 +264,7 @@ export async function stillsStep(projectId: string, ctx: PipelineContext): Promi
   readProjectPlan(store, projectId);
   // The sheet is assembled with drawtext: Remotion's minimal FFmpeg does not have it.
   if (!ffmpegFilters(tools).has('drawtext')) throw new Error('La planche de contrôle demande un FFmpeg complet (filtre drawtext) sur le serveur : installez FFmpeg (apt install ffmpeg, brew install ffmpeg) ou indiquez-le avec $FFMPEG.');
+  if (!config.browser) throw new Error('La planche de contrôle demande Google Chrome : installez-le, ou indiquez un navigateur avec REMOTION_BROWSER.');
   report(0.05, 'Planche de contrôle : ouverture du navigateur');
   const script = join(config.engineDir, 'packages', 'remotion', 'scripts', 'stills.mjs');
   const args = [script, store.file(projectId, 'plan.json'), '--out', store.file(projectId, 'stills.jpg'), ...(config.browser ? ['--browser', config.browser] : [])];
