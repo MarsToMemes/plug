@@ -1,6 +1,9 @@
 #!/bin/bash
-# Installs Plug on a Mac (Intel or Apple Silicon), without Homebrew:
-#   curl -fsSL https://raw.githubusercontent.com/MarsToMemes/plug/main/scripts/install-mac.sh | bash
+# Installs Plug on a Mac (Intel or Apple Silicon), without Homebrew.
+# The repository is private: download this file from GitHub while signed in
+# (MarsToMemes/plug → scripts/install-mac.sh → « Download raw file »), then:
+#   bash ~/Downloads/install-mac.sh
+# It signs in to GitHub with GitHub CLI (in the browser) to download Plug.
 # Re-running it is safe: it only installs what is missing, then updates Plug.
 # Puts Plug in ~/plug and a launcher on the Desktop (Plug.command).
 set -euo pipefail
@@ -23,6 +26,24 @@ if ! xcode-select -p >/dev/null 2>&1; then
   until xcode-select -p >/dev/null 2>&1; do sleep 10; done
 fi
 echo "✓ Git"
+
+# 1 bis. GitHub CLI and sign-in: the repository is private
+if ! command -v gh >/dev/null 2>&1; then
+  say "Installation de GitHub CLI (votre mot de passe de session est demandé)"
+  GH_V=$(curl -fsSI https://github.com/cli/cli/releases/latest/download/gh | awk -F/ 'tolower($1) ~ /^location/ {print $(NF-1)}' | tr -d 'v\r')
+  [ -n "$GH_V" ] || fail "Impossible de trouver la dernière version de GitHub CLI. Installez-la depuis https://cli.github.com puis relancez ce script."
+  curl -fL "https://github.com/cli/cli/releases/download/v$GH_V/gh_${GH_V}_macOS_universal.pkg" -o /tmp/gh.pkg
+  sudo installer -pkg /tmp/gh.pkg -target /
+  rm -f /tmp/gh.pkg
+  export PATH="/usr/local/bin:$PATH"
+fi
+if ! gh auth status --hostname github.com >/dev/null 2>&1; then
+  say "Connexion à votre compte GitHub"
+  echo "Un code va s'afficher : appuyez sur Entrée, collez-le dans la page GitHub qui s'ouvre et validez."
+  gh auth login --hostname github.com --git-protocol https --web </dev/tty
+fi
+gh auth setup-git --hostname github.com
+echo "✓ GitHub ($(gh api user --jq .login 2>/dev/null || echo connecté))"
 
 # 2. Node.js (installateur officiel, universel Intel / Apple Silicon)
 NODE_OK=0
@@ -73,7 +94,7 @@ if [ -d "$PLUG_DIR/.git" ]; then
   git -C "$PLUG_DIR" submodule update --init
 else
   say "Téléchargement de Plug dans $PLUG_DIR"
-  git clone --recurse-submodules https://github.com/MarsToMemes/plug "$PLUG_DIR"
+  gh repo clone MarsToMemes/plug "$PLUG_DIR" -- --recurse-submodules
 fi
 
 say "Préparation du serveur et du moteur (plusieurs minutes)"
