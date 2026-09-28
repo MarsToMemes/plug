@@ -28,13 +28,19 @@ export interface Config {
   corsOrigins: string[];
 }
 
-const CLOUD_BROWSER = '/opt/pw-browsers/chromium_headless_shell-1194/chrome-linux/headless_shell';
+/** Browsers found without configuration: the cloud container's, then Chrome / Chromium on a Mac. */
+const BROWSERS = [
+  '/opt/pw-browsers/chromium_headless_shell-1194/chrome-linux/headless_shell',
+  '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+  '/Applications/Chromium.app/Contents/MacOS/Chromium',
+];
 
 export function loadConfig(env: Record<string, string | undefined> = process.env): Config {
   const port = Number(env.PORT ?? 8787);
   const host = env.HOST ?? '127.0.0.1';
   const engineDir = resolve(env.ENGINE_DIR ?? resolve(here, '..', '..', 'engine'));
-  const browser = env.REMOTION_BROWSER ?? (existsSync(CLOUD_BROWSER) ? CLOUD_BROWSER : undefined);
+  // Always explicit: the control sheet script would otherwise look for the cloud container's browser.
+  const browser = env.REMOTION_BROWSER ?? BROWSERS.find((b) => existsSync(b));
   return {
     port,
     host,
