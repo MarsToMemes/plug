@@ -106,6 +106,12 @@ async function call<T>(path: string, init: RequestInit = {}): Promise<T> {
     throw new Error('Serveur Plug injoignable. Lancez-le avec « npm start » dans server/.');
   }
   if (res.status === 204) return undefined as T;
+  // Another program on the API's port answers with HTML, not Plug's JSON.
+  if (!(res.headers.get('content-type') ?? '').includes('application/json')) {
+    throw new Error(res.status === 502 || res.status === 504
+      ? 'Serveur Plug injoignable. Relancez Plug (icône du Bureau, ou « npm start » dans server/).'
+      : 'Le programme qui répond sur le port de l’API n’est pas le serveur Plug. Relancez Plug avec l’icône du Bureau : elle choisit un port libre.');
+  }
   const body = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error((body as { error?: string }).error ?? `Erreur ${res.status}`);
   return body as T;

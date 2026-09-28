@@ -11,7 +11,15 @@ if (!existsSync(join(config.engineDir, 'packages', 'render', 'dist', 'index.js')
 }
 const tools = findFfmpeg(config.engineDir);
 const { app } = await buildApp({ config, tools, logger: true });
-await app.listen({ port: config.port, host: config.host });
+try {
+  await app.listen({ port: config.port, host: config.host });
+} catch (e) {
+  if ((e as NodeJS.ErrnoException).code === 'EADDRINUSE') {
+    console.error(`Le port ${config.port} est déjà utilisé par un autre programme. Choisissez-en un autre : PORT=8788 npm start (et PLUG_API=http://127.0.0.1:8788 pour le site).`);
+    process.exit(1);
+  }
+  throw e;
+}
 console.log(`Plug API : http://${config.host}:${config.port}`);
 console.log(`  voix IA / transcription ElevenLabs : ${config.elevenLabsKey ? 'oui' : 'non (ELEVENLABS_API_KEY absente : alignement local)'}`);
 console.log(`  cerveau éditorial Claude : ${config.anthropicKey ? config.anthropicModel : 'non (ANTHROPIC_API_KEY absente : heuristique)'}`);
