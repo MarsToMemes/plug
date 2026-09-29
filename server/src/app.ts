@@ -4,7 +4,7 @@
  *   GET    /api/health
  *   GET    /api/projects                     POST /api/projects
  *   GET    /api/projects/:id                 PATCH /api/projects/:id     DELETE /api/projects/:id
- *   POST   /api/projects/:id/media           (multipart: file, role, description, synthetic)
+ *   POST   /api/projects/:id/media           (multipart: file, role, description, nature)
  *   PATCH  /api/projects/:id/media/:mediaId  DELETE /api/projects/:id/media/:mediaId
  *   POST   /api/projects/:id/direct          voice → timings → Apple-style plan
  *   POST   /api/projects/:id/stills          control sheet
@@ -24,7 +24,7 @@ import type { FfmpegTools } from './engine.ts';
 import { BusyError, JobQueue } from './jobs.ts';
 import { probe, sha256File } from './media.ts';
 import { readProjectPlan } from './pipeline.ts';
-import { newId, ProjectStore, type EditStyle, type MediaItem, type MediaRole, type Pacing, type Project, type VoiceMode } from './store.ts';
+import { IMAGE_NATURES, newId, ProjectStore, VIDEO_NATURES, type EditStyle, type MediaItem, type MediaNature, type MediaRole, type Pacing, type Project, type VoiceMode } from './store.ts';
 
 export interface AppOptions {
   config: Config;
@@ -49,6 +49,12 @@ const PACINGS: Pacing[] = ['calm', 'standard', 'dynamic'];
 const STYLES: EditStyle[] = ['apple', 'default'];
 const VOICE_MODES: VoiceMode[] = ['tts', 'upload', 'none'];
 const ROLES: MediaRole[] = ['visual', 'voice', 'music'];
+
+/** A declared nature if it fits the kind, else the default of the kind. */
+function pickNature(wanted: string | undefined, kind: 'image' | 'video'): MediaNature {
+  const allowed = kind === 'video' ? VIDEO_NATURES : IMAGE_NATURES;
+  return wanted && allowed.includes(wanted as MediaNature) ? (wanted as MediaNature) : kind === 'video' ? 'real_video' : 'real_photo';
+}
 
 class HttpError extends Error {
   readonly status: number;
@@ -232,7 +238,7 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
       ...(info.durationInSeconds ? { durationInSeconds: info.durationInSeconds } : {}),
       description,
       tags: [],
-      ...(field('synthetic') === 'true' ? { synthetic: true } : {}),
+      ...(role === 'visual' ? { nature: pickNature(field('nature') ?? (field('synthetic') === 'true' ? 'generated' : undefined), info.kind as 'image' | 'video') } : {}),
     };
     // One voice and one music per project: a new one replaces the old.
     const replaced = role === 'visual' ? [] : p.media.filter((m) => m.role === role);
@@ -253,7 +259,14 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
       const description = str(body.description, 300);
       if (description !== undefined) m.description = description;
       if (Array.isArray(body.tags)) m.tags = body.tags.filter((t): t is string => typeof t === 'string').map((t) => t.slice(0, 40)).slice(0, 20);
-      if (body.synthetic !== undefined) m.synthetic = body.synthetic === true;
+      if (body.nature !== undefined || body.synthetic !== undefined) {
+        if (m.role !== 'visual') throw new HttpError(400, 'seul un visuel a une nature');
+        const wanted = body.nature !== undefined ? String(body.nature) : body.synthetic === true ? 'generated' : undefined;
+        const allowed = m.kind === 'video' ? VIDEO_NATURES : IMAGE_NATURES;
+        if (wanted !== undefined && !allowed.includes(wanted as MediaNature)) throw new HttpError(400, `nature : ${allowed.join(', ')}`);
+        m.nature = wanted as MediaNature | undefined ?? (m.kind === 'video' ? 'real_video' : 'real_photo');
+        delete m.synthetic;
+      }
       // An audio file is the voice-over or the music; one of each per project.
       if (body.role !== undefined && m.kind === 'audio' && (body.role === 'voice' || body.role === 'music') && body.role !== m.role) {
         const previous = x.media.find((y) => y.role === body.role);

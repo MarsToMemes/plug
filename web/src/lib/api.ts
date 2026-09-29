@@ -4,6 +4,20 @@ export type Pacing = 'calm' | 'standard' | 'dynamic';
 export type EditStyle = 'apple' | 'default';
 export type VoiceMode = 'tts' | 'upload' | 'none';
 export type MediaRole = 'visual' | 'voice' | 'music';
+/** What a visual is: the engine prefers the most authentic (studio-engine bible §27). */
+export type MediaNature = 'real_video' | 'real_photo' | 'archive' | 'screenshot' | 'document' | 'generated';
+export const NATURE_LABEL: Record<MediaNature, string> = {
+  real_video: 'Vidéo réelle',
+  real_photo: 'Photo réelle',
+  archive: 'Archive',
+  screenshot: "Capture d'écran",
+  document: 'Document',
+  generated: 'Généré par IA'
+};
+export const NATURES_OF: Record<'image' | 'video', MediaNature[]> = {
+  video: ['real_video', 'generated'],
+  image: ['real_photo', 'archive', 'screenshot', 'document', 'generated']
+};
 
 export interface ProjectMedia {
   id: string;
@@ -17,6 +31,8 @@ export interface ProjectMedia {
   durationInSeconds?: number;
   description: string;
   tags: string[];
+  nature?: MediaNature;
+  /** Projects made before `nature`. */
   synthetic?: boolean;
 }
 
@@ -100,6 +116,8 @@ export interface PlanShot {
   media?: string;
   skill?: string;
   editorialIntent?: string;
+  /** Level of the authenticity scale used (bible §27). */
+  mediaTier?: 'real_video' | 'real_photo' | 'document' | 'data_viz' | 'generated' | 'motion';
   /** Why each decision was taken (shot, motion, camera, sfx…). */
   reasons?: Record<string, string>;
 }
@@ -156,7 +174,7 @@ export const api = {
       };
       xhr.send(form);
     }),
-  updateMedia: (id: string, mediaId: string, fields: { description?: string; synthetic?: boolean; role?: 'voice' | 'music' }) => call<Project>(`/api/projects/${id}/media/${mediaId}`, json('PATCH', fields)),
+  updateMedia: (id: string, mediaId: string, fields: { description?: string; nature?: MediaNature; role?: 'voice' | 'music' }) => call<Project>(`/api/projects/${id}/media/${mediaId}`, json('PATCH', fields)),
   removeMedia: (id: string, mediaId: string) => call<Project>(`/api/projects/${id}/media/${mediaId}`, { method: 'DELETE' }),
   direct: (id: string) => call<Job>(`/api/projects/${id}/direct`, { method: 'POST' }),
   stills: (id: string) => call<Job>(`/api/projects/${id}/stills`, { method: 'POST' }),

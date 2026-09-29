@@ -5,7 +5,8 @@
 //   4. the HyperFrames studio blocks of the Apple style (public/hyperframes).
 // Usage: npm run setup-engine   (from server/)
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -29,8 +30,18 @@ if (!existsSync(join(remotion, 'public', 'sfx'))) {
   run('npm', ['run', 'assets'], remotion);
 }
 
-if (existsSync(join(remotion, 'public', 'hyperframes', 'hyperframe.runtime.js'))) {
-  log('Blocs studio (style Apple) : déjà présents');
+// The studio blocks (Apple style) change with the engine: sync again whenever their sources change.
+const studioDir = join(remotion, 'hyperframes-studio');
+const studioHash = createHash('sha256');
+for (const f of readdirSync(studioDir, { recursive: true }).map(String).sort()) {
+  const path = join(studioDir, f);
+  if (statSync(path).isFile()) studioHash.update(f).update(readFileSync(path));
+}
+const hash = studioHash.digest('hex');
+const hashFile = join(remotion, 'public', 'hyperframes', '.studio-hash');
+const synced = existsSync(join(remotion, 'public', 'hyperframes', 'hyperframe.runtime.js')) && existsSync(hashFile) && readFileSync(hashFile, 'utf8') === hash;
+if (synced) {
+  log('Blocs studio (style Apple) : à jour');
 } else {
   log('Blocs studio HyperFrames (style Apple)');
   // The sync script clones HyperFrames without blobs, then fetches them one by one: slow.
@@ -51,6 +62,7 @@ if (existsSync(join(remotion, 'public', 'hyperframes', 'hyperframe.runtime.js'))
     env = { HYPERFRAMES_DIR: dir };
   } else console.log(`  commit ${pinned} inconnu de ce script : synchronisation standard (lente).`);
   run('node', ['scripts/hyperframes-sync.mjs'], remotion, env);
+  writeFileSync(hashFile, hash);
 }
 
 log('Vérifications');

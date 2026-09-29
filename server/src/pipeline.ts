@@ -29,7 +29,7 @@ import {
 } from './engine.ts';
 import { concatAudio, decodePcm16k, normalizeVoice, probe, sha256File, writeJson } from './media.ts';
 import { chunkText, parseScript, spokenText } from './script.ts';
-import { MAX_RENDERS, newId, type MediaItem, type Project, type ProjectStore, type RenderInfo } from './store.ts';
+import { MAX_RENDERS, natureOf, newId, type MediaItem, type Project, type ProjectStore, type RenderInfo } from './store.ts';
 import { alignKnownText, wordsFromAlignment, wordsFromStt } from './words.ts';
 
 export interface PipelineContext {
@@ -172,9 +172,10 @@ export function buildBrainInput(project: Project, config: Config, voice: Voice |
       ...(m.width ? { width: m.width } : {}),
       ...(m.height ? { height: m.height } : {}),
       ...(m.durationInSeconds ? { durationInSeconds: m.durationInSeconds } : {}),
-      source: { ...OWN, ...(m.synthetic ? { syntheticMedia: true } : {}) },
+      ...(m.role === 'visual' ? { nature: natureOf(m) } : {}),
+      source: { ...OWN, ...(m.role === 'visual' && natureOf(m) === 'generated' ? { syntheticMedia: true } : {}) },
     };
-    if (m.role === 'visual') catalog.push({ assetId: m.id, description: m.description || m.originalName, tags: tagsOf(m) });
+    if (m.role === 'visual') catalog.push({ assetId: m.id, description: m.description || m.originalName, tags: tagsOf(m), nature: natureOf(m) });
   }
   const music = project.media.find((m) => m.role === 'music');
   if (voice) {

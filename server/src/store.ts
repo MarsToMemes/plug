@@ -11,6 +11,12 @@ export type Pacing = 'calm' | 'standard' | 'dynamic';
 export type EditStyle = 'apple' | 'default';
 export type VoiceMode = 'tts' | 'upload' | 'none';
 export type MediaRole = 'visual' | 'voice' | 'music';
+/** What a visual is (studio-engine bible §27): the engine prefers the most authentic. */
+export type MediaNature = 'real_video' | 'real_photo' | 'archive' | 'screenshot' | 'document' | 'generated';
+export const VIDEO_NATURES: readonly MediaNature[] = ['real_video', 'generated'];
+export const IMAGE_NATURES: readonly MediaNature[] = ['real_photo', 'archive', 'screenshot', 'document', 'generated'];
+/** Nature of a media: declared, else from the old "généré par IA" flag and the kind. */
+export const natureOf = (m: Pick<MediaItem, 'kind' | 'nature' | 'synthetic'>): MediaNature => m.nature ?? (m.synthetic ? 'generated' : m.kind === 'video' ? 'real_video' : 'real_photo');
 
 export interface MediaItem {
   id: string;
@@ -27,7 +33,9 @@ export interface MediaItem {
   /** What the visual shows: the brain matches it to the narration. */
   description: string;
   tags: string[];
-  /** AI-generated realistic image or video (YouTube disclosure). */
+  /** What the visual is: real video, photo, archive, screenshot, document or generated. */
+  nature?: MediaNature;
+  /** Projects made before `nature`: AI-generated realistic image or video. */
   synthetic?: boolean;
 }
 

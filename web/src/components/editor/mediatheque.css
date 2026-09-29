@@ -142,8 +142,8 @@
 .mc__thumb video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .mc__desc { width: 100%; box-sizing: border-box; height: 26px; margin-top: 2px; padding: 0 8px; border-radius: 7px; border: 1px solid #2e2a33; background: #151317; color: #fff; font: inherit; font-size: 11.5px; outline: none; }
 .mc__desc:focus { border-color: var(--violet-3); }
-.mc__ai { display: flex; align-items: center; gap: 5px; font-size: 10.5px; color: #8f8797; margin-top: 2px; cursor: pointer; }
-.mc__ai input { margin: 0; accent-color: #a06bff; }
+.mc__nature { width: 100%; height: 24px; margin-top: 2px; padding: 0 6px; border-radius: 7px; border: 1px solid #2e2a33; background: #151317; color: #b9b0c2; font: inherit; font-size: 11px; cursor: pointer; }
+.mc__nature:focus { outline: none; border-color: var(--violet-3); }
 .mc__role { flex: none; height: 22px; padding: 0 8px; border-radius: 6px; border: 1px solid #3a3441; background: transparent; color: #c9b6ea; font-family: var(--f-mono); font-size: 9px; letter-spacing: .1em; cursor: pointer; }
 .mc__role:hover { border-color: var(--violet-3); color: #fff; }
 .ml-rights { flex: none; display: flex; gap: 8px; align-items: center; font-size: 12.5px; color: #b9b0c2; cursor: pointer; }
