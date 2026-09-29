@@ -1,7 +1,7 @@
 import { useEffect, useRef, type CSSProperties } from 'react';
 import { photo } from '../../media/catalog';
 import { DEMO_CLIPS, HERO_CL, HERO_TIMELINE, WAVE_BARS } from './demoClips';
-import { startHeroDemo } from './heroDemo';
+import { startHeroDemo } from './heroAnimation';
 
 // Art-directed placement of the floating rush cards (same order as DEMO_CLIPS).
 // m=0 cards are hidden when the demo is narrow.
