@@ -17,6 +17,7 @@ import {
   ffmpegFilters,
   qcEpisode,
   renderEpisode,
+  runFfmpeg,
   type AssetRegistry,
   type AssetSource,
   type BrainInput,
@@ -28,7 +29,7 @@ import {
 } from './engine.ts';
 import { concatAudio, decodePcm16k, normalizeVoice, probe, sha256File, writeJson } from './media.ts';
 import { chunkText, parseScript, spokenText } from './script.ts';
-import type { MediaItem, Project, ProjectStore } from './store.ts';
+import { MAX_RENDERS, newId, type MediaItem, type Project, type ProjectStore, type RenderInfo } from './store.ts';
 import { alignKnownText, wordsFromAlignment, wordsFromStt } from './words.ts';
 
 export interface PipelineContext {
@@ -200,7 +201,7 @@ export function buildBrainInput(project: Project, config: Config, voice: Voice |
     ...(music ? { music: { assetId: music.id } } : {}),
     sfx: lib.sfx,
     captions: project.captions,
-    style: 'apple',
+    style: project.style ?? 'apple',
     pacing: project.pacing,
   };
 }
@@ -289,9 +290,13 @@ export async function stillsStep(projectId: string, ctx: PipelineContext): Promi
 export async function renderStep(projectId: string, ctx: PipelineContext, scale: number): Promise<void> {
   const { config, store, tools, report } = ctx;
   const plan = readProjectPlan(store, projectId);
-  const planCreatedAt = store.get(projectId)!.plan!.createdAt;
-  const output = store.file(projectId, 'video.mp4');
-  const tmp = store.file(projectId, 'video.tmp.mp4');
+  const project = store.get(projectId)!;
+  const planCreatedAt = project.plan!.createdAt;
+  // Each render is a version: video-<id>.mp4 and its poster, the last MAX_RENDERS kept.
+  const id = newId();
+  const file = `video-${id}.mp4`;
+  const output = store.file(projectId, file);
+  const tmp = store.file(projectId, `video-${id}.tmp.mp4`);
   const onProgress = (e: RenderEvent) => {
     if (e.phase === 'chunk') report(0.05 + (0.8 * (e.index + 1)) / e.total, `Rendu : morceau ${e.index + 1}/${e.total}${e.cached ? ' (cache)' : ''}`);
     else report(e.phase === 'prepare' ? 0.03 : e.phase === 'mix' ? 0.87 : e.phase === 'concat' ? 0.86 : 0.9, { prepare: 'Préparation du rendu', mix: 'Mixage audio', concat: 'Assemblage', master: 'Mastering (−14 LUFS)' }[e.phase]);
@@ -300,10 +305,17 @@ export async function renderStep(projectId: string, ctx: PipelineContext, scale:
     { plan, output: tmp, publicDir: config.enginePublicDir, cacheDir: join(config.dataDir, 'cache'), scale, master: true, onProgress },
     { engine: 'remotion', fallback: false, ffmpeg: tools.ffmpeg[0]!, ffprobe: tools.ffprobe[0]!, ...(config.browser ? { browserExecutable: config.browser } : {}) },
   );
-  rmSync(output, { force: true });
   renameSync(tmp, output);
+  let poster: string | undefined;
+  try {
+    const at = Math.min(1.5, (result.durationInFrames / plan.fps) / 3);
+    runFfmpeg(tools, ['-y', '-ss', at.toFixed(2), '-i', output, '-frames:v', '1', '-vf', 'scale=640:-2', '-q:v', '4', store.file(projectId, `video-${id}.jpg`)]);
+    poster = `video-${id}.jpg`;
+  } catch {
+    // A version without a picture is still a version.
+  }
   report(0.95, 'Contrôle qualité');
-  let qc: NonNullable<Project['render']>['qc'];
+  let qc: RenderInfo['qc'];
   try {
     const r = await qcEpisode(tools, plan, output, { stage: scale >= 1 ? 'final' : 'preview' });
     qc = {
@@ -314,17 +326,27 @@ export async function renderStep(projectId: string, ctx: PipelineContext, scale:
   } catch (e) {
     qc = { pass: false, failed: [`Contrôle qualité impossible : ${(e as Error).message.slice(0, 300)}`], warnings: [] };
   }
-  ctx.commit({
-    render: {
-      createdAt: new Date().toISOString(),
-      planCreatedAt,
-      durationInSeconds: result.durationInFrames / plan.fps,
-      draft: result.draft,
-      scale,
-      ...(result.loudness ? { loudness: { integrated: result.loudness.after.integrated, truePeak: result.loudness.after.truePeak } } : {}),
-      qc,
-      notes: result.notes,
-    },
-  });
+  const info: RenderInfo = {
+    id,
+    file,
+    ...(poster ? { poster } : {}),
+    createdAt: new Date().toISOString(),
+    planCreatedAt,
+    durationInSeconds: result.durationInFrames / plan.fps,
+    shots: plan.shots.length,
+    style: project.style ?? 'apple',
+    draft: result.draft,
+    scale,
+    ...(result.loudness ? { loudness: { integrated: result.loudness.after.integrated, truePeak: result.loudness.after.truePeak } } : {}),
+    qc,
+    notes: result.notes,
+  };
+  const before = store.get(projectId);
+  // Projects rendered before versions existed only have `render`.
+  const renders = [info, ...(before?.renders ?? (before?.render ? [before.render] : []))];
+  for (const old of renders.slice(MAX_RENDERS)) {
+    for (const f of [old.file, old.poster]) if (f) rmSync(store.file(projectId, f), { force: true });
+  }
+  ctx.commit({ render: info, renders: renders.slice(0, MAX_RENDERS) });
   report(1, 'Vidéo prête');
 }

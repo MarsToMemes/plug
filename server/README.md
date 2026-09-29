@@ -44,15 +44,15 @@ Puis, dans `../web` : `npm run dev` et ouvrez http://localhost:5173/editeur.
 | Méthode | Route | |
 |---|---|---|
 | GET | `/api/health` | clés configurées, moteur construit, blocs studio présents |
-| GET / POST | `/api/projects` | liste / création (`title`, `script`, `pacing`, `captions`, `llm`, `voice`, `rightsConfirmed`) |
+| GET / POST | `/api/projects` | liste / création (`title`, `script`, `pacing`, `style` : `apple` ou `default`, `captions`, `llm`, `voice`, `rightsConfirmed`) |
 | GET / PATCH / DELETE | `/api/projects/:id` | |
 | POST | `/api/projects/:id/media` | multipart : `role` (`visual`, `voice`, `music`), `description`, `synthetic`, puis `file` |
-| PATCH / DELETE | `/api/projects/:id/media/:mediaId` | description, « généré par IA » |
+| PATCH / DELETE | `/api/projects/:id/media/:mediaId` | description, « généré par IA », `role` d'un audio (`voice` ⇄ `music`) |
 | POST | `/api/projects/:id/direct` | voix → timings → plan style Apple (tâche) |
 | POST | `/api/projects/:id/stills` | planche de contrôle (tâche) |
-| POST | `/api/projects/:id/render` | `{ "quality": "preview" \| "final" }` : 540p ou 1080p (tâche) |
+| POST | `/api/projects/:id/render` | `{ "quality": "preview" \| "final" }` : 540p ou 1080p (tâche). Chaque rendu est une version (`renders`, les 4 dernières, avec une vignette). |
 | GET | `/api/projects/:id/plan` | le ShotPlan |
-| GET | `/api/projects/:id/files/:name` | `voice.wav`, `stills.jpg`, `video.mp4` (Range) |
+| GET | `/api/projects/:id/files/:name` | `voice.wav`, `stills.jpg`, `video-<id>.mp4` et `video-<id>.jpg` (Range) |
 
 Les tâches s'exécutent une par une, dans un thread séparé : le moteur bloque parfois son thread (FFmpeg synchrone), et le rendu lit les médias sur ce même serveur. L'état de la tâche (`job`) est dans le projet ; l'éditeur l'interroge chaque seconde.
 

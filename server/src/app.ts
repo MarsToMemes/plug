@@ -24,7 +24,7 @@ import type { FfmpegTools } from './engine.ts';
 import { BusyError, JobQueue } from './jobs.ts';
 import { probe, sha256File } from './media.ts';
 import { readProjectPlan } from './pipeline.ts';
-import { newId, ProjectStore, type MediaItem, type MediaRole, type Pacing, type Project, type VoiceMode } from './store.ts';
+import { newId, ProjectStore, type EditStyle, type MediaItem, type MediaRole, type Pacing, type Project, type VoiceMode } from './store.ts';
 
 export interface AppOptions {
   config: Config;
@@ -36,6 +36,8 @@ export interface AppOptions {
 }
 
 const OUTPUTS = new Set(['voice.wav', 'stills.jpg', 'video.mp4', 'plan.json']);
+/** Versions: video-<id>.mp4 and their posters. */
+const VERSION_FILE = /^video-[a-z0-9]{6,32}\.(mp4|jpg)$/;
 const TYPES: Record<string, string> = {
   '.mp4': 'video/mp4', '.webm': 'video/webm', '.mov': 'video/quicktime', '.m4v': 'video/mp4',
   '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.gif': 'image/gif',
@@ -44,6 +46,7 @@ const TYPES: Record<string, string> = {
 };
 const UPLOAD_EXT = new Set(Object.keys(TYPES).filter((e) => e !== '.json'));
 const PACINGS: Pacing[] = ['calm', 'standard', 'dynamic'];
+const STYLES: EditStyle[] = ['apple', 'default'];
 const VOICE_MODES: VoiceMode[] = ['tts', 'upload', 'none'];
 const ROLES: MediaRole[] = ['visual', 'voice', 'music'];
 
@@ -69,6 +72,10 @@ function projectFields(body: Body, partial: boolean): Partial<Project> {
     if (!PACINGS.includes(body.pacing as Pacing)) throw new HttpError(400, 'pacing: calm, standard ou dynamic');
     out.pacing = body.pacing as Pacing;
   }
+  if (body.style !== undefined) {
+    if (!STYLES.includes(body.style as EditStyle)) throw new HttpError(400, 'style: apple ou default');
+    out.style = body.style as EditStyle;
+  }
   if (body.captions !== undefined) out.captions = body.captions === true;
   if (body.llm !== undefined) out.llm = body.llm === true;
   if (body.rightsConfirmed !== undefined) out.rightsConfirmed = body.rightsConfirmed === true;
@@ -83,6 +90,7 @@ function projectFields(body: Body, partial: boolean): Partial<Project> {
     out.title ??= 'Sans titre';
     out.script ??= '';
     out.pacing ??= 'standard';
+    out.style ??= 'apple';
     out.captions ??= true;
     out.llm ??= true;
     out.voice ??= { mode: 'tts' };
@@ -246,6 +254,14 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
       if (description !== undefined) m.description = description;
       if (Array.isArray(body.tags)) m.tags = body.tags.filter((t): t is string => typeof t === 'string').map((t) => t.slice(0, 40)).slice(0, 20);
       if (body.synthetic !== undefined) m.synthetic = body.synthetic === true;
+      // An audio file is the voice-over or the music; one of each per project.
+      if (body.role !== undefined && m.kind === 'audio' && (body.role === 'voice' || body.role === 'music') && body.role !== m.role) {
+        const previous = x.media.find((y) => y.role === body.role);
+        if (previous) previous.role = m.role;
+        m.role = body.role;
+        if (m.role === 'voice') x.voice = { mode: 'upload' };
+        else if (!x.media.some((y) => y.role === 'voice') && x.voice.mode === 'upload') x.voice = { mode: 'tts' };
+      }
     });
   });
 
@@ -288,7 +304,7 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
 
   app.get<{ Params: { id: string; name: string } }>('/api/projects/:id/files/:name', async (req, reply) => {
     const p = project(req.params.id);
-    if (!OUTPUTS.has(req.params.name)) throw new HttpError(404, 'fichier introuvable');
+    if (!OUTPUTS.has(req.params.name) && !VERSION_FILE.test(req.params.name)) throw new HttpError(404, 'fichier introuvable');
     return sendFile(req, reply, store.file(p.id, req.params.name));
   });
 

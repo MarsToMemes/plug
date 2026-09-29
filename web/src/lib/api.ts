@@ -1,6 +1,7 @@
 // Client of the Plug API (server/). In development Vite proxies /api to the server.
 
 export type Pacing = 'calm' | 'standard' | 'dynamic';
+export type EditStyle = 'apple' | 'default';
 export type VoiceMode = 'tts' | 'upload' | 'none';
 export type MediaRole = 'visual' | 'voice' | 'music';
 
@@ -31,6 +32,23 @@ export interface Job {
 
 export interface Issue { message: string; rule?: string }
 
+export interface RenderInfo {
+  id?: string;
+  /** File in the project folder (video.mp4 for renders made before versions). */
+  file?: string;
+  poster?: string;
+  createdAt: string;
+  planCreatedAt: string;
+  durationInSeconds: number;
+  shots?: number;
+  style?: EditStyle;
+  draft: boolean;
+  scale: number;
+  loudness?: { integrated: number; truePeak: number };
+  qc?: { pass: boolean; failed: string[]; warnings: string[] };
+  notes: string[];
+}
+
 export interface Project {
   id: string;
   title: string;
@@ -38,6 +56,7 @@ export interface Project {
   updatedAt: string;
   script: string;
   pacing: Pacing;
+  style?: EditStyle;
   captions: boolean;
   llm: boolean;
   voice: { mode: VoiceMode; voiceId?: string };
@@ -57,16 +76,9 @@ export interface Project {
     notes: string[];
   };
   stills?: { createdAt: string; planCreatedAt: string };
-  render?: {
-    createdAt: string;
-    planCreatedAt: string;
-    durationInSeconds: number;
-    draft: boolean;
-    scale: number;
-    loudness?: { integrated: number; truePeak: number };
-    qc?: { pass: boolean; failed: string[]; warnings: string[] };
-    notes: string[];
-  };
+  render?: RenderInfo;
+  /** The last renders, newest first. */
+  renders?: RenderInfo[];
   job?: Job;
 }
 
@@ -94,7 +106,7 @@ export interface PlanShot {
 
 export interface Plan { fps: number; shots: PlanShot[] }
 
-export type ProjectPatch = Partial<Pick<Project, 'title' | 'script' | 'pacing' | 'captions' | 'llm' | 'voice' | 'rightsConfirmed'>>;
+export type ProjectPatch = Partial<Pick<Project, 'title' | 'script' | 'pacing' | 'style' | 'captions' | 'llm' | 'voice' | 'rightsConfirmed'>>;
 
 const BASE = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '') ?? '';
 
@@ -126,15 +138,25 @@ export const api = {
   get: (id: string) => call<Project>(`/api/projects/${id}`),
   update: (id: string, fields: ProjectPatch) => call<Project>(`/api/projects/${id}`, json('PATCH', fields)),
   remove: (id: string) => call<void>(`/api/projects/${id}`, { method: 'DELETE' }),
-  upload: (id: string, file: File, role: MediaRole, extra: { description?: string; synthetic?: boolean } = {}) => {
-    const form = new FormData();
-    form.set('role', role);
-    if (extra.description) form.set('description', extra.description);
-    if (extra.synthetic) form.set('synthetic', 'true');
-    form.set('file', file); // the file last: the server reads the fields before it
-    return call<Project>(`/api/projects/${id}/media`, { method: 'POST', body: form });
-  },
-  updateMedia: (id: string, mediaId: string, fields: { description?: string; synthetic?: boolean }) => call<Project>(`/api/projects/${id}/media/${mediaId}`, json('PATCH', fields)),
+  /** Upload with real progress (XMLHttpRequest: fetch has no upload progress). */
+  upload: (id: string, file: File, role: MediaRole, onProgress?: (fraction: number) => void) =>
+    new Promise<Project>((resolve, reject) => {
+      const form = new FormData();
+      form.set('role', role);
+      form.set('file', file); // the file last: the server reads the fields before it
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `${BASE}/api/projects/${id}/media`);
+      xhr.upload.onprogress = e => { if (e.lengthComputable) onProgress?.(e.loaded / e.total); };
+      xhr.onerror = () => reject(new Error('Serveur Plug injoignable.'));
+      xhr.onload = () => {
+        let body: { error?: string } = {};
+        try { body = JSON.parse(xhr.responseText); } catch { /* not JSON */ }
+        if (xhr.status >= 200 && xhr.status < 300) resolve(body as Project);
+        else reject(new Error(body.error ?? `Erreur ${xhr.status}`));
+      };
+      xhr.send(form);
+    }),
+  updateMedia: (id: string, mediaId: string, fields: { description?: string; synthetic?: boolean; role?: 'voice' | 'music' }) => call<Project>(`/api/projects/${id}/media/${mediaId}`, json('PATCH', fields)),
   removeMedia: (id: string, mediaId: string) => call<Project>(`/api/projects/${id}/media/${mediaId}`, { method: 'DELETE' }),
   direct: (id: string) => call<Job>(`/api/projects/${id}/direct`, { method: 'POST' }),
   stills: (id: string) => call<Job>(`/api/projects/${id}/stills`, { method: 'POST' }),

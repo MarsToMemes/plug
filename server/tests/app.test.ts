@@ -154,6 +154,28 @@ describe('Plug API', () => {
     expect(r.json().error).toMatch(/droits/);
   });
 
+  it('validates the edit style, Apple by default', async () => {
+    const created = (await app.app.inject({ method: 'POST', url: '/api/projects', payload: {} })).json() as Project;
+    expect(created.style).toBe('apple');
+    expect((await app.app.inject({ method: 'PATCH', url: `/api/projects/${created.id}`, payload: { style: 'default' } })).json().style).toBe('default');
+    expect((await app.app.inject({ method: 'PATCH', url: `/api/projects/${created.id}`, payload: { style: 'vlog' } })).statusCode).toBe(400);
+  });
+
+  it('switches an audio file between voice-over and music', async () => {
+    const created = (await app.app.inject({ method: 'POST', url: '/api/projects', payload: {} })).json() as Project;
+    const up = (name: string) => multipart({ role: 'music' }, { name, type: 'audio/wav', data: wav([[0, 1000]], 1000) });
+    let p = (await app.app.inject({ method: 'POST', url: `/api/projects/${created.id}/media`, ...up('a.wav') })).json() as Project;
+    const a = p.media[0]!;
+    p = (await app.app.inject({ method: 'PATCH', url: `/api/projects/${p.id}/media/${a.id}`, payload: { role: 'voice' } })).json() as Project;
+    expect(p.media.find((m) => m.id === a.id)!.role).toBe('voice');
+    expect(p.voice).toEqual({ mode: 'upload' });
+    // A second audio file set as the voice: the first one becomes the music.
+    p = (await app.app.inject({ method: 'POST', url: `/api/projects/${p.id}/media`, ...up('b.wav') })).json() as Project;
+    const b = p.media.find((m) => m.originalName === 'b.wav')!;
+    p = (await app.app.inject({ method: 'PATCH', url: `/api/projects/${p.id}/media/${b.id}`, payload: { role: 'voice' } })).json() as Project;
+    expect(p.media.map((m) => [m.originalName, m.role])).toEqual([['a.wav', 'music'], ['b.wav', 'voice']]);
+  });
+
   it('rejects unsupported uploads', async () => {
     const created = (await app.app.inject({ method: 'POST', url: '/api/projects', payload: {} })).json() as Project;
     const bad = multipart({ role: 'visual' }, { name: 'virus.exe', type: 'application/octet-stream', data: Buffer.from('MZ') });

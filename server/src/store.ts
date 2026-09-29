@@ -7,6 +7,8 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, w
 import { join } from 'node:path';
 
 export type Pacing = 'calm' | 'standard' | 'dynamic';
+/** `apple`: studio blocks timed to the voice. `default`: the engine's own compositions. */
+export type EditStyle = 'apple' | 'default';
 export type VoiceMode = 'tts' | 'upload' | 'none';
 export type MediaRole = 'visual' | 'voice' | 'music';
 
@@ -52,6 +54,8 @@ export interface Project {
   /** The script, as typed (see script.ts for the format). */
   script: string;
   pacing: Pacing;
+  /** Missing in projects made before the choice existed: Apple. */
+  style?: EditStyle;
   captions: boolean;
   /** Claude writes the editorial analysis (needs ANTHROPIC_API_KEY). */
   llm: boolean;
@@ -80,18 +84,34 @@ export interface Project {
     notes: string[];
   };
   stills?: { createdAt: string; planCreatedAt: string };
-  render?: {
-    createdAt: string;
-    planCreatedAt: string;
-    durationInSeconds: number;
-    draft: boolean;
-    scale: number;
-    loudness?: { integrated: number; truePeak: number };
-    qc?: { pass: boolean; failed: string[]; warnings: string[] };
-    notes: string[];
-  };
+  /** The latest render (also renders[0]). */
+  render?: RenderInfo;
+  /** The last renders, newest first: the "versions" of the editor. */
+  renders?: RenderInfo[];
   job?: Job;
 }
+
+export interface RenderInfo {
+  /** Missing on renders made before versions existed (their file is video.mp4). */
+  id?: string;
+  /** File name in the project folder. */
+  file?: string;
+  /** A frame of the video (JPEG), for the version cards. */
+  poster?: string;
+  createdAt: string;
+  planCreatedAt: string;
+  durationInSeconds: number;
+  shots?: number;
+  style?: EditStyle;
+  draft: boolean;
+  scale: number;
+  loudness?: { integrated: number; truePeak: number };
+  qc?: { pass: boolean; failed: string[]; warnings: string[] };
+  notes: string[];
+}
+
+/** Versions kept per project; older files are deleted. */
+export const MAX_RENDERS = 4;
 
 export const newId = (prefix = '') => prefix + randomBytes(6).toString('hex');
 
@@ -118,7 +138,7 @@ export class ProjectStore {
     return join(this.dir(id), name);
   }
 
-  create(fields: Pick<Project, 'title' | 'script' | 'pacing' | 'captions' | 'llm' | 'voice' | 'rightsConfirmed'>): Project {
+  create(fields: Pick<Project, 'title' | 'script' | 'pacing' | 'style' | 'captions' | 'llm' | 'voice' | 'rightsConfirmed'>): Project {
     const now = new Date().toISOString();
     const project: Project = { id: newId(), createdAt: now, updatedAt: now, media: [], ...fields };
     mkdirSync(this.mediaDir(project.id), { recursive: true });
