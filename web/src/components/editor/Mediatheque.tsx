@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, type DragEvent, type KeyboardEvent } from 'react';
-import { api, type Project, type ProjectMedia } from '../../lib/api';
+import { api, NATURE_LABEL, NATURES_OF, type MediaNature, type Project, type ProjectMedia } from '../../lib/api';
 import { fmtDur, fmtSize } from '../../lib/plugMedia';
 import './mediatheque.css';
 
@@ -37,6 +37,9 @@ const pseudoWave = (name: string) => {
   for (const ch of name) s = (s * 31 + ch.charCodeAt(0)) % 99991;
   return Array.from({ length: 56 }, (_, i) => { s = (s * 9301 + 49297) % 233280; return 0.25 + 0.75 * Math.abs(Math.sin(i / 4 + s / 5e4)) * (0.5 + (s % 100) / 200); });
 };
+
+/** Declared nature, else from the old "généré par IA" flag and the kind. */
+const natureOf = (m: ProjectMedia): MediaNature => m.nature ?? (m.synthetic ? 'generated' : m.kind === 'video' ? 'real_video' : 'real_photo');
 
 interface Pending { id: string; name: string; kind: Kind; progress: number; error?: string; file: File }
 
@@ -170,9 +173,11 @@ export default function Mediatheque({ project, onChange, onError }: { project: P
             <input className="mc__desc" defaultValue={m.description} placeholder="Ce que montre ce média" aria-label={`Description de ${m.originalName}`}
               onClick={e => e.stopPropagation()} onKeyDown={e => e.stopPropagation()}
               onBlur={e => { if (e.target.value !== m.description) api.updateMedia(project.id, m.id, { description: e.target.value }).then(onChange, onError); }} />
-            <label className="mc__ai" onClick={e => e.stopPropagation()}>
-              <input type="checkbox" checked={!!m.synthetic} onChange={e => api.updateMedia(project.id, m.id, { synthetic: e.target.checked }).then(onChange, onError)} /> Généré par IA
-            </label>
+            <select className="mc__nature" value={natureOf(m)} aria-label={`Nature de ${m.originalName}`} title="Le monteur préfère le média le plus authentique"
+              onClick={e => e.stopPropagation()} onKeyDown={e => e.stopPropagation()}
+              onChange={e => api.updateMedia(project.id, m.id, { nature: e.target.value as MediaNature }).then(onChange, onError)}>
+              {NATURES_OF[m.kind === 'video' ? 'video' : 'image'].map(n => <option key={n} value={n}>{NATURE_LABEL[n]}</option>)}
+            </select>
           </div>
           <button type="button" className="mc__x" onClick={e => { e.stopPropagation(); void remove([m.id]); }} aria-label={'Retirer ' + m.originalName}>×</button>
         </div>

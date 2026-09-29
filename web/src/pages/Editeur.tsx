@@ -36,6 +36,7 @@ const STYLES: [EditStyle, string][] = [['apple', 'Apple'], ['default', 'Classiqu
 const VOICES: [VoiceMode, string][] = [['tts', 'Voix IA'], ['upload', 'Ma voix'], ['none', 'Sans voix']];
 const PACING_AT: Record<Pacing, number> = { calm: 17, standard: 50, dynamic: 83 };
 const JOB_LABEL = { direct: 'Montage', stills: 'Planche de contrôle', render: 'Rendu' } as const;
+const TIER_LABEL = { real_video: 'vidéo réelle', real_photo: 'photo réelle', document: 'document', data_viz: 'données', generated: 'visuel généré', motion: 'motion design' } as const;
 const TIMING_LABEL = { tts: 'timings fournis par la voix IA', stt: 'transcription ElevenLabs', aligned: 'alignement local (±0,15 s par mot)' } as const;
 
 const fmt = (s: number) => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(Math.floor(s % 60)).padStart(2, '0');
@@ -375,7 +376,7 @@ export default function Editeur() {
                   {plan.shots.map((s, i) => (
                     <div key={s.id} className="ed-shot" title={Object.values(s.reasons ?? {}).join('\n')}>
                       <span className="ed-mono ed-shot__n">{String(i + 1).padStart(2, '0')}</span>
-                      <div><span className="ed-ellipsis">{shotLabel(s, p)}</span><span className="ed-sub">{s.block?.item.replace(/^studio-/, '') ?? s.type}{s.editorialIntent ? ` · ${s.editorialIntent}` : ''}</span></div>
+                      <div><span className="ed-ellipsis">{shotLabel(s, p)}</span><span className="ed-sub">{s.mediaTier ? TIER_LABEL[s.mediaTier] : s.type}{s.block ? ` · ${s.block.item.replace(/^studio-/, '')}` : ''}{s.editorialIntent ? ` · ${s.editorialIntent}` : ''}</span></div>
                       <span className="ed-mono ed-shot__d">{(s.durationInFrames / plan.fps).toFixed(1)} s</span>
                     </div>
                   ))}

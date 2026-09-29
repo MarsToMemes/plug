@@ -176,6 +176,31 @@ describe('Plug API', () => {
     expect(p.media.map((m) => [m.originalName, m.role])).toEqual([['a.wav', 'music'], ['b.wav', 'voice']]);
   });
 
+  it('records what each visual is, and passes it to the engine', async () => {
+    const created = (await app.app.inject({ method: 'POST', url: '/api/projects', payload: { script: SCRIPT, voice: { mode: 'none' }, rightsConfirmed: true } })).json() as Project;
+    const png = await (async () => {
+      const { execFileSync } = await import('node:child_process');
+      const f = join(dataDir, 'test.png');
+      execFileSync(tools.ffmpeg[0]!, ['-v', 'error', '-y', '-f', 'lavfi', '-i', 'color=c=red:s=320x180', '-frames:v', '1', f]);
+      return (await import('node:fs')).readFileSync(f);
+    })();
+    const up = multipart({ role: 'visual', description: 'le premier restaurant McDonald en 1955' }, { name: 'archive.png', type: 'image/png', data: png });
+    let p = (await app.app.inject({ method: 'POST', url: `/api/projects/${created.id}/media`, ...up })).json() as Project;
+    const m = p.media[0]!;
+    expect(m.nature).toBe('real_photo');
+    const bad = await app.app.inject({ method: 'PATCH', url: `/api/projects/${p.id}/media/${m.id}`, payload: { nature: 'real_video' } });
+    expect(bad.statusCode).toBe(400);
+    p = (await app.app.inject({ method: 'PATCH', url: `/api/projects/${p.id}/media/${m.id}`, payload: { nature: 'generated' } })).json() as Project;
+    expect(p.media[0]!.nature).toBe('generated');
+    await run(p.id, 'direct');
+    const input = JSON.parse((await import('node:fs')).readFileSync(join(dataDir, 'projects', p.id, 'input.json'), 'utf8'));
+    expect(input.assets[m.id]).toMatchObject({ nature: 'generated', source: { syntheticMedia: true } });
+    expect(input.catalog[0]).toMatchObject({ assetId: m.id, nature: 'generated' });
+    // Every shot of the plan says which need and which level of the scale it answers.
+    const plan = (await app.app.inject({ method: 'GET', url: `/api/projects/${p.id}/plan` })).json();
+    expect(plan.shots.every((s: { mediaTier?: string }) => typeof s.mediaTier === 'string')).toBe(true);
+  }, 60_000);
+
   it('rejects unsupported uploads', async () => {
     const created = (await app.app.inject({ method: 'POST', url: '/api/projects', payload: {} })).json() as Project;
     const bad = multipart({ role: 'visual' }, { name: 'virus.exe', type: 'application/octet-stream', data: Buffer.from('MZ') });
