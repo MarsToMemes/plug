@@ -25,7 +25,7 @@ npm run fetch-media  # télécharge les photos/vidéos d'exemple dans public/med
 
 - **Médias d'exemple** : `src/media/catalog.ts` (un seul endroit). Les rushes du hero : `src/components/home/demoClips.ts`.
 - **Animations** : `heroAnimation.ts` (hero, boucle 12,8 s) et `editorDemo.ts` (section éditeur, 13,6 s). Ce sont des moteurs rAF qui n'écrivent que `transform`/`opacity`/`clip-path`, se mettent en pause hors écran et respectent `prefers-reduced-motion`.
-- **Éditeur** : `src/pages/Editeur.tsx`, client de l'API dans `src/lib/api.ts`. En développement, Vite relaie `/api` vers `http://127.0.0.1:8787` (`PLUG_API` pour changer) ; en production, `VITE_API_URL` au build si l'API est sur un autre domaine.
+- **Éditeur** : `src/pages/Editeur.tsx` (disposition des maquettes Claude Design, branchée sur les vraies fonctions) et `src/components/editor/Mediatheque.tsx` ; client de l’API dans `src/lib/api.ts`. En développement, Vite relaie `/api` vers `http://127.0.0.1:8787` (`PLUG_API` pour changer) ; en production, `VITE_API_URL` au build si l'API est sur un autre domaine.
 - **Polices** : auto-hébergées via `@fontsource` (aucun appel à Google Fonts).
 
 ## Ce qui est réel, ce qui est simulé

@@ -26,6 +26,8 @@ function ScrollManager() {
 }
 
 export default function App() {
+  // The app has rendered once: the startup error display of index.html stops here.
+  useEffect(() => { (window as { __plugStarted?: boolean }).__plugStarted = true; }, []);
   return (
     <>
       <ScrollManager />
