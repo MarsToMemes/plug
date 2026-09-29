@@ -45,8 +45,13 @@ for _ in $(seq 1 30); do
   sleep 1
 done
 
+echo "Préparation du site…"
+# A production build, served by vite preview: plain files, compiled for the browsers
+# of the last years. (The dev server compiles modules on demand in the browser, and
+# showed a blank page on a Mac.)
+(cd "$ROOT/web" && ./node_modules/.bin/vite build --logLevel warn) || { echo "La préparation du site a échoué (voir les messages ci-dessus)."; exit 1; }
 echo "Démarrage du site…"
-(cd "$ROOT/web" && PLUG_API="http://127.0.0.1:$API_PORT" exec ./node_modules/.bin/vite --host 127.0.0.1 --port "$WEB_PORT" --strictPort) &
+(cd "$ROOT/web" && PLUG_API="http://127.0.0.1:$API_PORT" exec ./node_modules/.bin/vite preview --host 127.0.0.1 --port "$WEB_PORT" --strictPort) &
 WEB_PID=$!
 for _ in $(seq 1 60); do
   curl -fs "http://127.0.0.1:$WEB_PORT/" >/dev/null 2>&1 && break

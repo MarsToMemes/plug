@@ -9,6 +9,34 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Errors on screen instead of a blank page: what stopped the site, to send to support.
+      (function () {
+        var box;
+        function show(msg) {
+          if (!box) {
+            box = document.createElement('pre');
+            box.style.cssText = 'position:fixed;left:16px;right:16px;bottom:16px;z-index:99999;margin:0;padding:14px 16px;max-height:45vh;overflow:auto;white-space:pre-wrap;font:12px/1.5 ui-monospace,Menlo,monospace;background:#3a1418;color:#ffd9dc;border:1px solid #7a2a33;border-radius:12px';
+            box.textContent = 'Plug n’a pas pu s’afficher. Envoyez une capture de ce message :\n';
+            document.body.appendChild(box);
+          }
+          box.textContent += '\n• ' + msg;
+        }
+        window.addEventListener('error', function (e) {
+          var t = e.target;
+          if (t && t !== window && (t.src || t.href)) show('fichier non chargé : ' + (t.src || t.href));
+          else show((e.message || 'erreur') + (e.filename ? ' (' + e.filename.replace(location.origin, '') + ':' + e.lineno + ')' : ''));
+        }, true);
+        window.addEventListener('unhandledrejection', function (e) {
+          var r = e.reason;
+          show('promesse rejetée : ' + (r && (r.stack || r.message) || r));
+        });
+        setTimeout(function () {
+          var root = document.getElementById('root');
+          if (root && !root.childElementCount) show('rien ne s’est affiché après 15 s (navigateur : ' + navigator.userAgent + ')');
+        }, 15000);
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
