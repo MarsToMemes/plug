@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useT } from '../../i18n';
-import { api, INTENTS, MEDIA_NEEDS, REAL_SUBJECT_NEEDS, type Intent, type MediaNeed, type Project, type SentenceHints } from '../../lib/api';
+import { api, INTENTS, MEDIA_NEEDS, REAL_SUBJECT_NEEDS, type Intent, type MediaNeed, type Project, type RunwayCosts, type SentenceHints } from '../../lib/api';
 
 type ChartKind = NonNullable<SentenceHints['chart']>['kind'];
 const CHART_KINDS: ChartKind[] = ['barChart', 'lineChart', 'pieChart'];
@@ -103,31 +103,68 @@ function Section({ title, on, onToggle, children, hint }: { title: string; on: b
  * Runway makes a visual for this sentence (on request: it costs credits). Refused when the
  * sentence must show something real (bible MED-07): a generated picture never stands for it.
  */
-function RunwayBox({ project, line, need, onSaved, onError }: { project: Project; line: string; need: MediaNeed | undefined; onSaved: (p: Project) => void; onError: (m: string) => void }) {
+/** Runway models the server uses (server/src/runway.ts): the estimate reads their average cost. */
+const MODEL_OF = { image: 'gen4_image', video: 'gen4.5', animate: 'gen4_turbo' } as const;
+type Mode = keyof typeof MODEL_OF;
+
+function RunwayBox({ project, line, need, lineSeconds, canWritePrompt, onSaved, onError }: {
+  project: Project; line: string; need: MediaNeed | undefined; lineSeconds?: number; canWritePrompt: boolean;
+  onSaved: (p: Project) => void; onError: (m: string) => void;
+}) {
   const T = useT(), t = T.sentence;
   const [prompt, setPrompt] = useState(line);
-  const [kind, setKind] = useState<'video' | 'image'>('video');
-  const [seconds, setSeconds] = useState('5');
+  // A still by default: the cheapest, and the start of an animation if it works.
+  const [mode, setMode] = useState<Mode>('image');
+  const planned = lineSeconds ? Math.min(10, Math.max(2, Math.ceil(lineSeconds))) : undefined;
+  const [seconds, setSeconds] = useState(String(planned ?? 5));
+  const images = project.media.filter(m => m.role === 'visual' && m.kind === 'image');
+  const [source, setSource] = useState('');
   const [sending, setSending] = useState(false);
+  const [writing, setWriting] = useState(false);
+  const [costs, setCosts] = useState<RunwayCosts | null>(null);
   const mine = (project.generations ?? []).filter(g => g.line === line);
   const pending = mine.some(g => g.status === 'pending');
+  const doneCount = (project.generations ?? []).filter(g => g.status === 'done').length;
+  useEffect(() => { api.runwayCosts().then(setCosts).catch(() => setCosts(null)); }, [doneCount]);
   if (need && REAL_SUBJECT_NEEDS.includes(need))
     return <span className="ed-sub">{t.realSubject(T.labels.needs[need].toLowerCase())}</span>;
+  const src = mode === 'animate' ? (images.find(m => m.id === source) ?? images[0]) : undefined;
+  const secs = Number(seconds) || planned || 5;
+  const avg = mode === 'image' ? costs?.perImage[MODEL_OF.image] : costs?.perSecond[MODEL_OF[mode]];
+  const estimate = avg === undefined ? undefined : Math.round(mode === 'image' ? avg : avg * Math.min(10, Math.max(2, Math.ceil(secs))));
   const go = async () => {
     setSending(true);
-    try { onSaved(await api.generate(project.id, { prompt, kind, seconds: Number(seconds) || 5, line })); } catch (e) { onError((e as Error).message); } finally { setSending(false); }
+    try {
+      onSaved(await api.generate(project.id, { prompt, kind: mode === 'image' ? 'image' : 'video', line, ...(mode !== 'image' ? { seconds: secs } : {}), ...(src ? { sourceMediaId: src.id } : {}) }));
+    } catch (e) { onError((e as Error).message); } finally { setSending(false); }
+  };
+  const improve = async () => {
+    setWriting(true);
+    try { setPrompt((await api.writePrompt(project.id, { line, draft: prompt, kind: mode === 'image' ? 'image' : 'video' })).prompt); } catch (e) { onError((e as Error).message); } finally { setWriting(false); }
   };
   return (
     <>
       <textarea className="ed-input se-area" value={prompt} onChange={e => setPrompt(e.target.value)} aria-label={t.promptLabel} placeholder={t.promptPlaceholder} />
+      {canWritePrompt && <button type="button" className="se-btn se-btn--ghost" disabled={writing || !(prompt.trim() || line)} onClick={() => void improve()}>{writing ? t.improving : t.improve}</button>}
       <div className="se-pair">
-        <div className="ed-seg se-grow">{([['video', t.video], ['image', t.image]] as const).map(([k, l]) => <button key={k} type="button" className={kind === k ? 'is-on' : ''} onClick={() => setKind(k)}>{l}</button>)}</div>
-        {kind === 'video' && <input className="ed-input se-sec-input" inputMode="numeric" value={seconds} onChange={e => setSeconds(e.target.value)} aria-label={t.seconds} title={t.seconds} />}
+        <div className="ed-seg se-grow">{([['image', t.image], ['animate', t.animate], ['video', t.video]] as const).map(([k, l]) => <button key={k} type="button" className={mode === k ? 'is-on' : ''} onClick={() => setMode(k)}>{l}</button>)}</div>
+        {mode !== 'image' && <input className="ed-input se-sec-input" inputMode="numeric" value={seconds} onChange={e => setSeconds(e.target.value)} aria-label={t.seconds} title={t.seconds} />}
       </div>
-      <button type="button" className="se-btn" disabled={sending || pending || !prompt.trim()} onClick={() => void go()}>{pending ? t.generating : t.generate(kind)}</button>
+      {mode !== 'image' && planned !== undefined && <span className="ed-sub">{t.fromPlan(lineSeconds!.toFixed(1).replace('.', T.common.decimal))}</span>}
+      {mode === 'animate' && (images.length
+        ? <label className="se-field"><span className="ed-box__label">{t.animateSource}</span>
+            <select className="ed-input" value={src?.id ?? ''} onChange={e => setSource(e.target.value)}>
+              {images.map(m => <option key={m.id} value={m.id}>{m.description || m.originalName}</option>)}
+            </select>
+          </label>
+        : <span className="ed-sub">{t.noImages}</span>)}
+      <span className="ed-sub">{estimate !== undefined ? t.estimate(String(estimate)) : t.estimateUnknown}{costs ? ` ${t.month(costs.monthUsed, costs.monthCap)}` : ''}</span>
+      <button type="button" className="se-btn" disabled={sending || pending || !prompt.trim() || (mode === 'animate' && !src)} onClick={() => void go()}>{pending ? t.generating : t.generate(mode)}</button>
       {mine.slice(0, 3).map(g => (
         <span key={g.id} className={g.status === 'failed' ? 'ed-warn' : 'ed-sub'}>
-          {g.status === 'pending' ? t.genPending(g.prompt.slice(0, 60)) : g.status === 'done' ? t.genDone(g.prompt.slice(0, 60)) : t.genFailed(g.error ?? t.unknownError)}
+          {g.status === 'pending' ? t.genPending(g.prompt.slice(0, 60))
+            : g.status === 'done' ? (g.reused ? t.genReused(g.prompt.slice(0, 60)) : t.genDone(g.prompt.slice(0, 60)) + (g.credits ? t.credits(g.credits) : ''))
+            : t.genFailed(g.error ?? t.unknownError)}
         </span>
       ))}
       <span className="ed-sub">{t.runwayNote}</span>
@@ -135,7 +172,7 @@ function RunwayBox({ project, line, need, onSaved, onError }: { project: Project
   );
 }
 
-export default function SentenceEditor({ project, line, onClose, onSaved, onRerun, busy, canGenerate = false }: {
+export default function SentenceEditor({ project, line, onClose, onSaved, onRerun, busy, canGenerate = false, canWritePrompt = false, lineSeconds }: {
   project: Project;
   line: string;
   onClose: () => void;
@@ -143,6 +180,10 @@ export default function SentenceEditor({ project, line, onClose, onSaved, onReru
   onRerun: () => void;
   busy: boolean;
   canGenerate?: boolean;
+  /** Claude can write the Runway prompt (ANTHROPIC_API_KEY set). */
+  canWritePrompt?: boolean;
+  /** How long the sentence lasts in the last plan. */
+  lineSeconds?: number;
 }) {
   const T = useT(), t = T.sentence;
   const [f, setF] = useState<Form>(() => toForm(project.hints?.[line]));
@@ -217,7 +258,7 @@ export default function SentenceEditor({ project, line, onClose, onSaved, onReru
       <div className="ed-box">
         <span className="ed-box__label">{t.noImage}</span>
         {canGenerate
-          ? <RunwayBox project={project} line={line} need={(f.mediaNeed || project.plan?.needs?.[line]) || undefined} onSaved={onSaved} onError={setError} />
+          ? <RunwayBox project={project} line={line} need={(f.mediaNeed || project.plan?.needs?.[line]) || undefined} lineSeconds={lineSeconds} canWritePrompt={canWritePrompt} onSaved={onSaved} onError={setError} />
           : <span className="ed-sub">{t.runwayNoKey}</span>}
       </div>
 

@@ -46,7 +46,19 @@ export interface Generation {
   status: 'pending' | 'done' | 'failed';
   createdAt: string;
   mediaId?: string;
+  sourceMediaId?: string;
+  /** What Runway charged (0 when reused). */
+  credits?: number;
+  reused?: boolean;
   error?: string;
+}
+
+/** What Runway charged on this server: averages per model, this month's use and cap. */
+export interface RunwayCosts {
+  perSecond: Record<string, number>;
+  perImage: Record<string, number>;
+  monthUsed: number;
+  monthCap?: number;
 }
 
 /** Needs a generated picture must never stand for (bible MED-07): a real subject. */
@@ -227,7 +239,9 @@ export const api = {
     }),
   updateMedia: (id: string, mediaId: string, fields: { description?: string; nature?: MediaNature; role?: 'voice' | 'music' }) => call<Project>(`/api/projects/${id}/media/${mediaId}`, json('PATCH', fields)),
   describeMedia: (id: string, mediaId: string) => call<Project>(`/api/projects/${id}/media/${mediaId}/describe`, { method: 'POST' }),
-  generate: (id: string, fields: { prompt: string; kind: 'image' | 'video'; seconds?: number; line?: string }) => call<Project>(`/api/projects/${id}/generate`, json('POST', fields)),
+  generate: (id: string, fields: { prompt: string; kind: 'image' | 'video'; seconds?: number; line?: string; sourceMediaId?: string }) => call<Project>(`/api/projects/${id}/generate`, json('POST', fields)),
+  writePrompt: (id: string, fields: { line: string; draft: string; kind: 'image' | 'video' }) => call<{ prompt: string }>(`/api/projects/${id}/prompt`, json('POST', fields)),
+  runwayCosts: () => call<RunwayCosts>('/api/runway/costs'),
   hints: (id: string, line: string, hints: SentenceHints | null) => call<Project>(`/api/projects/${id}/hints`, json('PUT', { line, hints })),
   removeMedia: (id: string, mediaId: string) => call<Project>(`/api/projects/${id}/media/${mediaId}`, { method: 'DELETE' }),
   direct: (id: string) => call<Job>(`/api/projects/${id}/direct`, { method: 'POST' }),
