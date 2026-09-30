@@ -38,7 +38,25 @@ export interface ProjectMedia {
   natureSet?: boolean;
   /** Claude's automatic description. */
   auto?: { status: 'pending' | 'done' | 'failed'; error?: string };
+  /** Made by Runway. */
+  generated?: { provider: 'Runway'; model: string; prompt: string; credits?: number };
 }
+
+/** A visual asked of Runway. */
+export interface Generation {
+  id: string;
+  prompt: string;
+  kind: 'image' | 'video';
+  seconds: number;
+  line?: string;
+  status: 'pending' | 'done' | 'failed';
+  createdAt: string;
+  mediaId?: string;
+  error?: string;
+}
+
+/** Needs a generated picture must never stand for (bible MED-07): a real subject. */
+export const REAL_SUBJECT_NEEDS: readonly MediaNeed[] = ['historical_context', 'introduce_entity', 'archival_evidence', 'platform_reference', 'financial_document', 'source_interface'];
 
 export const INTENTS = ['hook', 'context', 'fact', 'important_fact', 'keyword', 'number', 'statistic', 'comparison', 'quote', 'proof', 'location', 'process', 'contradiction', 'revelation', 'aftermath', 'chapter', 'conclusion'] as const;
 export type Intent = (typeof INTENTS)[number];
@@ -116,6 +134,8 @@ export interface Project {
   media: ProjectMedia[];
   /** Hints by script line. */
   hints?: Record<string, SentenceHints>;
+  /** Visuals asked of Runway, newest first. */
+  generations?: Generation[];
   voiceTrack?: { durationInSeconds: number; timing: 'tts' | 'stt' | 'aligned'; words: number };
   plan?: {
     createdAt: string;
@@ -125,11 +145,15 @@ export interface Project {
     brain: 'llm' | 'heuristic';
     /** Script line of each sentence (unit id → line). */
     units?: Record<string, string>;
+    /** What the picture must do for each line. */
+    needs?: Record<string, MediaNeed>;
     decisions: string[];
     assetRequests: Array<{ unitId: string; need: string; description: string }>;
     errors: Issue[];
     warnings: Issue[];
     notes: string[];
+    /** What the engine wrote that has no French translation (English). */
+    technical?: string[];
   };
   stills?: { createdAt: string; planCreatedAt: string };
   render?: RenderInfo;
@@ -142,6 +166,7 @@ export interface Health {
   ok: boolean;
   elevenLabs: boolean;
   anthropic: boolean;
+  runway?: boolean;
   studioBlocks: boolean;
   engineBuilt: boolean;
 }
@@ -156,6 +181,7 @@ export interface PlanShot {
   media?: string;
   skill?: string;
   editorialIntent?: string;
+  mediaNeed?: MediaNeed;
   /** Level of the authenticity scale used (bible §27). */
   mediaTier?: 'real_video' | 'real_photo' | 'document' | 'data_viz' | 'generated' | 'motion';
   /** Why each decision was taken (shot, motion, camera, sfx…). */
@@ -218,6 +244,7 @@ export const api = {
     }),
   updateMedia: (id: string, mediaId: string, fields: { description?: string; nature?: MediaNature; role?: 'voice' | 'music' }) => call<Project>(`/api/projects/${id}/media/${mediaId}`, json('PATCH', fields)),
   describeMedia: (id: string, mediaId: string) => call<Project>(`/api/projects/${id}/media/${mediaId}/describe`, { method: 'POST' }),
+  generate: (id: string, fields: { prompt: string; kind: 'image' | 'video'; seconds?: number; line?: string }) => call<Project>(`/api/projects/${id}/generate`, json('POST', fields)),
   hints: (id: string, line: string, hints: SentenceHints | null) => call<Project>(`/api/projects/${id}/hints`, json('PUT', { line, hints })),
   removeMedia: (id: string, mediaId: string) => call<Project>(`/api/projects/${id}/media/${mediaId}`, { method: 'DELETE' }),
   direct: (id: string) => call<Job>(`/api/projects/${id}/direct`, { method: 'POST' }),

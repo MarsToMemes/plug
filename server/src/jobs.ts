@@ -32,7 +32,7 @@ export class JobQueue {
   /** Queues a job; throws if the project already has one. */
   enqueue(projectId: string, kind: JobKind, args: JobArgs = {}): Job {
     const project = this.store.get(projectId);
-    if (!project) throw new Error('project not found');
+    if (!project) throw new Error('projet introuvable');
     if (project.job && (project.job.status === 'queued' || project.job.status === 'running')) throw new BusyError('Une tâche est déjà en cours sur ce projet.');
     const job: Job = { id: newId('job'), kind, status: 'queued', progress: 0, message: 'En attente', queuedAt: new Date().toISOString() };
     this.store.update(projectId, (p) => (p.job = job));

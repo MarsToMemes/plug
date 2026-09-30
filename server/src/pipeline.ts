@@ -29,6 +29,7 @@ import {
   type TranscriptWord,
 } from './engine.ts';
 import { concatAudio, decodePcm16k, normalizeVoice, probe, sha256File, writeJson } from './media.ts';
+import { frIssues, frLists, frNote } from './fr.ts';
 import { hintKey, withHints } from './hints.ts';
 import { chunkText, parseScript, spokenText } from './script.ts';
 import { MAX_RENDERS, natureOf, newId, type MediaItem, type Project, type ProjectStore, type RenderInfo } from './store.ts';
@@ -209,6 +210,15 @@ export function buildBrainInput(project: Project, config: Config, voice: Voice |
   };
 }
 
+/** What the engine says about the plan, in French; what cannot be translated goes to `technical`. */
+export function frPlanTexts(result: Pick<BrainResult, 'decisions' | 'qc'>, notes: string[]) {
+  const lists = frLists({ decisions: result.decisions, notes: [...notes, ...result.qc.notes] });
+  const technical = [...lists.technical];
+  const errors = frIssues(result.qc.errors, technical);
+  const warnings = frIssues(result.qc.warnings, technical);
+  return { decisions: lists.decisions, notes: lists.notes, errors, warnings, technical };
+}
+
 /** The script line of each analysed sentence (a line may hold several sentences): the editor opens a shot's line. */
 export function unitLines(script: string, units: ReadonlyArray<{ id: string; text: string }>): Record<string, string> {
   const lines = parseScript(script).flatMap((b) => (b.kind === 'text' ? [hintKey(b.text)] : []));
@@ -220,6 +230,17 @@ export function unitLines(script: string, units: ReadonlyArray<{ id: string; tex
     if (i < 0) continue;
     out[u.id] = lines[i]!;
     from = i;
+  }
+  return out;
+}
+
+/** The media need of each script line: the need of its first sentence. */
+export function lineNeeds(script: string, units: ReadonlyArray<{ id: string; text: string; mediaNeed?: string }>): Record<string, string> {
+  const lines = unitLines(script, units);
+  const out: Record<string, string> = {};
+  for (const u of units) {
+    const line = lines[u.id];
+    if (line && u.mediaNeed && !(line in out)) out[line] = u.mediaNeed;
   }
   return out;
 }
@@ -246,7 +267,7 @@ export async function directStep(projectId: string, ctx: PipelineContext): Promi
     brain = r.llm?.accepted === 'none' ? 'heuristic' : 'llm';
     if (r.llm) notes.push(`Claude (${r.llm.model}) : ${r.llm.accepted}, ${r.llm.attempts} appel(s)`);
   } else {
-    if (project.llm) notes.push('Pas de clé ANTHROPIC_API_KEY : le cerveau heuristique a monté l’épisode.');
+    if (project.llm) notes.push('Pas de clé ANTHROPIC_API_KEY : le monteur automatique (sans Claude) a monté l’épisode.');
     report(0.5, 'Le cerveau éditorial monte l’épisode (style Apple)');
     result = directEpisode(input);
   }
@@ -260,12 +281,10 @@ export async function directStep(projectId: string, ctx: PipelineContext): Promi
       durationInSeconds: frames / result.plan.fps,
       valid: result.qc.valid,
       brain,
-      decisions: result.decisions,
+      ...frPlanTexts(result, notes),
       assetRequests: result.assetRequests,
-      errors: result.qc.errors.map((e) => ({ message: e.message, ...(e.rule ? { rule: e.rule } : {}) })),
-      warnings: result.qc.warnings.map((e) => ({ message: e.message, ...(e.rule ? { rule: e.rule } : {}) })),
-      notes: [...notes, ...result.qc.notes],
       units: unitLines(project.script, result.analysis),
+      needs: lineNeeds(project.script, result.analysis),
     },
   });
   report(1, `Plan prêt : ${result.plan.shots.length} plans`);
@@ -345,8 +364,8 @@ export async function renderStep(projectId: string, ctx: PipelineContext, scale:
     const r = await qcEpisode(tools, plan, output, { stage: scale >= 1 ? 'final' : 'preview' });
     qc = {
       pass: r.summary.pass,
-      failed: r.checks.filter((c) => c.status === 'fail').map((c) => `${c.rule ? `[${c.rule}] ` : ''}${c.message}`),
-      warnings: r.checks.filter((c) => c.status === 'warn').map((c) => `${c.rule ? `[${c.rule}] ` : ''}${c.message}`),
+      failed: frIssues(r.checks.filter((c) => c.status === 'fail').map((c) => ({ ...c, ...(c.at?.shotId ? { shotId: c.at.shotId } : {}) })), []).map((i) => i.message),
+      warnings: frIssues(r.checks.filter((c) => c.status === 'warn').map((c) => ({ ...c, ...(c.at?.shotId ? { shotId: c.at.shotId } : {}) })), []).map((i) => i.message),
     };
   } catch (e) {
     qc = { pass: false, failed: [`Contrôle qualité impossible : ${(e as Error).message.slice(0, 300)}`], warnings: [] };
@@ -364,7 +383,7 @@ export async function renderStep(projectId: string, ctx: PipelineContext, scale:
     scale,
     ...(result.loudness ? { loudness: { integrated: result.loudness.after.integrated, truePeak: result.loudness.after.truePeak } } : {}),
     qc,
-    notes: result.notes,
+    notes: result.notes.map((n) => frNote(n) ?? n),
   };
   const before = store.get(projectId);
   // Projects rendered before versions existed only have `render`.

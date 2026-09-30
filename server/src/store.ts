@@ -42,6 +42,22 @@ export interface MediaItem {
   natureSet?: boolean;
   /** Claude's automatic description (describe.ts). */
   auto?: { status: 'pending' | 'done' | 'failed'; error?: string; model?: string; at?: string };
+  /** Made by Runway for this project (runway.ts). */
+  generated?: { provider: 'Runway'; model: string; prompt: string; credits?: number };
+}
+
+/** A visual asked of Runway: pending while Runway works, then a media of the project. */
+export interface Generation {
+  id: string;
+  prompt: string;
+  kind: 'image' | 'video';
+  seconds: number;
+  /** The script line the visual is for: it becomes that sentence's visual. */
+  line?: string;
+  status: 'pending' | 'done' | 'failed';
+  createdAt: string;
+  mediaId?: string;
+  error?: string;
 }
 
 export type JobKind = 'direct' | 'stills' | 'render';
@@ -78,6 +94,8 @@ export interface Project {
   media: MediaItem[];
   /** What the author set on sentences, keyed by script line (hints.ts). */
   hints?: HintsByLine;
+  /** Visuals asked of Runway, newest first. */
+  generations?: Generation[];
 
   voiceTrack?: {
     durationInSeconds: number;
@@ -94,11 +112,15 @@ export interface Project {
     brain: 'llm' | 'heuristic';
     /** Script line of each sentence (unit id → line). */
     units?: Record<string, string>;
+    /** What the picture must do for each line (first sentence of the line), bible §27. */
+    needs?: Record<string, string>;
     decisions: string[];
     assetRequests: Array<{ unitId: string; need: string; description: string }>;
     errors: Array<{ message: string; rule?: string }>;
     warnings: Array<{ message: string; rule?: string }>;
     notes: string[];
+    /** What the engine wrote that has no French translation (English, for support). */
+    technical?: string[];
   };
   stills?: { createdAt: string; planCreatedAt: string };
   /** The latest render (also renders[0]). */

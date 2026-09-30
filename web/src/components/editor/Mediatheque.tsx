@@ -152,7 +152,8 @@ export default function Mediatheque({ project, onChange, onError, canDescribe = 
   const meta = (m: ProjectMedia) => [
     m.kind !== 'image' && m.durationInSeconds ? fmtDur(m.durationInSeconds) : '',
     m.kind !== 'audio' && m.width ? `${m.width} × ${m.height}` : '',
-    fmtSize(m.bytes)
+    fmtSize(m.bytes),
+    m.generated ? `Runway${m.generated.credits !== undefined ? ` · ${m.generated.credits} crédits` : ''}` : ''
   ].filter(Boolean).join(' · ');
 
   const renderVisual = (m: ProjectMedia) => {
@@ -275,6 +276,11 @@ export default function Mediatheque({ project, onChange, onError, canDescribe = 
 
       <div className="ml-body">
         {pending.length > 0 && <div className="ml-grid ml-grid--doc">{pending.map(renderPending)}</div>}
+        {project.generations?.some(g => g.status === 'pending') && (
+          <div className="ml-gen" role="status">
+            {project.generations.filter(g => g.status === 'pending').map(g => <span key={g.id}>Runway génère {g.kind === 'video' ? 'une vidéo' : 'une image'} : « {g.prompt.slice(0, 70)} »</span>)}
+          </div>
+        )}
 
         {media.length === 0 && pending.length === 0 && (
           <div className="ml-empty">
@@ -290,7 +296,7 @@ export default function Mediatheque({ project, onChange, onError, canDescribe = 
         {groups.map(({ t, list }) => {
           const open = !closed[t];
           return (
-            <section key={t} className="ml-sec" aria-label={SEC_LABEL[t] + ', ' + list.length + ' fichiers'}>
+            <section key={t} className="ml-sec" aria-label={SEC_LABEL[t] + ', ' + list.length + (list.length > 1 ? ' fichiers' : ' fichier')}>
               <button type="button" className="ml-sec__head" aria-expanded={open} onClick={() => setClosed(c => ({ ...c, [t]: open }))}>
                 <Svg d={ICON[t]} size={15} sw={1.7} />
                 <span>{SEC_LABEL[t]} · {list.length}</span>

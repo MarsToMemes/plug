@@ -9,9 +9,9 @@ import './accueil.css';
 interface Plan { name: string; price: string; tag: string; items: string[]; cta: string; id: string; badge?: string }
 
 const PLANS: Plan[] = [
-  { name: 'Free', price: '0', tag: 'Pour essayer Plug sur votre sujet.', items: ['5 min de vidéo montée / mois', 'Export 1080p avec filigrane', 'Voix IA ou votre voix'], cta: 'Commencer', id: 'free' },
-  { name: 'Creator', price: '29', tag: 'Pour publier chaque semaine.', items: ['60 min de vidéo montée / mois', 'Export 1080p sans filigrane', 'Réalisation par Claude', 'Voix IA ElevenLabs incluse'], cta: 'Choisir Creator', id: 'creator', badge: 'Recommandé' },
-  { name: 'Pro', price: '59', tag: 'Pour les chaînes à fort volume.', items: ['180 min de vidéo montée / mois', 'Tout Creator', '500 Go de stockage'], cta: 'Choisir Pro', id: 'pro' },
+  { name: 'Gratuit', price: '0', tag: 'Pour essayer Plug sur votre sujet.', items: ['5 min de vidéo montée / mois', 'Export 1080p avec filigrane', 'Voix IA ou votre voix'], cta: 'Commencer', id: 'free' },
+  { name: 'Créateur', price: '29', tag: 'Pour publier chaque semaine.', items: ['60 min de vidéo montée / mois', 'Export 1080p sans filigrane', 'Réalisation par Claude', 'Voix IA ElevenLabs incluse'], cta: 'Choisir Créateur', id: 'creator', badge: 'Recommandé' },
+  { name: 'Pro', price: '59', tag: 'Pour les chaînes à fort volume.', items: ['180 min de vidéo montée / mois', 'Tout Créateur', '500 Go de stockage'], cta: 'Choisir Pro', id: 'pro' },
   { name: 'Studio', price: '149', tag: 'Pour les agences et équipes.', items: ['600 min de vidéo montée / mois', 'Tout Pro', 'Support dédié', '2 To de stockage'], cta: 'Choisir Studio', id: 'studio' }
 ];
 

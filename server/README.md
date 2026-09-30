@@ -26,11 +26,14 @@ Puis, dans `../web` : `npm run dev` et ouvrez http://localhost:5173/editeur.
 
 ## Variables d'environnement
 
+Sur Mac, elles se mettent dans `server/.env` (modèle : `server/.env.example`, copié par l'installateur), une par ligne : `ANTHROPIC_API_KEY=…`. Ce fichier n'est jamais envoyé sur GitHub.
+
 | Variable | Rôle |
 |---|---|
 | `ELEVENLABS_API_KEY` | Voix IA générée depuis le script, et transcription mot à mot d'une voix importée. Sans elle : voix importée seulement, alignée localement sur le script (±0,15 s par mot). |
 | `ELEVENLABS_VOICE_ID`, `ELEVENLABS_MODEL` | Voix et modèle par défaut (`eleven_multilingual_v2`). |
 | `ANTHROPIC_API_KEY` | Claude écrit l'analyse éditoriale (`--llm` d'editor-brain) et décrit chaque visuel importé (description, mots-clés, nature). Sans elle : cerveau heuristique, descriptions à écrire soi-même. |
+| `RUNWAYML_API_SECRET` | Runway génère une image ou une vidéo pour une phrase qui n'en a pas, à la demande (bouton dans le panneau de la phrase). Sans elle : pas de génération. |
 | `ANTHROPIC_MODEL` | Modèle Claude du cerveau et des descriptions (défaut `claude-sonnet-5-5`). |
 | `RENDER_CACHE_GB` | Taille gardée du cache de rendu après chaque rendu, en Go (défaut 10). |
 | `PORT`, `HOST` | Écoute (défaut `127.0.0.1:8787`). |
@@ -49,6 +52,7 @@ Puis, dans `../web` : `npm run dev` et ouvrez http://localhost:5173/editeur.
 | GET / PATCH / DELETE | `/api/projects/:id` | |
 | POST | `/api/projects/:id/media` | multipart : `role` (`visual`, `voice`, `music`), `description`, `nature`, puis `file` |
 | POST | `/api/projects/:id/media/:mediaId/describe` | Claude décrit de nouveau le visuel (remplace description et mots-clés ; la nature seulement si vous ne l'avez jamais choisie) |
+| POST | `/api/projects/:id/generate` | `{ prompt, kind: video \| image, seconds, line }` : Runway fabrique un visuel ; avec `line`, il devient celui de la phrase. Refusé pour une phrase qui doit montrer du réel (MED-07). |
 | PUT | `/api/projects/:id/hints` | `{ line, hints }` : ce que vous fixez sur une phrase du script (`null` efface) |
 | PATCH / DELETE | `/api/projects/:id/media/:mediaId` | description, `nature` d'un visuel (`real_video`, `real_photo`, `archive`, `screenshot`, `document`, `generated`), `role` d'un audio (`voice` ⇄ `music`) |
 | POST | `/api/projects/:id/direct` | voix → timings → plan style Apple (tâche) |
@@ -71,6 +75,14 @@ Sur une phrase du script, vous pouvez imposer ce que le moteur devinerait sinon 
 
 Avec `ANTHROPIC_API_KEY`, chaque visuel importé est regardé par Claude (une image, ou trois images d'une vidéo) : il écrit une description et des mots-clés dans la langue du script, et propose la nature du fichier. Ce que vous avez tapé ou choisi n'est jamais remplacé : une description saisie à l'import reste, une nature choisie reste. Claude ne sait pas toujours reconnaître une image générée par IA : vérifiez la nature des visuels réalistes.
 
+## Visuels générés par Runway
+
+À la demande seulement : chaque génération consomme des crédits Runway. Vidéo : Gen-4.5, 2 à 10 s, 1280×720 (agrandie au rendu 1080p). Image : Gen-4 Image, 1920×1080. Le visuel est rangé dans la médiathèque comme « Généré par IA », avec le modèle et les crédits facturés. Le monteur le place en dernier recours (après vos vraies vidéos, photos, documents et graphiques) et ne l'utilise jamais pour une personne réelle, un fait historique, une plateforme ou un document : Plug refuse d'ailleurs de le générer pour ces phrases. Le contrôle qualité rappelle de signaler sur YouTube un contenu réaliste généré par IA.
+
+## Langue
+
+Tout ce que l'éditeur affiche est en français. Le moteur écrit ses décisions et ses contrôles en anglais : `src/fr.ts` les traduit (les problèmes affichent le texte français de la règle de la bible). `tests/fr.test.ts` fait tourner le moteur sur de nombreux scripts et échoue si un texte n'est pas traduit ; ce qui ne l'est pas va, en anglais, dans le « Journal technique » de l'éditeur.
+
 ## Format du script
 
 ```
@@ -92,4 +104,4 @@ npm run typecheck
 - **Stockage local** (`DATA_DIR`) et **une machine** : pas encore de stockage objet ni de file de rendus répartie.
 - **ElevenLabs** : le format des réponses (voix avec timestamps, transcription Scribe) n'a pas été testé contre le vrai service dans cette version, seulement contre des réponses simulées.
 - **Vidéos dans le style Apple** : elles sont décodées par le navigateur du rendu. Sur Mac avec Google Chrome, le MP4 (H.264) passe ; avec un Chromium sans codecs propriétaires (serveur Linux), seules les vidéos WebM (VP9) s'affichent.
-- Les cartons de chapitre et les demandes de médias suivent la langue du script. Les décisions du moteur et les messages du contrôle qualité restent **en anglais** : c'est le moteur qui les écrit.
+- **Runway** n'a pas été testé contre le vrai service dans cette version (clé absente) : le SDK officiel est testé contre un faux serveur Runway local.

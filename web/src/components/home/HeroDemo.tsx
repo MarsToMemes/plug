@@ -38,8 +38,8 @@ export default function HeroDemo({ speed = 1 }: { speed?: number }) {
 
       <div data-h="panel" className="hd-panel">
         <div className="hd-status">
-          <span className="hd-ai">AI</span>
-          <span data-h="st" className="hd-status__text">DROP YOUR RUSHES</span>
+          <span className="hd-ai">IA</span>
+          <span data-h="st" className="hd-status__text">VOS IMAGES</span>
           <span data-h="ok" className="hd-status__ok">✓</span>
           <span data-h="pct" className="hd-status__pct">—</span>
         </div>
@@ -60,12 +60,12 @@ export default function HeroDemo({ speed = 1 }: { speed?: number }) {
           <img data-h="raw" className="hd-fill hd-raw" src={photo('tokyo', 720)} alt="" />
           <div data-h="veil" className="hd-fill hd-veil" />
           <div data-h="box" className="hd-box"><span>SUJET 0.97</span></div>
-          <div data-h="dv" className="hd-fill hd-divider"><div className="hd-divider__line" /><span className="hd-divider__tag">AI EDIT</span></div>
-          <span data-h="lraw" className="hd-rawtag">RAW</span>
+          <div data-h="dv" className="hd-fill hd-divider"><div className="hd-divider__line" /><span className="hd-divider__tag">MONTAGE IA</span></div>
+          <span data-h="lraw" className="hd-rawtag">BRUT</span>
         </div>
 
         <div className="hd-tl">
-          <span>VIDEO</span>
+          <span>VIDÉO</span>
           <div className="hd-tl__video">
             {HERO_TIMELINE.map((id, j) => {
               const [l, w] = HERO_CL[j];
@@ -77,17 +77,17 @@ export default function HeroDemo({ speed = 1 }: { speed?: number }) {
             })}
             {[24, 42, 64].map(l => <span key={l} data-h="cut" className="hd-cut" style={{ left: l + '%' }} />)}
           </div>
-          <span>CAPTIONS</span>
+          <span>SOUS-TITRES</span>
           <div className="hd-tl__caps">
             {[[6, 26], [36, 20], [60, 34]].map(([l, w]) => <span key={l} data-h="cb" style={{ left: l + '%', width: w + '%' }} />)}
           </div>
-          <span>MUSIC</span>
+          <span>MUSIQUE</span>
           <div className="hd-tl__music">
             <div data-h="wave" className="hd-wave">{WAVE_BARS.slice(0, 64).map((h, i) => <span key={i} style={{ height: h }} />)}</div>
           </div>
-          <span data-h="fxl">FX</span>
+          <span data-h="fxl">EFFETS</span>
           <div data-h="fxt" className="hd-tl__fx">
-            {[['DISSOLVE', 20], ['ZOOM', 43], ['GRADE', 66]].map(([t, l]) => <span key={t} data-h="fx" style={{ left: l + '%' }}>{t}</span>)}
+            {[['FONDU', 20], ['ZOOM', 43], ['ÉTALONNAGE', 66]].map(([t, l]) => <span key={t} data-h="fx" style={{ left: l + '%' }}>{t}</span>)}
           </div>
           <div data-h="ph" className="hd-ph"><div><span /></div></div>
         </div>

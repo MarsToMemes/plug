@@ -15,8 +15,8 @@ export default function EditorShowcase() {
     <div ref={ref} className="es" role="img" aria-label="Démonstration de l’éditeur Plug : import, montage IA, titre, avant/après et export">
       <div className="es-bar">
         <span className="es-dots"><span /><span /><span /></span>
-        <span className="es-file">TOKYO_VLOG.PLUG</span>
-        <span className="es-pill"><span data-a="sdot" className="es-pill__dot" /><span data-a="status">READY</span></span>
+        <span className="es-file">EPISODE_TOKYO.PLUG</span>
+        <span className="es-pill"><span data-a="sdot" className="es-pill__dot" /><span data-a="status">PRÊT</span></span>
         <span data-a="tc" className="es-tc">00:00:00</span>
       </div>
 
@@ -42,10 +42,10 @@ export default function EditorShowcase() {
         <div data-a="box" className="es-box" style={{ left: '52%', top: '40%', width: '17%', height: '40%' }}><span>SUJET 0.97</span></div>
         <div data-a="box" className="es-box es-box--soft" style={{ left: '14%', top: '14%', width: '30%', height: '44%' }}><span>SCÈNE · RUE</span></div>
         <div data-a="div" className="es-fill es-divider"><div className="es-divider__line" /><div className="es-divider__knob">‹›</div></div>
-        <span data-a="lraw" className="es-tag es-tag--raw">RAW FOOTAGE</span>
-        <span data-a="lai" className="es-tag es-tag--ai">AI EDIT</span>
+        <span data-a="lraw" className="es-tag es-tag--raw">IMAGES BRUTES</span>
+        <span data-a="lai" className="es-tag es-tag--ai">MONTAGE IA</span>
         <div data-a="exp" className="es-exp">
-          <span data-a="expt">EXPORTING 0%</span>
+          <span data-a="expt">EXPORT 0 %</span>
           <span className="es-exp__track"><span data-a="expb" /></span>
         </div>
       </div>
@@ -73,9 +73,9 @@ export default function EditorShowcase() {
           {[16, 36, 50, 68, 80].map(l => <span key={l} data-a="cut" className="es-cut" style={{ left: l + '%' }} />)}
           <span data-a="scan" className="es-scan" />
         </div>
-        <span data-full="1">FX</span>
+        <span data-full="1">EFFETS</span>
         <div data-full="1" className="es-track--fx">
-          {[['FONDU', 33], ['ZOOM', 49], ['GRADE', 64], ['RAMP', 80]].map(([t, l]) => <span key={t} data-a="fx" style={{ left: l + '%' }}>{t}</span>)}
+          {[['FONDU', 33], ['ZOOM', 49], ['ÉTALONNAGE', 64], ['ACCÉLÉRÉ', 80]].map(([t, l]) => <span key={t} data-a="fx" style={{ left: l + '%' }}>{t}</span>)}
         </div>
         <span>A1</span>
         <div className="es-track es-track--a1">

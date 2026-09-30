@@ -195,7 +195,7 @@ export async function processItem(item: MediaItem): Promise<MediaMeta> {
 }
 
 export const fmtSize = (b: number) =>
-  b >= 1e9 ? (b / 1e9).toFixed(1) + ' Go' : b >= 1e6 ? (b / 1e6).toFixed(1) + ' Mo' : Math.max(1, Math.round(b / 1e3)) + ' Ko';
+  (b >= 1e9 ? (b / 1e9).toFixed(1) + ' Go' : b >= 1e6 ? (b / 1e6).toFixed(1) + ' Mo' : Math.max(1, Math.round(b / 1e3)) + ' Ko').replace('.', ',');
 
 export const fmtDur = (s: number | null | undefined) => {
   if (s == null || !isFinite(s)) return '--:--';

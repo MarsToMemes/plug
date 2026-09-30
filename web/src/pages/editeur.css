@@ -239,3 +239,5 @@
 .se-actions { display: flex; gap: 8px; flex: none; }
 .se-btn { flex: 1; height: 44px; border-radius: 14px; border: 1px solid #2e2a33; background: transparent; color: #fff; font-size: 14px; cursor: pointer; }
 .se-btn:hover:not(:disabled) { border-color: #5a5260; }
+.se-grow { flex: 1; }
+.se-sec-input { flex: 0 0 64px; text-align: center; }

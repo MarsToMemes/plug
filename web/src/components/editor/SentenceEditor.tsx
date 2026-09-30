@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { api, INTENT_LABEL, INTENTS, MEDIA_NEEDS, NEED_LABEL, type Intent, type MediaNeed, type Project, type SentenceHints } from '../../lib/api';
+import { useEffect, useRef, useState } from 'react';
+import { api, INTENT_LABEL, INTENTS, MEDIA_NEEDS, NEED_LABEL, REAL_SUBJECT_NEEDS, type Intent, type MediaNeed, type Project, type SentenceHints } from '../../lib/api';
 
 type ChartKind = NonNullable<SentenceHints['chart']>['kind'];
 const CHART_KINDS: [ChartKind, string][] = [['barChart', 'Barres'], ['lineChart', 'Courbe'], ['pieChart', 'Camembert']];
@@ -97,18 +97,63 @@ function Section({ title, on, onToggle, children, hint }: { title: string; on: b
  * What the author fixes on one sentence: the engine guesses the rest. Saved on the
  * server keyed by the script line; "Enregistrer et remonter" re-runs the edit.
  */
-export default function SentenceEditor({ project, line, onClose, onSaved, onRerun, busy }: {
+/**
+ * Runway makes a visual for this sentence (on request: it costs credits). Refused when the
+ * sentence must show something real (bible MED-07): a generated picture never stands for it.
+ */
+function RunwayBox({ project, line, need, onSaved, onError }: { project: Project; line: string; need: MediaNeed | undefined; onSaved: (p: Project) => void; onError: (m: string) => void }) {
+  const [prompt, setPrompt] = useState(line);
+  const [kind, setKind] = useState<'video' | 'image'>('video');
+  const [seconds, setSeconds] = useState('5');
+  const [sending, setSending] = useState(false);
+  const mine = (project.generations ?? []).filter(g => g.line === line);
+  const pending = mine.some(g => g.status === 'pending');
+  if (need && REAL_SUBJECT_NEEDS.includes(need))
+    return <span className="ed-sub">Cette phrase montre du réel ({NEED_LABEL[need].toLowerCase()}) : une image générée ne peut pas la représenter. Cherchez une vraie photo ou vidéo (Wikimedia Commons, kit presse, Pexels).</span>;
+  const go = async () => {
+    setSending(true);
+    try { onSaved(await api.generate(project.id, { prompt, kind, seconds: Number(seconds) || 5, line })); } catch (e) { onError((e as Error).message); } finally { setSending(false); }
+  };
+  return (
+    <>
+      <textarea className="ed-input se-area" value={prompt} onChange={e => setPrompt(e.target.value)} aria-label="Ce que Runway doit montrer" placeholder="Décrivez l’image : sujet, lieu, lumière, mouvement de caméra." />
+      <div className="se-pair">
+        <div className="ed-seg se-grow">{([['video', 'Vidéo'], ['image', 'Image']] as const).map(([k, l]) => <button key={k} type="button" className={kind === k ? 'is-on' : ''} onClick={() => setKind(k)}>{l}</button>)}</div>
+        {kind === 'video' && <input className="ed-input se-sec-input" inputMode="numeric" value={seconds} onChange={e => setSeconds(e.target.value)} aria-label="Durée en secondes (2 à 10)" title="Durée en secondes (2 à 10)" />}
+      </div>
+      <button type="button" className="se-btn" disabled={sending || pending || !prompt.trim()} onClick={() => void go()}>{pending ? 'Runway génère… (quelques minutes)' : `Générer ${kind === 'video' ? 'une vidéo' : 'une image'} avec Runway`}</button>
+      {mine.slice(0, 3).map(g => (
+        <span key={g.id} className={g.status === 'failed' ? 'ed-warn' : 'ed-sub'}>
+          {g.status === 'pending' ? `En cours : « ${g.prompt.slice(0, 60)} »` : g.status === 'done' ? `Généré et choisi pour cette phrase : « ${g.prompt.slice(0, 60)} »` : `Échec : ${g.error ?? 'erreur inconnue'}`}
+        </span>
+      ))}
+      <span className="ed-sub">Chaque génération consomme des crédits Runway. Un visuel généré passe après vos vraies images, et YouTube demande de signaler les contenus réalistes générés par IA.</span>
+    </>
+  );
+}
+
+export default function SentenceEditor({ project, line, onClose, onSaved, onRerun, busy, canGenerate = false }: {
   project: Project;
   line: string;
   onClose: () => void;
   onSaved: (p: Project) => void;
   onRerun: () => void;
   busy: boolean;
+  canGenerate?: boolean;
 }) {
   const [f, setF] = useState<Form>(() => toForm(project.hints?.[line]));
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const set = (x: Partial<Form>) => setF({ ...f, ...x });
+  // A Runway visual made for this sentence becomes its visual on the server: the form follows.
+  const known = useRef(new Set((project.generations ?? []).filter(g => g.status === 'done').map(g => g.id)));
+  useEffect(() => {
+    for (const g of project.generations ?? []) {
+      if (g.status !== 'done' || g.line !== line || known.current.has(g.id)) continue;
+      known.current.add(g.id);
+      if (g.mediaId) setF(prev => ({ ...prev, media: g.mediaId!, mediaStart: '' }));
+    }
+  }, [project.generations, line]);
   const visuals = project.media.filter(m => m.role === 'visual');
   const clip = visuals.find(m => m.id === f.media && m.kind === 'video');
 
@@ -160,9 +205,16 @@ export default function SentenceEditor({ project, line, onClose, onSaved, onReru
         {clip && (
           <label className="se-field"><span className="ed-box__label">Début dans le clip (secondes)</span>
             <input className="ed-input" inputMode="decimal" value={f.mediaStart} placeholder="0" onChange={e => set({ mediaStart: e.target.value })} />
-            <span className="ed-sub">{clip.durationInSeconds ? `Clip de ${clip.durationInSeconds.toFixed(1)} s. ` : ''}Un clip plus court que le plan repart en boucle.</span>
+            <span className="ed-sub">{clip.durationInSeconds ? `Clip de ${clip.durationInSeconds.toFixed(1).replace('.', ',')} s. ` : ''}Un clip plus court que le plan repart en boucle.</span>
           </label>
         )}
+      </div>
+
+      <div className="ed-box">
+        <span className="ed-box__label">Pas d’image pour cette phrase ?</span>
+        {canGenerate
+          ? <RunwayBox project={project} line={line} need={(f.mediaNeed || project.plan?.needs?.[line]) || undefined} onSaved={onSaved} onError={setError} />
+          : <span className="ed-sub">Ajoutez votre clé Runway (RUNWAYML_API_SECRET) dans server/.env pour en générer une.</span>}
       </div>
 
       <Section title="Graphique" on={f.chartOn} onToggle={() => set({ chartOn: !f.chartOn })} hint="Les vraies données derrière la phrase : le monteur les montre en barres, en courbe ou en camembert.">

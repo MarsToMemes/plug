@@ -10,6 +10,7 @@
  *   POST   /api/projects/:id/direct          voice → timings → Apple-style plan
  *   POST   /api/projects/:id/stills          control sheet
  *   POST   /api/projects/:id/render          { quality: 'preview' | 'final' }
+ *   POST   /api/projects/:id/generate           { prompt, kind, seconds, line }: Runway makes a visual
  *   PUT    /api/projects/:id/hints            { line, hints }: what the author sets on one sentence
  *   GET    /api/projects/:id/plan
  *   GET    /api/projects/:id/files/:name     voice.wav, stills.jpg, video.mp4 (Range supported)
@@ -18,12 +19,15 @@
 import { createReadStream, createWriteStream, existsSync, statSync } from 'node:fs';
 import { rm } from 'node:fs/promises';
 import { extname, join } from 'node:path';
+import { Readable } from 'node:stream';
 import { pipeline as pump } from 'node:stream/promises';
 import multipart from '@fastify/multipart';
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
 import type { Config } from './config.ts';
 import type { FfmpegTools } from './engine.ts';
 import { ClaudeDescriber, framesOf, type Describer } from './describe.ts';
+import { REAL_SUBJECT_NEEDS } from './engine.ts';
+import { RunwayGenerator, type Generator } from './runway.ts';
 import { HintError, hintKey, keepHints, parseHints } from './hints.ts';
 import { BusyError, JobQueue } from './jobs.ts';
 import { probe, sha256File } from './media.ts';
@@ -39,6 +43,8 @@ export interface AppOptions {
   inlineJobs?: boolean;
   /** Describes imported visuals. Default: Claude when ANTHROPIC_API_KEY is set; null turns it off. */
   describer?: Describer | null;
+  /** Generates visuals. Default: Runway when RUNWAYML_API_SECRET is set; null turns it off. */
+  generator?: Generator | null;
 }
 
 const OUTPUTS = new Set(['voice.wav', 'stills.jpg', 'video.mp4', 'plan.json']);
@@ -137,10 +143,70 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
   const { config, tools } = options;
   const store = new ProjectStore(config.dataDir);
   const jobs = new JobQueue(store, { config, store, tools, ...(options.fetch ? { fetch: options.fetch } : {}) }, { inline: options.inlineJobs ?? false });
-  // Descriptions interrupted by a restart.
+  // Descriptions and generations interrupted by a restart.
   for (const p of store.list()) {
-    if (p.media.some((m) => m.auto?.status === 'pending'))
-      store.update(p.id, (x) => x.media.forEach((m) => { if (m.auto?.status === 'pending') m.auto = { status: 'failed', error: 'interrompue par un redémarrage' }; }));
+    if (p.media.some((m) => m.auto?.status === 'pending') || p.generations?.some((g) => g.status === 'pending'))
+      store.update(p.id, (x) => {
+        x.media.forEach((m) => { if (m.auto?.status === 'pending') m.auto = { status: 'failed', error: 'interrompue par un redémarrage' }; });
+        x.generations?.forEach((g) => { if (g.status === 'pending') Object.assign(g, { status: 'failed', error: 'interrompue par un redémarrage : relancez-la (Runway a peut-être déjà compté les crédits)' }); });
+      });
+  }
+  const generator = options.generator !== undefined ? options.generator : config.runwayKey ? new RunwayGenerator({ apiKey: config.runwayKey }) : null;
+
+  /** Runway makes the visual, Plug downloads it into the project; with a line, it becomes that sentence's visual. */
+  async function runGeneration(projectId: string, genId: string) {
+    const g = store.get(projectId)?.generations?.find((x) => x.id === genId);
+    if (!g || !generator) return;
+    const fail = (e: unknown) => {
+      app.log.warn({ err: e }, 'génération Runway impossible');
+      if (!store.get(projectId)) return;
+      store.update(projectId, (x) => {
+        const y = x.generations?.find((z) => z.id === genId);
+        if (y) Object.assign(y, { status: 'failed', error: (e as Error).message.slice(0, 300) });
+      });
+    };
+    try {
+      const out = await generator.generate({ prompt: g.prompt, kind: g.kind, seconds: g.seconds });
+      const res = await fetch(out.url);
+      if (!res.ok || !res.body) throw new Error(`téléchargement du visuel impossible (${res.status})`);
+      const type = res.headers.get('content-type') ?? '';
+      const ext = g.kind === 'video' ? (type.includes('webm') ? '.webm' : '.mp4') : type.includes('png') ? '.png' : type.includes('webp') ? '.webp' : '.jpg';
+      const id = newId('m');
+      const file = `${id}${ext}`;
+      const path = join(store.mediaDir(projectId), file);
+      await pump(Readable.fromWeb(res.body as never), createWriteStream(path));
+      const info = probe(tools, path);
+      if (info.kind === 'audio') throw new Error('Runway a renvoyé un fichier sans image');
+      const item: MediaItem = {
+        id,
+        role: 'visual',
+        kind: info.kind as 'image' | 'video',
+        file,
+        originalName: `runway-${g.kind === 'video' ? 'video' : 'image'}${ext}`,
+        bytes: statSync(path).size,
+        checksum: sha256File(path),
+        ...(info.width ? { width: info.width } : {}),
+        ...(info.height ? { height: info.height } : {}),
+        ...(info.durationInSeconds ? { durationInSeconds: info.durationInSeconds } : {}),
+        description: g.prompt.slice(0, 300),
+        tags: [],
+        nature: 'generated',
+        natureSet: true,
+        generated: { provider: 'Runway', model: out.model, prompt: g.prompt, ...(out.credits !== undefined ? { credits: out.credits } : {}) },
+        ...(describer ? { auto: { status: 'pending' as const } } : {}),
+      };
+      store.update(projectId, (x) => {
+        x.media.push(item);
+        const y = x.generations?.find((z) => z.id === genId);
+        if (y) Object.assign(y, { status: 'done', mediaId: id });
+        // The sentence gets this visual, unless the line left the script meanwhile.
+        if (g.line && x.script.split(/\r?\n/).some((l) => hintKey(l) === g.line)) x.hints = { ...(x.hints ?? {}), [g.line]: { ...(x.hints?.[g.line] ?? {}), media: id } };
+      });
+      // Claude adds tags in the script's language; the prompt stays the description.
+      if (describer) void describeMedia(projectId, id, { replaceDescription: false });
+    } catch (e) {
+      fail(e);
+    }
   }
   const describer = options.describer !== undefined ? options.describer : config.anthropicKey ? new ClaudeDescriber({ model: config.anthropicModel, apiKey: config.anthropicKey }) : null;
 
@@ -206,6 +272,7 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
     ok: true,
     elevenLabs: !!config.elevenLabsKey,
     anthropic: !!config.anthropicKey,
+    runway: !!generator,
     studioBlocks: existsSync(join(config.enginePublicDir, 'hyperframes', 'hyperframe.runtime.js')),
     engineBuilt: existsSync(join(config.engineDir, 'packages', 'render', 'dist', 'index.js')),
     browser: config.browser ?? null,
@@ -361,6 +428,31 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
     });
   });
 
+  app.post<{ Params: { id: string } }>('/api/projects/:id/generate', async (req, reply) => {
+    const p = project(req.params.id);
+    if (!generator) throw new HttpError(400, 'Ajoutez RUNWAYML_API_SECRET dans server/.env pour générer des visuels avec Runway.');
+    const body = (req.body ?? {}) as Body;
+    const prompt = (str(body.prompt, 1000) ?? '').trim();
+    if (!prompt) throw new HttpError(400, 'Décrivez ce que Runway doit générer.');
+    const kind: 'image' | 'video' = body.kind === 'image' ? 'image' : 'video';
+    const seconds = Math.min(10, Math.max(2, Math.round(Number(body.seconds) || 5)));
+    const line = typeof body.line === 'string' ? hintKey(body.line) : undefined;
+    if (line) {
+      if (!p.script.split(/\r?\n/).some((l) => hintKey(l) === line)) throw new HttpError(400, 'Cette phrase n’est plus dans le script.');
+      // Bible MED-07: a generated picture never stands for something real. The engine would not use it anyway.
+      const need = p.hints?.[line]?.mediaNeed ?? p.plan?.needs?.[line];
+      if (need && (REAL_SUBJECT_NEEDS as readonly string[]).includes(need))
+        throw new HttpError(400, 'Cette phrase montre du réel (une personne, une marque, l’histoire, un document, une plateforme) : une image générée ne peut pas la représenter. Cherchez une vraie photo ou vidéo (Wikimedia Commons, kit presse, Pexels).');
+    }
+    if ((p.generations ?? []).filter((g) => g.status === 'pending').length >= 3) throw new HttpError(409, 'Trois générations sont déjà en cours sur ce projet : attendez qu’une se termine.');
+    const g = { id: newId('g'), prompt, kind, seconds, ...(line ? { line } : {}), status: 'pending' as const, createdAt: new Date().toISOString() };
+    const updated = store.update(p.id, (x) => {
+      x.generations = [g, ...(x.generations ?? [])].slice(0, 20);
+    });
+    void runGeneration(p.id, g.id);
+    return reply.code(202).send(updated);
+  });
+
   app.put<{ Params: { id: string } }>('/api/projects/:id/hints', async (req) => {
     const p = project(req.params.id);
     const body = (req.body ?? {}) as Body;
@@ -377,7 +469,8 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
   });
 
   const requireRights = (p: Project) => {
-    if (p.media.some((m) => m.role !== 'voice') && !p.rightsConfirmed) throw new HttpError(400, 'Confirmez que vous détenez les droits des médias importés.');
+    // A Runway visual comes with Runway's terms: only imported files need the confirmation.
+    if (p.media.some((m) => m.role !== 'voice' && !m.generated) && !p.rightsConfirmed) throw new HttpError(400, 'Confirmez que vous détenez les droits des médias importés.');
   };
 
   app.post<{ Params: { id: string } }>('/api/projects/:id/direct', async (req, reply) => {

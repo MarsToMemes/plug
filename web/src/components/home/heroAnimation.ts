@@ -1,5 +1,5 @@
 // Hero editing demo: floating rush cards fly into a mini timeline, the AI playhead edits,
-// then a raw → edited sweep and "EDIT COMPLETE". 12.8 s loop, driven by one rAF clock.
+// then a raw → edited sweep and "MONTAGE TERMINÉ". 12.8 s loop, driven by one rAF clock.
 // Everything is transform/opacity/clip-path writes on elements tagged with data-h="…".
 
 import { HERO_CL, HERO_SLOT } from './demoClips';
@@ -155,8 +155,8 @@ export function startHeroDemo(root: HTMLElement, { speed = 1 }: HeroDemoOptions 
   }
 
   function status({ t, sg }: Frame) {
-    const st = t < 1.5 ? 'DROP YOUR RUSHES' : t < 3 ? 'AI ANALYZING' : t < 5 ? 'SELECTING BEST SHOTS' : t < 8 ? 'AI EDITING'
-      : t < 8.67 ? 'ADDING MOTION' : t < 9.33 ? 'COLOR GRADING' : t < 10 ? 'SOUND DESIGN' : t < 11.8 ? 'EDIT COMPLETE' : 'READY';
+    const st = t < 1.5 ? 'VOS IMAGES' : t < 3 ? 'ANALYSE IA' : t < 5 ? 'CHOIX DES IMAGES' : t < 8 ? 'MONTAGE IA'
+      : t < 8.67 ? 'ANIMATION' : t < 9.33 ? 'ÉTALONNAGE' : t < 10 ? 'MIXAGE' : t < 11.8 ? 'MONTAGE TERMINÉ' : 'PRÊT';
     if (H.st.textContent !== st) H.st.textContent = st;
     const pr = sg(1.5, 10.0), pct = t < 1.5 || t >= 12.3 ? '—' : Math.round(pr * 100) + '%';
     if (H.pct.textContent !== pct) H.pct.textContent = pct;

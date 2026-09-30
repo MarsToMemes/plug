@@ -10,7 +10,7 @@ const E = {
 };
 /** Clip slots on V1 [left %, width %]. */
 const CL: [number, number][] = [[0, 16], [16, 20], [36, 14], [50, 18], [68, 12], [80, 20]];
-const SUB = ['ANALYZING', 'SELECTING BEST SHOTS', 'BUILDING RHYTHM', 'ADDING MOTION', 'COLOR GRADING', 'SOUND DESIGN'];
+const SUB = ['ANALYSE', 'CHOIX DES IMAGES', 'RYTHME', 'ANIMATION', 'ÉTALONNAGE', 'MIXAGE'];
 
 const GRAIN_SVG = "<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(#n)'/></svg>";
 
@@ -114,12 +114,12 @@ export function startEditorDemo(root: HTMLElement): () => void {
     A.lraw.style.opacity = String(clamp((x - 14) / 10) * dvo); A.lai.style.opacity = String(clamp((96 - x) / 10) * dvo);
     const eb = sg(12.0, 12.75, E.io); A.exp.style.opacity = String(sg(11.95, 12.15) * (1 - sg(13.2, 13.5)));
     A.expb.style.transform = `scaleX(${eb.toFixed(3)})`;
-    txt(A.expt, eb < 1 ? 'EXPORTING ' + Math.round(eb * 100) + '%' : 'EDIT COMPLETE ✓');
+    txt(A.expt, eb < 1 ? 'EXPORT ' + Math.round(eb * 100) + ' %' : 'MONTAGE TERMINÉ ✓');
     // status
-    const st = t < 1.4 ? 'READY' : t < 2.8 ? 'IMPORTING ASSETS' : t < ES ? 'ANALYZING FOOTAGE' : t < EE ? 'AI EDITING · ' + SUB[Math.min(5, Math.floor((t - ES) / 0.7))]
-      : t < 9.8 ? 'AI EDIT' : t < 11.95 ? 'BEFORE / AFTER' : t < 12.75 ? 'EXPORTING' : t < 13.35 ? 'EDIT COMPLETE' : 'READY';
+    const st = t < 1.4 ? 'PRÊT' : t < 2.8 ? 'IMPORT DES MÉDIAS' : t < ES ? 'ANALYSE DES IMAGES' : t < EE ? 'MONTAGE IA · ' + SUB[Math.min(5, Math.floor((t - ES) / 0.7))]
+      : t < 9.8 ? 'MONTAGE IA' : t < 11.95 ? 'AVANT / APRÈS' : t < 12.75 ? 'EXPORT' : t < 13.35 ? 'MONTAGE TERMINÉ' : 'PRÊT';
     txt(A.status, st);
-    const done = st === 'EDIT COMPLETE', busy = t >= 1.4 && t < 12.75;
+    const done = st === 'MONTAGE TERMINÉ', busy = t >= 1.4 && t < 12.75;
     A.sdot.style.background = done ? '#5ee0a0' : '#a06bff';
     A.sdot.style.opacity = busy ? (0.55 + 0.45 * Math.sin(t * 7)).toFixed(3) : '1';
     const secs = Math.round(t < ES ? 0 : t < EE ? p * 552 : 552);

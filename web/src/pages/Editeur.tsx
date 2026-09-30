@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Mediatheque from '../components/editor/Mediatheque';
 import SentenceEditor from '../components/editor/SentenceEditor';
-import { api, hintKey, jobActive, type EditStyle, type Health, type Pacing, type Plan, type PlanShot, type Project, type RenderInfo, type VoiceMode } from '../lib/api';
+import { api, hintKey, INTENT_LABEL, jobActive, NEED_LABEL, type EditStyle, type Intent, type Health, type Pacing, type Plan, type PlanShot, type Project, type RenderInfo, type VoiceMode } from '../lib/api';
 import './editeur.css';
 
 const PROJECT_KEY = 'plug.project';
@@ -37,7 +37,20 @@ const STYLES: [EditStyle, string][] = [['apple', 'Apple'], ['default', 'Classiqu
 const VOICES: [VoiceMode, string][] = [['tts', 'Voix IA'], ['upload', 'Ma voix'], ['none', 'Sans voix']];
 const PACING_AT: Record<Pacing, number> = { calm: 17, standard: 50, dynamic: 83 };
 const JOB_LABEL = { direct: 'Montage', stills: 'Planche de contrôle', render: 'Rendu' } as const;
-const TIER_LABEL = { real_video: 'vidéo réelle', real_photo: 'photo réelle', document: 'document', data_viz: 'données', generated: 'visuel généré', motion: 'motion design' } as const;
+const TIER_LABEL = { real_video: 'vidéo réelle', real_photo: 'photo réelle', document: 'document', data_viz: 'données', generated: 'visuel généré', motion: 'animation' } as const;
+/** Studio blocks of the Apple style, and shot types of the engine, in French. */
+const BLOCK_LABEL: Record<string, string> = { title: 'titre', image: 'photo', video: 'vidéo', stat: 'chiffre', bars: 'graphique', document: 'document', map: 'carte', units: 'part' };
+const TYPE_LABEL: Record<string, string> = { image: 'image', video: 'vidéo', text: 'texte', number: 'chiffre', document: 'document', chart: 'graphique', map: 'carte', revelation: 'révélation', chapter: 'chapitre' };
+const intentFr = (i?: string) => (i && i in INTENT_LABEL ? INTENT_LABEL[i as Intent].toLowerCase() : '');
+/** Why a shot looks this way, in French, from the plan's structured fields. */
+function shotWhy(s: PlanShot): string {
+  return [
+    s.editorialIntent && `Rôle : ${intentFr(s.editorialIntent)}`,
+    s.mediaNeed && s.mediaNeed !== 'none' && `Ce que l’image doit faire : ${NEED_LABEL[s.mediaNeed].toLowerCase()}`,
+    s.mediaTier && `Image : ${TIER_LABEL[s.mediaTier]}`,
+    s.block && `Bloc : ${BLOCK_LABEL[s.block.item.replace(/^studio-/, '')] ?? s.block.item}`,
+  ].filter(Boolean).join('\n');
+}
 const TIMING_LABEL = { tts: 'timings fournis par la voix IA', stt: 'transcription ElevenLabs', aligned: 'alignement local (±0,15 s par mot)' } as const;
 
 const fmt = (s: number) => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(Math.floor(s % 60)).padStart(2, '0');
@@ -79,7 +92,7 @@ function shotLabel(s: PlanShot, p: Project): string {
   const v = s.block?.variables ?? {};
   const blockText = typeof v.text === 'string' ? v.text.replace(/[|*]/g, ' ').replace(/\s+/g, ' ').trim() : '';
   const figure = v.to !== undefined ? `${v.prefix ?? ''}${v.to}${v.suffix ?? ''}` : '';
-  return s.text || blockText || figure || (s.media ? p.media.find(m => m.id === s.media)?.description ?? '' : '') || (s.metadata?.unit ? p.plan?.units?.[s.metadata.unit] : '') || s.type;
+  return s.text || blockText || figure || (s.media ? p.media.find(m => m.id === s.media)?.description ?? '' : '') || (s.metadata?.unit ? p.plan?.units?.[s.metadata.unit] : '') || (TYPE_LABEL[s.type] ?? s.type);
 }
 
 export default function Editeur() {
@@ -143,7 +156,8 @@ export default function Editeur() {
 
   // Follow the running job.
   const active = jobActive(p ?? undefined);
-  const describing = !!p?.media.some(m => m.auto?.status === 'pending');
+  // Claude describing an import, or Runway generating a visual: the editor follows them too.
+  const describing = !!p?.media.some(m => m.auto?.status === 'pending') || !!p?.generations?.some(g => g.status === 'pending');
   useEffect(() => {
     if (!p || (!active && !describing)) return;
     const iv = window.setInterval(async () => {
@@ -236,7 +250,8 @@ export default function Editeur() {
   // The line must be saved on the server before hints can be set on it.
   const openSentence = async (line: string) => { await flush(); setSentence(line); };
   const curStale = !!cur && !!p.plan && cur.planCreatedAt !== p.plan.createdAt;
-  const needsRights = p.media.some(m => m.role !== 'voice') && !p.rightsConfirmed;
+  // Imported files need the rights confirmation; a Runway visual comes with Runway's terms.
+  const needsRights = p.media.some(m => m.role !== 'voice' && !m.generated) && !p.rightsConfirmed;
   const isMedias = rail === 'medias';
   const showVideo = tab === 'video' && cur;
   const showStills = tab === 'stills' && p.stills;
@@ -293,7 +308,7 @@ export default function Editeur() {
 
         <section className="ed-panel" hidden={isMedias} data-screen-label="Réglages">
           {sentence && (
-            <SentenceEditor key={sentence} project={p} line={sentence} busy={active} onClose={() => setSentence(null)} onSaved={setP}
+            <SentenceEditor key={sentence} project={p} line={sentence} busy={active} canGenerate={!!health?.runway} onClose={() => setSentence(null)} onSaved={setP}
               onRerun={() => { setSentence(null); void start('direct'); }} />
           )}
           {!sentence && rail === 'montage' && (
@@ -411,18 +426,18 @@ export default function Editeur() {
               {p.plan && (
                 <div className="ed-box">
                   <span className="ed-box__label">{p.plan.shots} plans · {fmt(p.plan.durationInSeconds)}</span>
-                  <span className="ed-sub">{STYLES.find(([v]) => v === style)?.[1]} · {p.plan.brain === 'llm' ? 'réalisé par Claude' : 'cerveau heuristique'} · {p.plan.valid ? 'validation finale OK' : 'validation finale : à corriger'}</span>
+                  <span className="ed-sub">{STYLES.find(([v]) => v === style)?.[1]} · {p.plan.brain === 'llm' ? 'réalisé par Claude' : 'monteur automatique (sans Claude)'} · {p.plan.valid ? 'validation finale OK' : 'validation finale : à corriger'}</span>
                   {planStale && <span className="ed-warn">Le script a changé depuis ce plan : relancez le montage.</span>}
                 </div>
               )}
               {plan && (
                 <div className="ed-shots">
                   {plan.shots.map((s, i) => (
-                    <button key={s.id} type="button" className="ed-shot" title={Object.values(s.reasons ?? {}).join('\n')}
+                    <button key={s.id} type="button" className="ed-shot" title={shotWhy(s)}
                       disabled={!lineOf(s)} onClick={() => { const l = lineOf(s); if (l) void openSentence(l); }}>
                       <span className="ed-mono ed-shot__n">{String(i + 1).padStart(2, '0')}</span>
-                      <div><span className="ed-ellipsis">{shotLabel(s, p)}</span><span className="ed-sub">{s.mediaTier ? TIER_LABEL[s.mediaTier] : s.type}{s.block ? ` · ${s.block.item.replace(/^studio-/, '')}` : ''}{s.editorialIntent ? ` · ${s.editorialIntent}` : ''}</span></div>
-                      <span className="ed-mono ed-shot__d">{(s.durationInFrames / plan.fps).toFixed(1)} s</span>
+                      <div><span className="ed-ellipsis">{shotLabel(s, p)}</span><span className="ed-sub">{s.mediaTier ? TIER_LABEL[s.mediaTier] : TYPE_LABEL[s.type] ?? s.type}{s.block ? ` · ${BLOCK_LABEL[s.block.item.replace(/^studio-/, '')] ?? s.block.item}` : ''}{s.editorialIntent ? ` · ${intentFr(s.editorialIntent)}` : ''}</span></div>
+                      <span className="ed-mono ed-shot__d">{(s.durationInFrames / plan.fps).toFixed(1).replace('.', ',')} s</span>
                     </button>
                   ))}
                 </div>
@@ -433,6 +448,7 @@ export default function Editeur() {
                   <Issues title="Il manque" items={p.plan.assetRequests.map(r => r.description)} tone="warn" />
                   <Issues title="Avertissements" items={p.plan.warnings.map(e => (e.rule ? `[${e.rule}] ` : '') + e.message)} tone="warn" collapsed />
                   <Issues title="Choix du monteur" items={[...p.plan.notes, ...p.plan.decisions]} tone="info" collapsed />
+                  <Issues title="Journal technique (non traduit)" items={p.plan.technical ?? []} tone="info" collapsed />
                 </>
               )}
               {cur?.qc && <Issues title={cur.qc.pass ? 'Contrôle qualité : réussi' : 'Contrôle qualité : échec'} items={[...cur.qc.failed, ...cur.qc.warnings]} tone={cur.qc.pass ? 'info' : 'err'} collapsed={cur.qc.pass} />}

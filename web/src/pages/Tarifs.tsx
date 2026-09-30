@@ -8,9 +8,9 @@ import './tarifs.css';
 const DEFAULT_YEARLY = false;
 
 const PLANS: [name: string, monthly: number, tag: string, items: string[], cta: string, id: string, badge: string][] = [
-  ['Free', 0, 'Pour essayer Plug sur votre sujet.', ['5 min de vidéo montée / mois', 'Export 1080p avec filigrane', 'Voix IA ou votre voix', '3 projets actifs', '5 Go de stockage'], 'Commencer', 'free', ''],
-  ['Creator', 29, 'Pour les créateurs qui publient chaque semaine.', ['60 min de vidéo montée / mois', 'Export 1080p sans filigrane', 'Réalisation par Claude', 'Voix IA ElevenLabs incluse', 'Projets illimités', '100 Go de stockage'], 'Choisir Creator', 'creator', 'Recommandé'],
-  ['Pro', 59, 'Pour les chaînes à fort volume.', ['180 min de vidéo montée / mois', 'Tout Creator', 'Projets illimités', '500 Go de stockage'], 'Choisir Pro', 'pro', ''],
+  ['Gratuit', 0, 'Pour essayer Plug sur votre sujet.', ['5 min de vidéo montée / mois', 'Export 1080p avec filigrane', 'Voix IA ou votre voix', '3 projets actifs', '5 Go de stockage'], 'Commencer', 'free', ''],
+  ['Créateur', 29, 'Pour les créateurs qui publient chaque semaine.', ['60 min de vidéo montée / mois', 'Export 1080p sans filigrane', 'Réalisation par Claude', 'Voix IA ElevenLabs incluse', 'Projets illimités', '100 Go de stockage'], 'Choisir Créateur', 'creator', 'Recommandé'],
+  ['Pro', 59, 'Pour les chaînes à fort volume.', ['180 min de vidéo montée / mois', 'Tout Créateur', 'Projets illimités', '500 Go de stockage'], 'Choisir Pro', 'pro', ''],
   ['Studio', 149, 'Pour les agences et les équipes éditoriales.', ['600 min de vidéo montée / mois', 'Tout Pro', 'Support dédié', '2 To de stockage'], 'Choisir Studio', 'studio', '']
 ];
 
@@ -37,7 +37,7 @@ const FAQ: [string, string][] = [
   ['Que se passe-t-il si je dépasse mon quota ?', 'Plug vous prévient à 80 %. Vous pouvez acheter des minutes à l’unité ou passer au plan supérieur, sans perdre votre travail.'],
   ['Puis-je changer de plan à tout moment ?', 'Oui. Le passage à un plan supérieur est immédiat et calculé au prorata. La résiliation prend effet à la fin de la période.'],
   ['Mes vidéos servent-elles à entraîner l’IA ?', 'Non. Vos fichiers restent privés et ne sont jamais utilisés pour entraîner des modèles.'],
-  ['Les styles sont-ils inclus ?', 'Oui. Les styles Apple et classique sont inclus dans tous les plans, y compris Free.']
+  ['Les styles sont-ils inclus ?', 'Oui. Les styles Apple et classique sont inclus dans tous les plans, y compris Gratuit.']
 ];
 
 export default function Tarifs() {
@@ -79,7 +79,7 @@ export default function Tarifs() {
               );
             })}
           </div>
-          <div className="pr-note"><span>Sans carte bancaire pour Free</span><span>·</span><span>Résiliable en 1 clic</span><span>·</span><span>TVA incluse</span></div>
+          <div className="pr-note"><span>Sans carte bancaire pour l’offre Gratuit</span><span>·</span><span>Résiliable en 1 clic</span><span>·</span><span>TVA incluse</span></div>
         </section>
 
         <section className="pr-compare">
@@ -88,7 +88,7 @@ export default function Tarifs() {
             {/* Rows are CSS grids (display changes drop native table roles, so they are restated). */}
             <table role="table">
               <thead role="rowgroup">
-                <tr role="row"><td role="cell" /><th role="columnheader" scope="col">Free</th><th role="columnheader" scope="col" className="is-hot">Creator</th><th role="columnheader" scope="col">Pro</th><th role="columnheader" scope="col">Studio</th></tr>
+                <tr role="row"><td role="cell" /><th role="columnheader" scope="col">Gratuit</th><th role="columnheader" scope="col" className="is-hot">Créateur</th><th role="columnheader" scope="col">Pro</th><th role="columnheader" scope="col">Studio</th></tr>
               </thead>
               <tbody role="rowgroup">
                 {ROWS.map(([label, vals]) => (
@@ -104,7 +104,7 @@ export default function Tarifs() {
             <div>
               <span className="pr-packs__kicker">STYLES DE MONTAGE</span>
               <h2 className="pr-h2">Un style, choisi en un clic.</h2>
-              <p>Inclus dans tous les plans, y compris Free. Le même script peut être monté dans chaque style.</p>
+              <p>Inclus dans tous les plans, y compris Gratuit. Le même script peut être monté dans chaque style.</p>
             </div>
             <span className="pr-packs__range">Inclus</span>
           </div>

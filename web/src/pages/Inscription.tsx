@@ -4,9 +4,9 @@ import { Logo } from '../components/Site';
 import './inscription.css';
 
 const PLANS: Record<string, [string, string, string[]]> = {
-  free: ['Free', '0 €/mois', ['5 min de vidéo montée', 'Export 1080p', 'Sans carte bancaire']],
-  creator: ['Creator', '29 €/mois', ['60 min de vidéo montée', 'Export 1080p sans filigrane', 'Réalisation par Claude']],
-  pro: ['Pro', '59 €/mois', ['180 min de vidéo montée', 'Tout Creator', '500 Go de stockage']],
+  free: ['Gratuit', '0 €/mois', ['5 min de vidéo montée', 'Export 1080p', 'Sans carte bancaire']],
+  creator: ['Créateur', '29 €/mois', ['60 min de vidéo montée', 'Export 1080p sans filigrane', 'Réalisation par Claude']],
+  pro: ['Pro', '59 €/mois', ['180 min de vidéo montée', 'Tout Créateur', '500 Go de stockage']],
   studio: ['Studio', '149 €/mois', ['600 min de vidéo montée', 'Tout Pro', 'Support dédié']]
 };
 
