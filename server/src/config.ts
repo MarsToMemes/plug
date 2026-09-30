@@ -22,6 +22,8 @@ export interface Config {
   anthropicKey?: string;
   /** Claude model of the editorial brain (--llm). */
   anthropicModel: string;
+  /** Render cache (chunks, decoded media, mixes) kept after a render, bytes. */
+  renderCacheBytes: number;
   /** Chrome / Chromium Headless Shell for Remotion and the control sheet. */
   browser?: string;
   /** Origins allowed to call the API (the web app in development). */
@@ -54,6 +56,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     elevenLabsModel: env.ELEVENLABS_MODEL ?? 'eleven_multilingual_v2',
     ...(env.ANTHROPIC_API_KEY ? { anthropicKey: env.ANTHROPIC_API_KEY } : {}),
     anthropicModel: env.ANTHROPIC_MODEL ?? 'claude-sonnet-5-5',
+    renderCacheBytes: Math.max(0, Number(env.RENDER_CACHE_GB ?? 10)) * 1e9,
     ...(browser ? { browser } : {}),
     corsOrigins: (env.CORS_ORIGINS ?? 'http://localhost:5173,http://127.0.0.1:5173').split(',').map((s) => s.trim()).filter(Boolean),
   };

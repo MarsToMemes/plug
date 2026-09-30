@@ -5,6 +5,7 @@
 import { randomBytes } from 'node:crypto';
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import type { HintsByLine } from './hints.ts';
 
 export type Pacing = 'calm' | 'standard' | 'dynamic';
 /** `apple`: studio blocks timed to the voice. `default`: the engine's own compositions. */
@@ -37,6 +38,10 @@ export interface MediaItem {
   nature?: MediaNature;
   /** Projects made before `nature`: AI-generated realistic image or video. */
   synthetic?: boolean;
+  /** The user chose the nature (upload or library): Claude's guess never replaces it. */
+  natureSet?: boolean;
+  /** Claude's automatic description (describe.ts). */
+  auto?: { status: 'pending' | 'done' | 'failed'; error?: string; model?: string; at?: string };
 }
 
 export type JobKind = 'direct' | 'stills' | 'render';
@@ -71,6 +76,8 @@ export interface Project {
   /** The user confirmed owning or licensing the uploaded media (bible SRC-01). */
   rightsConfirmed: boolean;
   media: MediaItem[];
+  /** What the author set on sentences, keyed by script line (hints.ts). */
+  hints?: HintsByLine;
 
   voiceTrack?: {
     durationInSeconds: number;

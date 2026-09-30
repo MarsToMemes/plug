@@ -6,9 +6,11 @@
  *   GET    /api/projects/:id                 PATCH /api/projects/:id     DELETE /api/projects/:id
  *   POST   /api/projects/:id/media           (multipart: file, role, description, nature)
  *   PATCH  /api/projects/:id/media/:mediaId  DELETE /api/projects/:id/media/:mediaId
+ *   POST   /api/projects/:id/media/:mediaId/describe   Claude describes the visual again
  *   POST   /api/projects/:id/direct          voice → timings → Apple-style plan
  *   POST   /api/projects/:id/stills          control sheet
  *   POST   /api/projects/:id/render          { quality: 'preview' | 'final' }
+ *   PUT    /api/projects/:id/hints            { line, hints }: what the author sets on one sentence
  *   GET    /api/projects/:id/plan
  *   GET    /api/projects/:id/files/:name     voice.wav, stills.jpg, video.mp4 (Range supported)
  *   GET    /api/projects/:id/files/media/:file
@@ -21,6 +23,8 @@ import multipart from '@fastify/multipart';
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
 import type { Config } from './config.ts';
 import type { FfmpegTools } from './engine.ts';
+import { ClaudeDescriber, framesOf, type Describer } from './describe.ts';
+import { HintError, hintKey, keepHints, parseHints } from './hints.ts';
 import { BusyError, JobQueue } from './jobs.ts';
 import { probe, sha256File } from './media.ts';
 import { readProjectPlan } from './pipeline.ts';
@@ -33,6 +37,8 @@ export interface AppOptions {
   logger?: boolean;
   /** Run jobs on the main thread (tests with an injected fetch). */
   inlineJobs?: boolean;
+  /** Describes imported visuals. Default: Claude when ANTHROPIC_API_KEY is set; null turns it off. */
+  describer?: Describer | null;
 }
 
 const OUTPUTS = new Set(['voice.wav', 'stills.jpg', 'video.mp4', 'plan.json']);
@@ -55,6 +61,8 @@ function pickNature(wanted: string | undefined, kind: 'image' | 'video'): MediaN
   const allowed = kind === 'video' ? VIDEO_NATURES : IMAGE_NATURES;
   return wanted && allowed.includes(wanted as MediaNature) ? (wanted as MediaNature) : kind === 'video' ? 'real_video' : 'real_photo';
 }
+
+const visualIds = (p: Project) => new Set(p.media.filter((m) => m.role === 'visual').map((m) => m.id));
 
 class HttpError extends Error {
   readonly status: number;
@@ -129,6 +137,45 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
   const { config, tools } = options;
   const store = new ProjectStore(config.dataDir);
   const jobs = new JobQueue(store, { config, store, tools, ...(options.fetch ? { fetch: options.fetch } : {}) }, { inline: options.inlineJobs ?? false });
+  // Descriptions interrupted by a restart.
+  for (const p of store.list()) {
+    if (p.media.some((m) => m.auto?.status === 'pending'))
+      store.update(p.id, (x) => x.media.forEach((m) => { if (m.auto?.status === 'pending') m.auto = { status: 'failed', error: 'interrompue par un redémarrage' }; }));
+  }
+  const describer = options.describer !== undefined ? options.describer : config.anthropicKey ? new ClaudeDescriber({ model: config.anthropicModel, apiKey: config.anthropicKey }) : null;
+
+  /**
+   * Claude describes a visual in the background. What the user typed meanwhile
+   * wins: the description is replaced only while it is still `replaceDescription`
+   * (the one set at upload), tags only while empty, the nature only when the user never chose it.
+   */
+  async function describeMedia(projectId: string, mediaId: string, how: { replaceDescription: string | false | true }) {
+    const p = store.get(projectId);
+    const m = p?.media.find((x) => x.id === mediaId);
+    if (!p || !m || m.kind === 'audio' || !describer) return;
+    try {
+      const frames = await framesOf(tools, join(store.mediaDir(p.id), m.file), m.kind, m.durationInSeconds);
+      const d = await describer.describe({ kind: m.kind, frames, natures: m.kind === 'video' ? VIDEO_NATURES : IMAGE_NATURES, script: p.script, fileName: m.originalName });
+      store.update(projectId, (x) => {
+        const y = x.media.find((z) => z.id === mediaId);
+        if (!y) return;
+        if (how.replaceDescription === true || y.description === how.replaceDescription) y.description = d.description;
+        if (how.replaceDescription === true || !y.tags.length) y.tags = d.tags;
+        if (d.nature && !y.natureSet) {
+          y.nature = d.nature;
+          delete y.synthetic;
+        }
+        y.auto = { status: 'done', model: config.anthropicModel, at: new Date().toISOString() };
+      });
+    } catch (e) {
+      app.log.warn({ err: e }, 'description automatique impossible');
+      if (!store.get(projectId)) return;
+      store.update(projectId, (x) => {
+        const y = x.media.find((z) => z.id === mediaId);
+        if (y) y.auto = { status: 'failed', error: (e as Error).message.slice(0, 200) };
+      });
+    }
+  }
   jobs.recover();
 
   const app = Fastify({ logger: options.logger ?? false, bodyLimit: 2 * 1024 * 1024 });
@@ -144,7 +191,7 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
   });
 
   app.setErrorHandler((err: Error & { statusCode?: number }, _req, reply) => {
-    const status = err instanceof HttpError ? err.status : err instanceof BusyError ? 409 : err.statusCode && err.statusCode < 500 ? err.statusCode : 500;
+    const status = err instanceof HttpError ? err.status : err instanceof HintError ? 400 : err instanceof BusyError ? 409 : err.statusCode && err.statusCode < 500 ? err.statusCode : 500;
     if (status >= 500) app.log.error(err);
     reply.code(status).send({ error: status >= 500 ? `Erreur serveur : ${err.message}` : err.message });
   });
@@ -176,7 +223,11 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
   app.patch<{ Params: { id: string } }>('/api/projects/:id', async (req) => {
     project(req.params.id);
     const fields = projectFields((req.body ?? {}) as Body, true);
-    return store.update(req.params.id, (p) => Object.assign(p, fields));
+    return store.update(req.params.id, (p) => {
+      Object.assign(p, fields);
+      // Hints of lines that left the script go with them.
+      if (fields.script !== undefined && p.hints) p.hints = keepHints(p.hints, p.script, visualIds(p));
+    });
   });
 
   app.delete<{ Params: { id: string } }>('/api/projects/:id', async (req, reply) => {
@@ -225,6 +276,8 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
       throw new HttpError(400, 'un visuel doit être une image ou une vidéo');
     }
     const description = (field('description') ?? part.filename.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ')).slice(0, 300);
+    const declaredNature = field('nature') ?? (field('synthetic') === 'true' ? 'generated' : undefined);
+    const autoDescribe = role === 'visual' && !!describer;
     const item: MediaItem = {
       id,
       role,
@@ -238,7 +291,8 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
       ...(info.durationInSeconds ? { durationInSeconds: info.durationInSeconds } : {}),
       description,
       tags: [],
-      ...(role === 'visual' ? { nature: pickNature(field('nature') ?? (field('synthetic') === 'true' ? 'generated' : undefined), info.kind as 'image' | 'video') } : {}),
+      ...(role === 'visual' ? { nature: pickNature(declaredNature, info.kind as 'image' | 'video'), ...(declaredNature ? { natureSet: true } : {}) } : {}),
+      ...(autoDescribe ? { auto: { status: 'pending' as const } } : {}),
     };
     // One voice and one music per project: a new one replaces the old.
     const replaced = role === 'visual' ? [] : p.media.filter((m) => m.role === role);
@@ -247,6 +301,8 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
       x.media = [...x.media.filter((m) => !replaced.includes(m)), item];
       if (role === 'voice') x.voice = { mode: 'upload' };
     });
+    // A description typed at upload is the user's: Claude only adds tags and, if undeclared, the nature.
+    if (autoDescribe) void describeMedia(p.id, id, { replaceDescription: field('description') === undefined ? description : false });
     return reply.code(201).send(updated);
   });
 
@@ -265,6 +321,7 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
         const allowed = m.kind === 'video' ? VIDEO_NATURES : IMAGE_NATURES;
         if (wanted !== undefined && !allowed.includes(wanted as MediaNature)) throw new HttpError(400, `nature : ${allowed.join(', ')}`);
         m.nature = wanted as MediaNature | undefined ?? (m.kind === 'video' ? 'real_video' : 'real_photo');
+        m.natureSet = true;
         delete m.synthetic;
       }
       // An audio file is the voice-over or the music; one of each per project.
@@ -278,6 +335,20 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
     });
   });
 
+  app.post<{ Params: { id: string; mediaId: string } }>('/api/projects/:id/media/:mediaId/describe', async (req, reply) => {
+    const p = project(req.params.id);
+    const m = p.media.find((y) => y.id === req.params.mediaId);
+    if (!m) throw new HttpError(404, 'média introuvable');
+    if (m.role !== 'visual') throw new HttpError(400, 'seul un visuel se décrit');
+    if (!describer) throw new HttpError(400, 'Ajoutez ANTHROPIC_API_KEY dans server/.env pour que Claude décrive les visuels.');
+    if (m.auto?.status === 'pending') throw new HttpError(409, 'Claude décrit déjà ce visuel.');
+    const updated = store.update(p.id, (x) => {
+      x.media.find((y) => y.id === m.id)!.auto = { status: 'pending' };
+    });
+    void describeMedia(p.id, m.id, { replaceDescription: true });
+    return reply.code(202).send(updated);
+  });
+
   app.delete<{ Params: { id: string; mediaId: string } }>('/api/projects/:id/media/:mediaId', async (req) => {
     const p = project(req.params.id);
     const m = p.media.find((y) => y.id === req.params.mediaId);
@@ -286,6 +357,22 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
     return store.update(p.id, (x) => {
       x.media = x.media.filter((y) => y.id !== m.id);
       if (m.role === 'voice' && x.voice.mode === 'upload') x.voice = { mode: 'tts' };
+      if (x.hints) x.hints = keepHints(x.hints, x.script, visualIds(x));
+    });
+  });
+
+  app.put<{ Params: { id: string } }>('/api/projects/:id/hints', async (req) => {
+    const p = project(req.params.id);
+    const body = (req.body ?? {}) as Body;
+    const line = typeof body.line === 'string' ? hintKey(body.line) : '';
+    if (!line) throw new HttpError(400, 'line : la phrase du script');
+    if (!p.script.split(/\r?\n/).some((l) => hintKey(l) === line)) throw new HttpError(400, 'Cette phrase n’est plus dans le script.');
+    const hints = body.hints === null ? {} : parseHints(body.hints, visualIds(p));
+    return store.update(p.id, (x) => {
+      const all = { ...(x.hints ?? {}) };
+      if (Object.keys(hints).length) all[line] = hints;
+      else delete all[line];
+      x.hints = all;
     });
   });
 

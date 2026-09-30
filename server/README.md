@@ -30,8 +30,9 @@ Puis, dans `../web` : `npm run dev` et ouvrez http://localhost:5173/editeur.
 |---|---|
 | `ELEVENLABS_API_KEY` | Voix IA générée depuis le script, et transcription mot à mot d'une voix importée. Sans elle : voix importée seulement, alignée localement sur le script (±0,15 s par mot). |
 | `ELEVENLABS_VOICE_ID`, `ELEVENLABS_MODEL` | Voix et modèle par défaut (`eleven_multilingual_v2`). |
-| `ANTHROPIC_API_KEY` | Claude écrit l'analyse éditoriale (`--llm` d'editor-brain). Sans elle : cerveau heuristique. |
-| `ANTHROPIC_MODEL` | Modèle Claude du cerveau (défaut `claude-sonnet-5-5`). |
+| `ANTHROPIC_API_KEY` | Claude écrit l'analyse éditoriale (`--llm` d'editor-brain) et décrit chaque visuel importé (description, mots-clés, nature). Sans elle : cerveau heuristique, descriptions à écrire soi-même. |
+| `ANTHROPIC_MODEL` | Modèle Claude du cerveau et des descriptions (défaut `claude-sonnet-5-5`). |
+| `RENDER_CACHE_GB` | Taille gardée du cache de rendu après chaque rendu, en Go (défaut 10). |
 | `PORT`, `HOST` | Écoute (défaut `127.0.0.1:8787`). |
 | `MEDIA_BASE_URL` | URL à laquelle le navigateur de rendu joint ce serveur (défaut `http://127.0.0.1:$PORT`). |
 | `DATA_DIR` | Projets, médias, plans, rendus (défaut `server/data`). |
@@ -47,6 +48,8 @@ Puis, dans `../web` : `npm run dev` et ouvrez http://localhost:5173/editeur.
 | GET / POST | `/api/projects` | liste / création (`title`, `script`, `pacing`, `style` : `apple` ou `default`, `captions`, `llm`, `voice`, `rightsConfirmed`) |
 | GET / PATCH / DELETE | `/api/projects/:id` | |
 | POST | `/api/projects/:id/media` | multipart : `role` (`visual`, `voice`, `music`), `description`, `nature`, puis `file` |
+| POST | `/api/projects/:id/media/:mediaId/describe` | Claude décrit de nouveau le visuel (remplace description et mots-clés ; la nature seulement si vous ne l'avez jamais choisie) |
+| PUT | `/api/projects/:id/hints` | `{ line, hints }` : ce que vous fixez sur une phrase du script (`null` efface) |
 | PATCH / DELETE | `/api/projects/:id/media/:mediaId` | description, `nature` d'un visuel (`real_video`, `real_photo`, `archive`, `screenshot`, `document`, `generated`), `role` d'un audio (`voice` ⇄ `music`) |
 | POST | `/api/projects/:id/direct` | voix → timings → plan style Apple (tâche) |
 | POST | `/api/projects/:id/stills` | planche de contrôle (tâche) |
@@ -59,6 +62,14 @@ Les tâches s'exécutent une par une, dans un thread séparé : le moteur bloque
 ## Choix des médias
 
 Le moteur choisit pour chaque phrase le média le plus authentique qui répond à son besoin (bible de studio-engine, §27) : vidéo réelle → photo réelle ou archive → capture d'écran ou document → visualisation de données → visuel généré → motion design. La **nature** de chaque visuel (menu de la médiathèque) compte : un visuel « Généré par IA » n'est jamais utilisé pour présenter une personne réelle, un contexte historique, une plateforme ou un document. Les vidéos réelles sont rendues dans le bloc `studio-video` du style Apple (muettes : la voix off porte le son).
+
+## Indications par phrase
+
+Sur une phrase du script, vous pouvez imposer ce que le moteur devinerait sinon : l'intention (`intent`), le besoin en image (`mediaNeed`), le visuel (`media`) et la seconde où le clip commence (`mediaStart`), un graphique (`chart` : type, libellés, valeurs, unité, titre, source), une part (`share`), une source affichée (`source`), une fiche document (`documentCard`), un mot barré (`strike`). Elles sont rangées par texte de ligne : si vous modifiez la phrase, ses indications disparaissent. Si une ligne contient plusieurs phrases, le moteur les applique à la première.
+
+## Description automatique des visuels
+
+Avec `ANTHROPIC_API_KEY`, chaque visuel importé est regardé par Claude (une image, ou trois images d'une vidéo) : il écrit une description et des mots-clés dans la langue du script, et propose la nature du fichier. Ce que vous avez tapé ou choisi n'est jamais remplacé : une description saisie à l'import reste, une nature choisie reste. Claude ne sait pas toujours reconnaître une image générée par IA : vérifiez la nature des visuels réalistes.
 
 ## Format du script
 
@@ -81,4 +92,4 @@ npm run typecheck
 - **Stockage local** (`DATA_DIR`) et **une machine** : pas encore de stockage objet ni de file de rendus répartie.
 - **ElevenLabs** : le format des réponses (voix avec timestamps, transcription Scribe) n'a pas été testé contre le vrai service dans cette version, seulement contre des réponses simulées.
 - **Vidéos dans le style Apple** : elles sont décodées par le navigateur du rendu. Sur Mac avec Google Chrome, le MP4 (H.264) passe ; avec un Chromium sans codecs propriétaires (serveur Linux), seules les vidéos WebM (VP9) s'affichent.
-- Les textes produits par studio-engine (demandes d'assets, décisions, contrôle qualité, « Chapter 2 » sur les cartons) sont **en anglais** : c'est le moteur qui les écrit.
+- Les cartons de chapitre et les demandes de médias suivent la langue du script. Les décisions du moteur et les messages du contrôle qualité restent **en anglais** : c'est le moteur qui les écrit.

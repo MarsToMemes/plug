@@ -16,6 +16,7 @@ import {
   directEpisodeWithLlm,
   ffmpegFilters,
   qcEpisode,
+  pruneCache,
   renderEpisode,
   runFfmpeg,
   type AssetRegistry,
@@ -28,6 +29,7 @@ import {
   type TranscriptWord,
 } from './engine.ts';
 import { concatAudio, decodePcm16k, normalizeVoice, probe, sha256File, writeJson } from './media.ts';
+import { withHints } from './hints.ts';
 import { chunkText, parseScript, spokenText } from './script.ts';
 import { MAX_RENDERS, natureOf, newId, type MediaItem, type Project, type ProjectStore, type RenderInfo } from './store.ts';
 import { alignKnownText, wordsFromAlignment, wordsFromStt } from './words.ts';
@@ -195,7 +197,7 @@ export function buildBrainInput(project: Project, config: Config, voice: Voice |
     fps: FPS,
     width: 1920,
     height: 1080,
-    script: parseScript(project.script),
+    script: withHints(parseScript(project.script), project.hints),
     assets,
     catalog,
     ...(voice ? { narration: { assetId: 'narration', words: voice.words } } : {}),
@@ -307,6 +309,12 @@ export async function renderStep(projectId: string, ctx: PipelineContext, scale:
     { engine: 'remotion', fallback: false, ffmpeg: tools.ffmpeg[0]!, ffprobe: tools.ffprobe[0]!, ...(config.browser ? { browserExecutable: config.browser } : {}) },
   );
   renameSync(tmp, output);
+  // The cache speeds up the next render of the same shots; beyond the limit the least recently used entries go.
+  try {
+    pruneCache(join(config.dataDir, 'cache'), config.renderCacheBytes);
+  } catch {
+    // A cache that could not be pruned does not fail the render.
+  }
   let poster: string | undefined;
   try {
     const at = Math.min(1.5, (result.durationInFrames / plan.fps) / 3);
