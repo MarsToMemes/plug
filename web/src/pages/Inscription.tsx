@@ -4,10 +4,10 @@ import { Logo } from '../components/Site';
 import './inscription.css';
 
 const PLANS: Record<string, [string, string, string[]]> = {
-  free: ['Free', '0 €/mois', ['30 min de rushes traités par l’IA', 'Export 1080p', 'Sans carte bancaire']],
-  creator: ['Creator', '29 €/mois', ['5 h de rushes traités par l’IA', 'Export 1080p sans filigrane', 'Tous les styles de montage']],
-  pro: ['Pro', '59 €/mois', ['15 h de rushes traités par l’IA', 'Export 4K', 'Rendu prioritaire']],
-  studio: ['Studio', '149 €/mois', ['50 h de rushes traités par l’IA', '5 sièges inclus', 'Support dédié']]
+  free: ['Free', '0 €/mois', ['5 min de vidéo montée', 'Export 1080p', 'Sans carte bancaire']],
+  creator: ['Creator', '29 €/mois', ['60 min de vidéo montée', 'Export 1080p sans filigrane', 'Réalisation par Claude']],
+  pro: ['Pro', '59 €/mois', ['180 min de vidéo montée', 'Tout Creator', '500 Go de stockage']],
+  studio: ['Studio', '149 €/mois', ['600 min de vidéo montée', 'Tout Pro', 'Support dédié']]
 };
 
 // Simulated Google account chooser (a real sign-in needs a server and a Google client id).
@@ -68,7 +68,7 @@ export default function Inscription() {
         <Logo />
         <div className="auth-visual__copy">
           <h1>{su ? 'Montez plus. Publiez plus.' : 'Content de vous revoir'}</h1>
-          <p>Votre premier montage IA est prêt en quelques minutes.</p>
+          <p>Votre premier documentaire est monté en quelques minutes.</p>
         </div>
         <div className="auth-plan">
           <div className="auth-plan__head"><span>PLAN SÉLECTIONNÉ</span><Link to="/tarifs">Changer</Link></div>
@@ -94,7 +94,7 @@ export default function Inscription() {
               </div>
               <div>
                 <h2 className="auth-title">{su ? 'Créez votre compte' : 'Connexion'}</h2>
-                <p className="auth-sub">{su ? '30 minutes de montage IA offertes.' : 'Retrouvez vos projets en cours.'}</p>
+                <p className="auth-sub">{su ? '5 minutes de vidéo offertes.' : 'Retrouvez vos projets en cours.'}</p>
               </div>
               <button type="button" className="g-btn" onClick={() => { setGOpen(true); setGLoading(false); }}><span className="g-logo" />Continuer avec Google</button>
               <div className="auth-or"><span />ou par e-mail<span /></div>

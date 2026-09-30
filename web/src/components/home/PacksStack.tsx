@@ -5,9 +5,12 @@ const STACK: PhotoKey[] = ['concert', 'cinema', 'studio'];
 const EASE = 'cubic-bezier(.22,1,.36,1)';
 
 /**
- * Thumbnail stack of the "Packs Motion & Style" card: cards fly in when scrolled into view,
- * the "40+" counter counts up with a shine, and the stack fans out on hover.
+ * Thumbnail stack of the "Le style Apple" card: cards fly in when scrolled into view,
+ * the counter (the bible's rules of editing) counts up with a shine, and the stack fans out on hover.
  */
+/** Rules of editing checked on every edit (studio-engine's bible). */
+const TARGET = 158;
+
 export default function PacksStack() {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -33,8 +36,8 @@ export default function PacksStack() {
       if (num) {
         const t0 = performance.now() + 450, dur = 1500;
         const tick = (t: number) => {
-          const p = Math.min(1, Math.max(0, (t - t0) / dur)), v = Math.round(40 * (1 - Math.pow(1 - p, 4)));
-          num.textContent = v + (p >= 1 ? '+' : '');
+          const p = Math.min(1, Math.max(0, (t - t0) / dur)), v = Math.round(TARGET * (1 - Math.pow(1 - p, 4)));
+          num.textContent = String(v);
           if (p < 1) rafId = requestAnimationFrame(tick);
         };
         num.textContent = '0'; rafId = requestAnimationFrame(tick);
@@ -68,7 +71,7 @@ export default function PacksStack() {
     <div ref={ref} className="stack" aria-hidden="true">
       {STACK.map(k => <img key={k} className="stack__card" src={photo(k, 360)} alt="" />)}
       <div className="stack__card stack__count">
-        <span data-count="40">40+</span>
+        <span data-count={TARGET}>{TARGET}</span>
         <div data-shine="1" className="stack__shine" />
       </div>
     </div>

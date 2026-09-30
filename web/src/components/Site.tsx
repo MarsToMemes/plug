@@ -19,7 +19,7 @@ export function SiteNav({ packsHref = '/tarifs#packs', howHref = '/#fonctionneme
         <Link to="/editeur">Éditeur</Link>
         <Link to={howHref}>Fonctionnement</Link>
         <Link to="/tarifs" aria-current={pathname === '/tarifs' ? 'page' : undefined}>Tarifs</Link>
-        <Link to={packsHref}>Packs</Link>
+        <Link to={packsHref}>Styles</Link>
       </div>
       <div className="site-nav__cta">
         <Link to="/inscription?mode=login" className="btn-ghost-light">Connexion</Link>

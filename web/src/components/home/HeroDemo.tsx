@@ -21,7 +21,7 @@ export default function HeroDemo({ speed = 1 }: { speed?: number }) {
   useEffect(() => (ref.current ? startHeroDemo(ref.current, { speed }) : undefined), [speed]);
 
   return (
-    <div ref={ref} className="hd" aria-label="Démonstration : Plug monte automatiquement des rushes" role="img">
+    <div ref={ref} className="hd" aria-label="Démonstration : Plug monte automatiquement une vidéo" role="img">
       {DEMO_CLIPS.map((c, i) => {
         const cp = CARD_POS[i];
         return (

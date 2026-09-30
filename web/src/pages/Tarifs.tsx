@@ -8,36 +8,36 @@ import './tarifs.css';
 const DEFAULT_YEARLY = false;
 
 const PLANS: [name: string, monthly: number, tag: string, items: string[], cta: string, id: string, badge: string][] = [
-  ['Free', 0, 'Pour tester Plug sur vos vraies vidéos.', ['30 min de rushes traités / mois', 'Export 1080p avec filigrane', '3 projets actifs', '5 Go de stockage'], 'Commencer', 'free', ''],
-  ['Creator', 29, 'Pour les créateurs qui publient chaque semaine.', ['5 h de rushes traités / mois', 'Export 1080p sans filigrane', 'Tous les styles de montage', 'Projets illimités', '100 Go de stockage'], 'Choisir Creator', 'creator', 'Recommandé'],
-  ['Pro', 59, 'Pour les chaînes à fort volume.', ['15 h de rushes traités / mois', 'Export 4K', 'Rendu prioritaire', 'Marque personnalisée', '500 Go de stockage'], 'Choisir Pro', 'pro', ''],
-  ['Studio', 149, 'Pour les agences et les équipes marketing.', ['50 h de rushes traités / mois', '5 sièges inclus', 'Espace équipe et validation', 'Support dédié', '2 To de stockage'], 'Choisir Studio', 'studio', '']
+  ['Free', 0, 'Pour essayer Plug sur votre sujet.', ['5 min de vidéo montée / mois', 'Export 1080p avec filigrane', 'Voix IA ou votre voix', '3 projets actifs', '5 Go de stockage'], 'Commencer', 'free', ''],
+  ['Creator', 29, 'Pour les créateurs qui publient chaque semaine.', ['60 min de vidéo montée / mois', 'Export 1080p sans filigrane', 'Réalisation par Claude', 'Voix IA ElevenLabs incluse', 'Projets illimités', '100 Go de stockage'], 'Choisir Creator', 'creator', 'Recommandé'],
+  ['Pro', 59, 'Pour les chaînes à fort volume.', ['180 min de vidéo montée / mois', 'Tout Creator', 'Projets illimités', '500 Go de stockage'], 'Choisir Pro', 'pro', ''],
+  ['Studio', 149, 'Pour les agences et les équipes éditoriales.', ['600 min de vidéo montée / mois', 'Tout Pro', 'Support dédié', '2 To de stockage'], 'Choisir Studio', 'studio', '']
 ];
 
 const ROWS: [string, string[]][] = [
-  ['Rushes traités par l’IA / mois', ['30 min', '5 h', '15 h', '50 h']],
-  ['Heures supplémentaires', ['—', '6 € / h', '5 € / h', '4 € / h']],
-  ['Résolution d’export', ['1080p', '1080p', '4K', '4K']],
+  ['Vidéo montée / mois', ['5 min', '60 min', '180 min', '600 min']],
+  ['Minutes supplémentaires', ['—', '0,60 € / min', '0,50 € / min', '0,40 € / min']],
+  ['Résolution d’export', ['1080p', '1080p', '1080p', '1080p']],
   ['Filigrane', ['Oui', 'Non', 'Non', 'Non']],
-  ['Styles de montage IA', ['3', 'Tous', 'Tous', 'Tous']],
-  ['File de rendu', ['Standard', 'Standard', 'Prioritaire', 'Prioritaire']],
-  ['Sièges', ['1', '1', '1', '5']],
+  ['Voix IA ElevenLabs', ['Oui', 'Oui', 'Oui', 'Oui']],
+  ['Réalisation par Claude', ['Non', 'Oui', 'Oui', 'Oui']],
+  ['Description automatique des images', ['Non', 'Oui', 'Oui', 'Oui']],
   ['Stockage', ['5 Go', '100 Go', '500 Go', '2 To']]
 ];
 
-const PACKS: [string, number, string, string, PhotoKey][] = [
-  ['Neon Pulse', 29, 'Titres néon et transitions rythmées pour le gaming.', 'linear-gradient(135deg,#2a1540,#ff6fb0)', 'concert'],
-  ['Docu Press', 39, 'Cartons, surlignages et chiffres clés façon enquête.', 'linear-gradient(135deg,#1a1a1a,#FFC72C)', 'cinema'],
-  ['Soft Vlog', 19, 'Étalonnage doux et sous-titres arrondis.', 'linear-gradient(135deg,#f0a9cf,#ffd29a)', 'travel'],
-  ['Tech Clean', 49, 'Callouts, zooms écran et habillage produit.', 'linear-gradient(135deg,#0f3340,#8a5cff)', 'neon']
+const PACKS: [string, string, string, string, PhotoKey][] = [
+  ['Style Apple', 'Inclus', 'Coupes franches, titres au rythme de la voix, chiffres qui comptent, parts qui s’allument, documents recomposés.', 'linear-gradient(135deg,#1a1a1a,#8a5cff)', 'cinema'],
+  ['Style classique', 'Inclus', 'Photos et vidéos plein cadre, mouvements de caméra, sous-titres mot à mot, transitions douces.', 'linear-gradient(135deg,#0f3340,#ff6fb0)', 'travel']
 ];
 
 const FAQ: [string, string][] = [
-  ['Que compte une « heure de rushes traitée » ?', 'La durée des fichiers bruts que l’IA analyse et monte. Une vidéo finale de 15 min issue de 1 h de rushes consomme 1 h. Les retouches manuelles dans l’éditeur ne consomment rien.'],
-  ['Que se passe-t-il si je dépasse mon quota ?', 'Plug vous prévient à 80 %. Vous pouvez acheter des heures à l’unité ou passer au plan supérieur, sans perdre votre travail.'],
+  ['Que compte une « minute de vidéo montée » ?', 'La durée de la vidéo finale exportée en 1080p. Les aperçus 540p, la planche de contrôle et les réglages de phrase ne consomment rien.'],
+  ['D’où viennent les images ?', 'De vous : vos photos, vidéos, captures et documents. Plug ne télécharge aucune image sans licence vérifiée. Quand une image manque, il vous dit laquelle chercher et où (Wikimedia Commons, kits presse, Pexels).'],
+  ['Dois-je enregistrer ma voix ?', 'Non. La voix IA est générée depuis votre script. Vous pouvez aussi importer votre propre voix : chaque mot est calé sur l’image.'],
+  ['Que se passe-t-il si je dépasse mon quota ?', 'Plug vous prévient à 80 %. Vous pouvez acheter des minutes à l’unité ou passer au plan supérieur, sans perdre votre travail.'],
   ['Puis-je changer de plan à tout moment ?', 'Oui. Le passage à un plan supérieur est immédiat et calculé au prorata. La résiliation prend effet à la fin de la période.'],
   ['Mes vidéos servent-elles à entraîner l’IA ?', 'Non. Vos fichiers restent privés et ne sont jamais utilisés pour entraîner des modèles.'],
-  ['Les packs sont-ils inclus dans les abonnements ?', 'Non, ce sont des achats uniques. Une fois achetés, ils restent à vous, même si vous changez de plan.']
+  ['Les styles sont-ils inclus ?', 'Oui. Les styles Apple et classique sont inclus dans tous les plans, y compris Free.']
 ];
 
 export default function Tarifs() {
@@ -49,8 +49,8 @@ export default function Tarifs() {
       <header className="pr-hero">
         <SiteNav packsHref="#packs" />
         <div className="pr-hero__body">
-          <h1>Payez pour le montage, pas pour la complexité</h1>
-          <p>Chaque plan inclut un volume d’heures de rushes traitées par l’IA. L’éditeur, lui, est illimité.</p>
+          <h1>Payez pour la vidéo, pas pour la complexité</h1>
+          <p>Chaque plan inclut des minutes de vidéo montée. Les aperçus, la planche de contrôle et les réglages, eux, sont illimités.</p>
           <div className="pr-toggle" role="group" aria-label="Période de facturation">
             <button type="button" aria-pressed={!yearly} className={!yearly ? 'is-on' : ''} onClick={() => setYearly(false)}>Mensuel</button>
             <button type="button" aria-pressed={yearly} className={yearly ? 'is-on' : ''} onClick={() => setYearly(true)}>Annuel <span>−20 %</span></button>
@@ -102,18 +102,18 @@ export default function Tarifs() {
         <section id="packs" className="pr-packs">
           <div className="pr-packs__head">
             <div>
-              <span className="pr-packs__kicker">PACKS MOTION &amp; STYLE</span>
-              <h2 className="pr-h2">Une identité visuelle en un clic.</h2>
-              <p>Achat unique, utilisable sur toutes vos vidéos. Compatible avec tous les plans, y compris Free.</p>
+              <span className="pr-packs__kicker">STYLES DE MONTAGE</span>
+              <h2 className="pr-h2">Un style, choisi en un clic.</h2>
+              <p>Inclus dans tous les plans, y compris Free. Le même script peut être monté dans chaque style.</p>
             </div>
-            <span className="pr-packs__range">19 à 49 € l’unité</span>
+            <span className="pr-packs__range">Inclus</span>
           </div>
           <div className="pr-packs__grid">
             {PACKS.map(([name, price, desc, bg, img]) => (
               <div key={name} className="pack">
                 <img src={photo(img, 720)} alt="" style={{ background: bg }} />
                 <div className="pack__body">
-                  <div className="pack__row"><span>{name}</span><span>{price} €</span></div>
+                  <div className="pack__row"><span>{name}</span><span>{price}</span></div>
                   <span className="pack__desc">{desc}</span>
                 </div>
               </div>
@@ -140,7 +140,7 @@ export default function Tarifs() {
       </main>
 
       <section className="cta-final cta-final--tarifs">
-        <h2>30 minutes offertes pour essayer</h2>
+        <h2>5 minutes de vidéo offertes pour essayer</h2>
         <Link to="/inscription" className="cta-final__btn">Créer mon compte gratuit →</Link>
       </section>
       <SiteFooter links={[['Accueil', '/'], ['Éditeur', '/editeur'], ['CGU', '#']]} />

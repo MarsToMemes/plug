@@ -6,7 +6,7 @@ import Tarifs from './pages/Tarifs';
 import Inscription from './pages/Inscription';
 
 const TITLES: Record<string, string> = {
-  '/': 'Plug — Vos rushes, montés par l’IA',
+  '/': 'Plug — Votre script, monté comme un documentaire',
   '/editeur': 'Éditeur — Plug',
   '/tarifs': 'Tarifs — Plug',
   '/inscription': 'Inscription — Plug'

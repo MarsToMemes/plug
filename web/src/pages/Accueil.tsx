@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { SiteFooter, SiteNav } from '../components/Site';
 import HeroDemo from '../components/home/HeroDemo';
-import UploadCard from '../components/home/UploadCard';
+import ScriptCard from '../components/home/ScriptCard';
 import PacksStack from '../components/home/PacksStack';
 import EditorShowcase from '../components/home/EditorShowcase';
 import './accueil.css';
@@ -9,16 +9,16 @@ import './accueil.css';
 interface Plan { name: string; price: string; tag: string; items: string[]; cta: string; id: string; badge?: string }
 
 const PLANS: Plan[] = [
-  { name: 'Free', price: '0', tag: 'Pour tester Plug sur vos vraies vidéos.', items: ['30 min de rushes traités par l’IA / mois', 'Export 1080p avec filigrane', '5 Go de stockage'], cta: 'Commencer', id: 'free' },
-  { name: 'Creator', price: '29', tag: 'Pour publier chaque semaine.', items: ['5 h de rushes traités par l’IA / mois', 'Export 1080p sans filigrane', 'Tous les styles de montage', '100 Go de stockage'], cta: 'Choisir Creator', id: 'creator', badge: 'Recommandé' },
-  { name: 'Pro', price: '59', tag: 'Pour les chaînes à fort volume.', items: ['15 h de rushes traités par l’IA / mois', 'Export 4K', 'Rendu prioritaire', '500 Go de stockage'], cta: 'Choisir Pro', id: 'pro' },
-  { name: 'Studio', price: '149', tag: 'Pour les agences et équipes.', items: ['50 h de rushes traités par l’IA / mois', '5 sièges inclus', 'Espace équipe partagé', '2 To de stockage'], cta: 'Choisir Studio', id: 'studio' }
+  { name: 'Free', price: '0', tag: 'Pour essayer Plug sur votre sujet.', items: ['5 min de vidéo montée / mois', 'Export 1080p avec filigrane', 'Voix IA ou votre voix'], cta: 'Commencer', id: 'free' },
+  { name: 'Creator', price: '29', tag: 'Pour publier chaque semaine.', items: ['60 min de vidéo montée / mois', 'Export 1080p sans filigrane', 'Réalisation par Claude', 'Voix IA ElevenLabs incluse'], cta: 'Choisir Creator', id: 'creator', badge: 'Recommandé' },
+  { name: 'Pro', price: '59', tag: 'Pour les chaînes à fort volume.', items: ['180 min de vidéo montée / mois', 'Tout Creator', '500 Go de stockage'], cta: 'Choisir Pro', id: 'pro' },
+  { name: 'Studio', price: '149', tag: 'Pour les agences et équipes.', items: ['600 min de vidéo montée / mois', 'Tout Pro', 'Support dédié', '2 To de stockage'], cta: 'Choisir Studio', id: 'studio' }
 ];
 
 const STEPS = [
-  { n: '01', title: 'Déposez vos rushes', text: 'Glissez vos fichiers bruts, même longs. Plug analyse l’image, le son et la parole.', mod: 'a' },
-  { n: '02', title: 'L’IA monte pour vous', text: 'Choisissez un style : vlog, tuto, podcast, gaming. Plug coupe les temps morts et cale le rythme.', mod: 'dark' },
-  { n: '03', title: 'Peaufinez et exportez', text: 'Chaque coupe reste modifiable sur la timeline. Exportez en 1080p ou 4K, prêt pour YouTube.', mod: 'b' }
+  { n: '01', title: 'Écrivez le script', text: 'Une phrase par ligne, # pour un chapitre, les chiffres en chiffres. Plug lit l’intention de chaque phrase : accroche, fait, chiffre, révélation.', mod: 'a' },
+  { n: '02', title: 'Ajoutez la voix et vos images', text: 'Voix IA générée depuis le script, ou votre propre voix calée au mot près. Vos photos, vidéos et documents : Claude les décrit pour le monteur.', mod: 'dark' },
+  { n: '03', title: 'Plug monte, vous contrôlez', text: 'Titres qui se construisent au mot, chiffres qui comptent, graphiques, cartes, documents surlignés. Planche de contrôle, versions, export 1080p masterisé pour YouTube.', mod: 'b' }
 ];
 
 export default function Accueil() {
@@ -28,16 +28,16 @@ export default function Accueil() {
         <SiteNav packsHref="/tarifs#packs" howHref="#fonctionnement" />
 
         <div className="home-hero__main">
-          <div className="home-kicker"><span>NOUVEAU</span>Montage IA automatique pour YouTube</div>
-          <h1 className="home-h1">Vos rushes,<br />montés par l’IA</h1>
+          <div className="home-kicker"><span>NOUVEAU</span>Documentaires YouTube, style Apple</div>
+          <h1 className="home-h1">Votre script,<br />monté comme un docu</h1>
           <div className="home-hero__grid">
             <div>
-              <p className="home-lead">Déposez vos fichiers bruts. Plug coupe, rythme et assemble une vidéo prête à publier. Vous gardez la main sur chaque plan.</p>
+              <p className="home-lead">Écrivez le script, choisissez une voix. Plug choisit pour chaque phrase l’image la plus authentique, anime titres, chiffres et graphiques au mot près, et livre une vidéo prête à publier. Vous gardez la main sur chaque phrase.</p>
               <div className="home-ctas">
                 <Link to="/inscription" className="btn-white">Commencer gratuitement <span aria-hidden="true">→</span></Link>
                 <Link to="/tarifs" className="btn-outline-white">Voir les tarifs</Link>
               </div>
-              <div className="home-reassure"><span>✓ Sans carte bancaire</span><span>✓ 30 min de montage IA offertes</span><span>✓ Sans engagement</span></div>
+              <div className="home-reassure"><span>✓ Sans carte bancaire</span><span>✓ 5 min de vidéo offertes</span><span>✓ Sans engagement</span></div>
             </div>
             <HeroDemo />
           </div>
@@ -49,14 +49,14 @@ export default function Accueil() {
             Voir la démo
           </Link>
           <div className="home-cards__grid">
-            <UploadCard />
+            <ScriptCard />
             <div className="glass-card glass-card--packs">
               <PacksStack />
               <div>
-                <div className="glass-card__title">Packs Motion &amp; Style</div>
-                <div className="glass-card__sub glass-card__sub--wide">Transitions, titres animés et étalonnages créés par des motion designers. Appliqués en un clic, dès 19 €.</div>
+                <div className="glass-card__title">Le style Apple</div>
+                <div className="glass-card__sub glass-card__sub--wide">Coupes franches, titres qui apparaissent au rythme de la voix, chiffres qui comptent, parts qui s’allument, documents recomposés. Chaque montage est vérifié par 158 règles de réalisation.</div>
               </div>
-              <Link to="/tarifs#packs" className="btn-outline-white btn-outline-white--sm">Découvrir les packs <span aria-hidden="true">→</span></Link>
+              <Link to="/tarifs#packs" className="btn-outline-white btn-outline-white--sm">Voir les styles <span aria-hidden="true">→</span></Link>
             </div>
           </div>
         </div>
@@ -65,8 +65,8 @@ export default function Accueil() {
       <main className="home-main">
         <section id="fonctionnement" className="how">
           <div className="how__head">
-            <h2 className="h2">Du rush brut à la vidéo publiée, en trois étapes.</h2>
-            <p>Le montage qui vous prenait une journée tient dans une pause café.</p>
+            <h2 className="h2">Du script à la vidéo publiée, en trois étapes.</h2>
+            <p>Vous écrivez l’histoire. Plug fait le montage qui prendrait une journée.</p>
           </div>
           <div className="how__grid">
             {STEPS.map(s => (
@@ -82,8 +82,8 @@ export default function Accueil() {
         <section className="showcase" aria-labelledby="showcase-title">
           <div className="showcase__copy">
             <div className="showcase__kicker">L’ÉDITEUR PLUG</div>
-            <h2 id="showcase-title">L’IA fait le premier montage. Vous signez le final.</h2>
-            <p>Une timeline complète, des pistes titres et audio, un inspecteur précis. Tout ce que l’IA propose se corrige à la frame près.</p>
+            <h2 id="showcase-title">Le monteur propose. Vous imposez.</h2>
+            <p>Chaque plan dit pourquoi il existe et quelle image il utilise. Cliquez une phrase pour imposer un visuel, un graphique avec ses vraies données, une source : le montage se refait autour.</p>
             <div><Link to="/editeur" className="btn-grad">Ouvrir l’éditeur →</Link></div>
           </div>
           <div className="showcase__demo"><EditorShowcase /></div>
@@ -91,7 +91,7 @@ export default function Accueil() {
 
         <section id="tarifs" className="home-pricing">
           <div className="home-pricing__head">
-            <h2 className="h2">Un prix simple. Des minutes IA claires.</h2>
+            <h2 className="h2">Un prix simple, en minutes de vidéo.</h2>
             <p>Commencez gratuitement. Changez de plan quand votre chaîne grandit.</p>
           </div>
           <div className="home-pricing__grid">
@@ -117,9 +117,9 @@ export default function Accueil() {
       </main>
 
       <section className="cta-final">
-        <h2>Votre prochaine vidéo est déjà dans vos rushes</h2>
+        <h2>Votre prochain documentaire est déjà dans votre script</h2>
         <Link to="/inscription" className="cta-final__btn">Commencer gratuitement →</Link>
-        <span className="cta-final__note">30 min de montage IA offertes, sans carte bancaire</span>
+        <span className="cta-final__note">5 min de vidéo offertes, sans carte bancaire</span>
       </section>
 
       <SiteFooter links={[['Tarifs', '/tarifs'], ['Éditeur', '/editeur'], ['Confidentialité', '#'], ['CGU', '#']]} />
