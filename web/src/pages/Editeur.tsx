@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Mediatheque from '../components/editor/Mediatheque';
-import { api, jobActive, type EditStyle, type Health, type Pacing, type Plan, type PlanShot, type Project, type RenderInfo, type VoiceMode } from '../lib/api';
+import SentenceEditor from '../components/editor/SentenceEditor';
+import { api, hintKey, jobActive, type EditStyle, type Health, type Pacing, type Plan, type PlanShot, type Project, type RenderInfo, type VoiceMode } from '../lib/api';
 import './editeur.css';
 
 const PROJECT_KEY = 'plug.project';
@@ -58,12 +59,27 @@ function Seg<T extends string>({ options, value, onPick }: { options: [T, string
   );
 }
 
+/** The text lines of a script, read like the server's parseScript: a `?` line right after a chapter title is its question. */
+function scriptLines(script: string): string[] {
+  const out: string[] = [];
+  let afterChapter = false;
+  for (const raw of script.split('\n')) {
+    const line = hintKey(raw);
+    if (!line) continue;
+    if (line.startsWith('#')) { afterChapter = line.replace(/^#+/, '').trim() !== ''; continue; }
+    if (line.startsWith('?') && afterChapter) { afterChapter = false; continue; }
+    afterChapter = false;
+    out.push(line);
+  }
+  return out;
+}
+
 /** What a shot shows: its text, the text or figure of its studio block, its media, else its type. */
 function shotLabel(s: PlanShot, p: Project): string {
   const v = s.block?.variables ?? {};
   const blockText = typeof v.text === 'string' ? v.text.replace(/[|*]/g, ' ').replace(/\s+/g, ' ').trim() : '';
   const figure = v.to !== undefined ? `${v.prefix ?? ''}${v.to}${v.suffix ?? ''}` : '';
-  return s.text || blockText || figure || (s.media ? p.media.find(m => m.id === s.media)?.description ?? '' : '') || s.type;
+  return s.text || blockText || figure || (s.media ? p.media.find(m => m.id === s.media)?.description ?? '' : '') || (s.metadata?.unit ? p.plan?.units?.[s.metadata.unit] : '') || s.type;
 }
 
 export default function Editeur() {
@@ -80,6 +96,7 @@ export default function Editeur() {
   const [playing, setPlaying] = useState(false);
   const [t, setT] = useState(0);
   const [error, setError] = useState('');
+  const [sentence, setSentence] = useState<string | null>(null);
   const [toast, setToast] = useState('');
   const vidRef = useRef<HTMLVideoElement>(null);
   const musicInput = useRef<HTMLInputElement>(null);
@@ -102,7 +119,7 @@ export default function Editeur() {
 
   const openProject = useCallback((project: Project) => {
     setP(project); setDraft({ title: project.title, script: project.script }); setPlan(null); setError('');
-    setSelVer(null); setPlaying(false); setT(0);
+    setSelVer(null); setPlaying(false); setT(0); setSentence(null);
     try { localStorage.setItem(PROJECT_KEY, project.id); } catch { /* storage disabled */ }
     if (project.plan) api.plan(project.id).then(setPlan).catch(() => setPlan(null));
     setTab(project.render || !project.stills ? 'video' : 'stills');
@@ -126,13 +143,14 @@ export default function Editeur() {
 
   // Follow the running job.
   const active = jobActive(p ?? undefined);
+  const describing = !!p?.media.some(m => m.auto?.status === 'pending');
   useEffect(() => {
-    if (!p || !active) return;
+    if (!p || (!active && !describing)) return;
     const iv = window.setInterval(async () => {
       try {
         const next = await api.get(p.id);
         setP(next);
-        if (!jobActive(next)) {
+        if (active && !jobActive(next)) {
           const j = next.job!;
           if (j.status === 'failed') setError(`${JOB_LABEL[j.kind]} : ${j.error ?? 'échec'}`);
           else {
@@ -145,8 +163,8 @@ export default function Editeur() {
       } catch (e) { fail(e); }
     }, 1000);
     return () => clearInterval(iv);
-    // Only the project and whether a job runs restart the polling.
-  }, [p?.id, active]);
+    // Only the project, whether a job runs and whether Claude describes restart the polling.
+  }, [p?.id, active, describing]);
 
   const patch = async (fields: Parameters<typeof api.update>[1]) => {
     if (!p) return;
@@ -212,6 +230,11 @@ export default function Editeur() {
   const job = active ? p.job! : null;
   const jobPct = job ? Math.round((job.progress || 0) * 100) : 0;
   const planStale = !!p.plan && draft.script !== p.script;
+  // The text lines of the script (not chapters or questions), as the server keys them.
+  const lines = scriptLines(draft.script);
+  const lineOf = (s: PlanShot) => (s.metadata?.unit ? p.plan?.units?.[s.metadata.unit] : undefined);
+  // The line must be saved on the server before hints can be set on it.
+  const openSentence = async (line: string) => { await flush(); setSentence(line); };
   const curStale = !!cur && !!p.plan && cur.planCreatedAt !== p.plan.createdAt;
   const needsRights = p.media.some(m => m.role !== 'voice') && !p.rightsConfirmed;
   const isMedias = rail === 'medias';
@@ -269,7 +292,11 @@ export default function Editeur() {
         </nav>
 
         <section className="ed-panel" hidden={isMedias} data-screen-label="Réglages">
-          {rail === 'montage' && (
+          {sentence && (
+            <SentenceEditor key={sentence} project={p} line={sentence} busy={active} onClose={() => setSentence(null)} onSaved={setP}
+              onRerun={() => { setSentence(null); void start('direct'); }} />
+          )}
+          {!sentence && rail === 'montage' && (
             <>
               <h1>Monter la vidéo</h1>
               <div className="ed-brief">
@@ -317,7 +344,7 @@ export default function Editeur() {
             </>
           )}
 
-          {rail === 'voix' && (
+          {!sentence && rail === 'voix' && (
             <>
               <h1>Voix off</h1>
               <div className="ed-box"><Seg options={VOICES} value={p.voice.mode} onPick={v => patch({ voice: { mode: v, ...(p.voice.voiceId ? { voiceId: p.voice.voiceId } : {}) } })} /></div>
@@ -344,7 +371,7 @@ export default function Editeur() {
             </>
           )}
 
-          {rail === 'texte' && (
+          {!sentence && rail === 'texte' && (
             <>
               <h1>Titres &amp; sous-titres</h1>
               <div className="ed-box">
@@ -357,10 +384,27 @@ export default function Editeur() {
                 <span className="ed-box__label">Écrire le script</span>
                 <span className="ed-sub"><span className="ed-mono">#</span> titre de chapitre · <span className="ed-mono">?</span> question du chapitre, juste après · une phrase par ligne · les chiffres en chiffres (« 60 % », pas « soixante pour cent »).</span>
               </div>
+              {lines.length > 0 && (
+                <div className="ed-box">
+                  <span className="ed-box__label">Phrase par phrase</span>
+                  <span className="ed-sub">Imposez un visuel, un graphique, une source… Sans rien, le monteur décide.</span>
+                  <div className="se-list">
+                    {lines.map((l, i) => {
+                      const h = p.hints?.[l];
+                      return (
+                        <button key={i} type="button" className="se-item" onClick={() => void openSentence(l)}>
+                          <span className="ed-grow">{l}</span>
+                          {h && <span className="se-item__tag">{Object.keys(h).length} réglage{Object.keys(h).length > 1 ? 's' : ''}</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </>
           )}
 
-          {rail === 'controle' && (
+          {!sentence && rail === 'controle' && (
             <>
               <h1>Plan et contrôle</h1>
               {!p.plan && <div className="ed-hint">Aucun plan pour l’instant : écrivez le script, puis « Lancer le montage IA ».</div>}
@@ -374,11 +418,12 @@ export default function Editeur() {
               {plan && (
                 <div className="ed-shots">
                   {plan.shots.map((s, i) => (
-                    <div key={s.id} className="ed-shot" title={Object.values(s.reasons ?? {}).join('\n')}>
+                    <button key={s.id} type="button" className="ed-shot" title={Object.values(s.reasons ?? {}).join('\n')}
+                      disabled={!lineOf(s)} onClick={() => { const l = lineOf(s); if (l) void openSentence(l); }}>
                       <span className="ed-mono ed-shot__n">{String(i + 1).padStart(2, '0')}</span>
                       <div><span className="ed-ellipsis">{shotLabel(s, p)}</span><span className="ed-sub">{s.mediaTier ? TIER_LABEL[s.mediaTier] : s.type}{s.block ? ` · ${s.block.item.replace(/^studio-/, '')}` : ''}{s.editorialIntent ? ` · ${s.editorialIntent}` : ''}</span></div>
                       <span className="ed-mono ed-shot__d">{(s.durationInFrames / plan.fps).toFixed(1)} s</span>
-                    </div>
+                    </button>
                   ))}
                 </div>
               )}
@@ -432,7 +477,7 @@ export default function Editeur() {
         </section>
 
         <section className="ed-lib" hidden={!isMedias} data-screen-label="Médiathèque">
-          <Mediatheque project={p} onChange={setP} onError={fail} />
+          <Mediatheque project={p} onChange={setP} onError={fail} canDescribe={!!health?.anthropic} />
         </section>
 
         <section className="ed-versions" data-screen-label="Versions">

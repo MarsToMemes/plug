@@ -148,3 +148,8 @@
 .mc__role:hover { border-color: var(--violet-3); color: #fff; }
 .ml-rights { flex: none; display: flex; gap: 8px; align-items: center; font-size: 12.5px; color: #b9b0c2; cursor: pointer; }
 .ml-rights input { margin: 0; accent-color: #a06bff; }
+
+.mc__auto { font-size: 11px; color: #c9a8ff; }
+.mc__auto--err { color: #ffcf8a; }
+.mc__redo { align-self: flex-start; border: 0; background: transparent; color: #8f8797; font-size: 11px; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+.mc__redo:hover { color: #fff; }

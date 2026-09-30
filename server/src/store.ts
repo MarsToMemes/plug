@@ -92,6 +92,8 @@ export interface Project {
     durationInSeconds: number;
     valid: boolean;
     brain: 'llm' | 'heuristic';
+    /** Script line of each sentence (unit id → line). */
+    units?: Record<string, string>;
     decisions: string[];
     assetRequests: Array<{ unitId: string; need: string; description: string }>;
     errors: Array<{ message: string; rule?: string }>;

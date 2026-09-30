@@ -48,7 +48,7 @@ interface Pending { id: string; name: string; kind: Kind; progress: number; erro
  * search, sort, multi-select. Visuals carry a description the editor brain matches to the
  * narration; an audio file is the voice-over or the music.
  */
-export default function Mediatheque({ project, onChange, onError }: { project: Project; onChange: (p: Project) => void; onError: (e: unknown) => void }) {
+export default function Mediatheque({ project, onChange, onError, canDescribe = false }: { project: Project; onChange: (p: Project) => void; onError: (e: unknown) => void; canDescribe?: boolean }) {
   const [filter, setFilter] = useState<Filter>('ALL');
   const [q, setQ] = useState('');
   const [sort, setSort] = useState<Sort>('date');
@@ -170,7 +170,8 @@ export default function Mediatheque({ project, onChange, onError }: { project: P
           <div className="mc__txt">
             <span className="mc__name" title={m.originalName}>{m.originalName}</span>
             <span className="mc__meta">{meta(m)}</span>
-            <input className="mc__desc" defaultValue={m.description} placeholder="Ce que montre ce média" aria-label={`Description de ${m.originalName}`}
+            {/* Keyed on the saved text: Claude's description replaces the field when it arrives. */}
+            <input key={m.description} className="mc__desc" defaultValue={m.description} disabled={m.auto?.status === 'pending'} placeholder="Ce que montre ce média" aria-label={`Description de ${m.originalName}`}
               onClick={e => e.stopPropagation()} onKeyDown={e => e.stopPropagation()}
               onBlur={e => { if (e.target.value !== m.description) api.updateMedia(project.id, m.id, { description: e.target.value }).then(onChange, onError); }} />
             <select className="mc__nature" value={natureOf(m)} aria-label={`Nature de ${m.originalName}`} title="Le monteur préfère le média le plus authentique"
@@ -178,6 +179,13 @@ export default function Mediatheque({ project, onChange, onError }: { project: P
               onChange={e => api.updateMedia(project.id, m.id, { nature: e.target.value as MediaNature }).then(onChange, onError)}>
               {NATURES_OF[m.kind === 'video' ? 'video' : 'image'].map(n => <option key={n} value={n}>{NATURE_LABEL[n]}</option>)}
             </select>
+            {m.auto?.status === 'pending' && <span className="mc__auto">Claude décrit ce visuel…</span>}
+            {m.auto?.status === 'failed' && <span className="mc__auto mc__auto--err" title={m.auto.error}>Description automatique impossible</span>}
+            {canDescribe && m.auto?.status !== 'pending' && (
+              <button type="button" className="mc__redo" onClick={e => { e.stopPropagation(); api.describeMedia(project.id, m.id).then(onChange, onError); }}>
+                {m.auto?.status === 'done' ? 'Redécrire avec Claude' : 'Décrire avec Claude'}
+              </button>
+            )}
           </div>
           <button type="button" className="mc__x" onClick={e => { e.stopPropagation(); void remove([m.id]); }} aria-label={'Retirer ' + m.originalName}>×</button>
         </div>

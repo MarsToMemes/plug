@@ -220,6 +220,8 @@ describe('Plug API', () => {
     expect(input.script.find((b: { text?: string }) => b.text === line).hints).toMatchObject({ intent: 'statistic', chart: { values: [62, 38] } });
     const plan = (await app.app.inject({ method: 'GET', url: `/api/projects/${p.id}/plan` })).json();
     expect(JSON.stringify(plan.shots)).toContain('Rapport annuel 2023');
+    // Each sentence knows its script line: the editor opens a shot's line.
+    expect(Object.values(p.plan!.units!)).toContain(line);
 
     // The sentence leaves the script: its hints go with it.
     const edited = (await app.app.inject({ method: 'PATCH', url: `/api/projects/${p.id}`, payload: { script: SCRIPT.replace(line, 'Une autre phrase.') } })).json() as Project;

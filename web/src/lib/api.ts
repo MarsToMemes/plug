@@ -34,7 +34,43 @@ export interface ProjectMedia {
   nature?: MediaNature;
   /** Projects made before `nature`. */
   synthetic?: boolean;
+  /** The user chose the nature: Claude's guess never replaces it. */
+  natureSet?: boolean;
+  /** Claude's automatic description. */
+  auto?: { status: 'pending' | 'done' | 'failed'; error?: string };
 }
+
+export const INTENTS = ['hook', 'context', 'fact', 'important_fact', 'keyword', 'number', 'statistic', 'comparison', 'quote', 'proof', 'location', 'process', 'contradiction', 'revelation', 'aftermath', 'chapter', 'conclusion'] as const;
+export type Intent = (typeof INTENTS)[number];
+export const INTENT_LABEL: Record<Intent, string> = {
+  hook: 'Accroche', context: 'Contexte', fact: 'Fait', important_fact: 'Fait important', keyword: 'Mot-clé', number: 'Nombre',
+  statistic: 'Statistique', comparison: 'Comparaison', quote: 'Citation', proof: 'Preuve', location: 'Lieu', process: 'Processus',
+  contradiction: 'Contradiction', revelation: 'Révélation', aftermath: 'Conséquence', chapter: 'Chapitre', conclusion: 'Conclusion'
+};
+export const MEDIA_NEEDS = ['explain_number', 'show_relation', 'connect_concepts', 'abstract_mechanism', 'historical_context', 'introduce_entity', 'archival_evidence', 'human_behavior', 'product_in_use', 'atmosphere', 'platform_reference', 'financial_document', 'source_interface', 'none'] as const;
+export type MediaNeed = (typeof MEDIA_NEEDS)[number];
+export const NEED_LABEL: Record<MediaNeed, string> = {
+  explain_number: 'Expliquer un chiffre', show_relation: 'Montrer une relation', connect_concepts: 'Relier des idées', abstract_mechanism: 'Mécanisme abstrait',
+  historical_context: 'Contexte historique', introduce_entity: 'Présenter une personne, une marque', archival_evidence: 'Preuve d’archive',
+  human_behavior: 'Comportement humain', product_in_use: 'Produit utilisé', atmosphere: 'Ambiance', platform_reference: 'Plateforme citée',
+  financial_document: 'Document financier', source_interface: 'Source, interface', none: 'Aucun (texte seul)'
+};
+
+/** What the author sets on one sentence of the script (studio-engine UnitHints). */
+export interface SentenceHints {
+  intent?: Intent;
+  mediaNeed?: MediaNeed;
+  media?: string;
+  mediaStart?: number;
+  chart?: { kind: 'barChart' | 'lineChart' | 'pieChart'; labels: string[]; values: number[]; unit?: string; title?: string; source?: string };
+  share?: { value: number; of?: number; label?: string };
+  source?: string;
+  documentCard?: { header?: string; heading?: string; sentence: string; rows?: Array<[string, string]> };
+  strike?: string;
+}
+
+/** Lines are matched on their text, spaces normalised (as on the server). */
+export const hintKey = (line: string) => line.trim().replace(/\s+/g, ' ');
 
 export interface Job {
   id: string;
@@ -78,6 +114,8 @@ export interface Project {
   voice: { mode: VoiceMode; voiceId?: string };
   rightsConfirmed: boolean;
   media: ProjectMedia[];
+  /** Hints by script line. */
+  hints?: Record<string, SentenceHints>;
   voiceTrack?: { durationInSeconds: number; timing: 'tts' | 'stt' | 'aligned'; words: number };
   plan?: {
     createdAt: string;
@@ -85,6 +123,8 @@ export interface Project {
     durationInSeconds: number;
     valid: boolean;
     brain: 'llm' | 'heuristic';
+    /** Script line of each sentence (unit id → line). */
+    units?: Record<string, string>;
     decisions: string[];
     assetRequests: Array<{ unitId: string; need: string; description: string }>;
     errors: Issue[];
@@ -120,6 +160,8 @@ export interface PlanShot {
   mediaTier?: 'real_video' | 'real_photo' | 'document' | 'data_viz' | 'generated' | 'motion';
   /** Why each decision was taken (shot, motion, camera, sfx…). */
   reasons?: Record<string, string>;
+  /** `unit`: the sentence the shot belongs to. */
+  metadata?: { unit?: string };
 }
 
 export interface Plan { fps: number; shots: PlanShot[] }
@@ -175,6 +217,8 @@ export const api = {
       xhr.send(form);
     }),
   updateMedia: (id: string, mediaId: string, fields: { description?: string; nature?: MediaNature; role?: 'voice' | 'music' }) => call<Project>(`/api/projects/${id}/media/${mediaId}`, json('PATCH', fields)),
+  describeMedia: (id: string, mediaId: string) => call<Project>(`/api/projects/${id}/media/${mediaId}/describe`, { method: 'POST' }),
+  hints: (id: string, line: string, hints: SentenceHints | null) => call<Project>(`/api/projects/${id}/hints`, json('PUT', { line, hints })),
   removeMedia: (id: string, mediaId: string) => call<Project>(`/api/projects/${id}/media/${mediaId}`, { method: 'DELETE' }),
   direct: (id: string) => call<Job>(`/api/projects/${id}/direct`, { method: 'POST' }),
   stills: (id: string) => call<Job>(`/api/projects/${id}/stills`, { method: 'POST' }),

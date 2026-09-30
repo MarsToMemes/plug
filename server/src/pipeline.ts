@@ -29,7 +29,7 @@ import {
   type TranscriptWord,
 } from './engine.ts';
 import { concatAudio, decodePcm16k, normalizeVoice, probe, sha256File, writeJson } from './media.ts';
-import { withHints } from './hints.ts';
+import { hintKey, withHints } from './hints.ts';
 import { chunkText, parseScript, spokenText } from './script.ts';
 import { MAX_RENDERS, natureOf, newId, type MediaItem, type Project, type ProjectStore, type RenderInfo } from './store.ts';
 import { alignKnownText, wordsFromAlignment, wordsFromStt } from './words.ts';
@@ -209,6 +209,21 @@ export function buildBrainInput(project: Project, config: Config, voice: Voice |
   };
 }
 
+/** The script line of each analysed sentence (a line may hold several sentences): the editor opens a shot's line. */
+export function unitLines(script: string, units: ReadonlyArray<{ id: string; text: string }>): Record<string, string> {
+  const lines = parseScript(script).flatMap((b) => (b.kind === 'text' ? [hintKey(b.text)] : []));
+  const out: Record<string, string> = {};
+  let from = 0;
+  for (const u of units) {
+    const text = hintKey(u.text);
+    const i = lines.findIndex((l, k) => k >= from && l.includes(text));
+    if (i < 0) continue;
+    out[u.id] = lines[i]!;
+    from = i;
+  }
+  return out;
+}
+
 // ---------------------------------------------------------------------------
 // Steps
 
@@ -250,6 +265,7 @@ export async function directStep(projectId: string, ctx: PipelineContext): Promi
       errors: result.qc.errors.map((e) => ({ message: e.message, ...(e.rule ? { rule: e.rule } : {}) })),
       warnings: result.qc.warnings.map((e) => ({ message: e.message, ...(e.rule ? { rule: e.rule } : {}) })),
       notes: [...notes, ...result.qc.notes],
+      units: unitLines(project.script, result.analysis),
     },
   });
   report(1, `Plan prêt : ${result.plan.shots.length} plans`);
