@@ -1,6 +1,7 @@
 /** RunwayGenerator against a fake client: the request it sends, and its errors in French. */
 import { TaskFailedError } from '@runwayml/sdk';
 import { describe, expect, it } from 'vitest';
+import { text, type MsgError } from '../src/messages.ts';
 import { RunwayGenerator } from '../src/runway.ts';
 
 const task = (output: string) => ({ id: 't1', createdAt: '', status: 'SUCCEEDED' as const, output: [output], cost: { credits: 60 } });
@@ -20,10 +21,11 @@ describe('RunwayGenerator', () => {
     expect(f.calls[1]).toEqual({ kind: 'image', body: { model: 'gen4_image', promptText: 'Un comptoir vide', ratio: '1920:1080' } });
   });
 
-  it('explains a failed task in French', async () => {
+  it('explains a failed task in the reader’s language', async () => {
     const failed = new TaskFailedError({ id: 't', createdAt: '', status: 'FAILED', failure: 'content moderation', failureCode: 'SAFETY', cost: { credits: 0 } });
-    await expect(new RunwayGenerator({ client: fake(async () => { throw failed; }).client }).generate({ prompt: 'x', kind: 'video', seconds: 5 }))
-      .rejects.toThrow('Runway n’a pas pu générer ce visuel : content moderation (SAFETY)');
-    await expect(new RunwayGenerator({ client: fake(async () => task('u')).client }).generate({ prompt: '  ', kind: 'image', seconds: 5 })).rejects.toThrow(/Décrivez/);
+    const e = (await new RunwayGenerator({ client: fake(async () => { throw failed; }).client }).generate({ prompt: 'x', kind: 'video', seconds: 5 }).catch((x: MsgError) => x)) as MsgError;
+    expect(text(e.msg, 'fr')).toBe('Runway n’a pas pu générer ce visuel : content moderation (SAFETY).');
+    expect(text(e.msg, 'en')).toBe('Runway could not generate this visual: content moderation (SAFETY).');
+    await expect(new RunwayGenerator({ client: fake(async () => task('u')).client }).generate({ prompt: '  ', kind: 'image', seconds: 5 })).rejects.toThrow(/Describe what Runway/);
   });
 });

@@ -79,9 +79,13 @@ Avec `ANTHROPIC_API_KEY`, chaque visuel importé est regardé par Claude (une im
 
 À la demande seulement : chaque génération consomme des crédits Runway. Vidéo : Gen-4.5, 2 à 10 s, 1280×720 (agrandie au rendu 1080p). Image : Gen-4 Image, 1920×1080. Le visuel est rangé dans la médiathèque comme « Généré par IA », avec le modèle et les crédits facturés. Le monteur le place en dernier recours (après vos vraies vidéos, photos, documents et graphiques) et ne l'utilise jamais pour une personne réelle, un fait historique, une plateforme ou un document : Plug refuse d'ailleurs de le générer pour ces phrases. Le contrôle qualité rappelle de signaler sur YouTube un contenu réaliste généré par IA.
 
-## Langue
+## Langue (français / anglais)
 
-Tout ce que l'éditeur affiche est en français. Le moteur écrit ses décisions et ses contrôles en anglais : `src/fr.ts` les traduit (les problèmes affichent le texte français de la règle de la bible). `tests/fr.test.ts` fait tourner le moteur sur de nombreux scripts et échoue si un texte n'est pas traduit ; ce qui ne l'est pas va, en anglais, dans le « Journal technique » de l'éditeur.
+Le site s'affiche en français ou en anglais : d'abord le choix du visiteur (bouton FR / EN, mémorisé dans le navigateur), sinon la première langue de son navigateur que Plug parle (`navigator.languages`), sinon l'anglais. Les textes du site sont dans `web/src/i18n/fr.ts` et `en.ts` (mêmes clés, vérifiées à la compilation).
+
+Le serveur répond dans la langue de la requête : `X-Plug-Lang` (envoyé par le site), sinon `Accept-Language`, sinon le français. Ses messages sont dans `src/messages.ts`. Ce qu'il enregistre dans un projet (progression et erreurs des tâches, erreurs de Claude et de Runway) est stocké comme une clé, et ce que le moteur écrit (décisions, contrôles) tel quel, en anglais : tout est écrit dans la langue du lecteur quand le projet est lu (`src/i18n.ts`). En français, les problèmes affichent le texte de la règle de la bible (`src/fr.ts`) ; ce qui n'a pas de traduction va, en anglais, dans le « Journal technique ». `tests/fr.test.ts` fait tourner le moteur sur de nombreux scripts et échoue si un texte n'est pas traduit.
+
+Ce qui reste dans la langue du script, quelle que soit celle du site : la vidéo (cartons de chapitre, titres) et les demandes de médias (« Il manque »).
 
 ## Format du script
 

@@ -6,6 +6,7 @@
  * Author hints always win over the analysis (studio-engine, bible §27).
  */
 import { EDITORIAL_INTENTS, MEDIA_NEEDS, type ScriptBlock } from './engine.ts';
+import { MsgError } from './messages.ts';
 
 export interface SentenceHints {
   intent?: (typeof EDITORIAL_INTENTS)[number];
@@ -26,42 +27,43 @@ export type HintsByLine = Record<string, SentenceHints>;
 /** Lines are matched on their text, spaces normalised. */
 export const hintKey = (line: string) => line.trim().replace(/\s+/g, ' ');
 
-export class HintError extends Error {}
+/** A setting that cannot be kept: answered 400, in the language of the request. */
+export class HintError extends MsgError {}
 
 type Obj = Record<string, unknown>;
 const isObj = (v: unknown): v is Obj => typeof v === 'object' && v !== null && !Array.isArray(v);
 const text = (v: unknown, max: number, field: string): string | undefined => {
   if (v === undefined || v === null || v === '') return undefined;
-  if (typeof v !== 'string') throw new HintError(`${field} : texte attendu`);
+  if (typeof v !== 'string') throw new HintError('hintText', { field });
   return v.trim().slice(0, max) || undefined;
 };
 const num = (v: unknown, field: string): number | undefined => {
   if (v === undefined || v === null || v === '') return undefined;
   const n = typeof v === 'string' ? Number(v.replace(',', '.')) : v;
-  if (typeof n !== 'number' || !Number.isFinite(n)) throw new HintError(`${field} : nombre attendu`);
+  if (typeof n !== 'number' || !Number.isFinite(n)) throw new HintError('hintNumber', { field });
   return n;
 };
 
 /** Validates what the editor sends. Empty fields are dropped; an empty result means "no hints". */
 export function parseHints(body: unknown, mediaIds: ReadonlySet<string>): SentenceHints {
-  if (!isObj(body)) throw new HintError('indications : objet attendu');
+  if (!isObj(body)) throw new HintError('hintObject');
   const h: SentenceHints = {};
   if (body.intent !== undefined && body.intent !== '') {
-    if (!EDITORIAL_INTENTS.includes(body.intent as never)) throw new HintError(`intent inconnu : ${String(body.intent)}`);
+    if (!EDITORIAL_INTENTS.includes(body.intent as never)) throw new HintError('hintIntent', { value: String(body.intent) });
     h.intent = body.intent as SentenceHints['intent'];
   }
   if (body.mediaNeed !== undefined && body.mediaNeed !== '') {
-    if (!MEDIA_NEEDS.includes(body.mediaNeed as never)) throw new HintError(`mediaNeed inconnu : ${String(body.mediaNeed)}`);
+    if (!MEDIA_NEEDS.includes(body.mediaNeed as never)) throw new HintError('hintNeed', { value: String(body.mediaNeed) });
     h.mediaNeed = body.mediaNeed as SentenceHints['mediaNeed'];
   }
   const media = text(body.media, 64, 'media');
   if (media) {
-    if (!mediaIds.has(media)) throw new HintError('media : ce visuel n’est pas dans le projet');
+    if (!mediaIds.has(media)) throw new HintError('hintMedia');
     h.media = media;
   }
   const start = num(body.mediaStart, 'mediaStart');
   if (start !== undefined) {
-    if (start < 0) throw new HintError('mediaStart : secondes ≥ 0');
+    if (start < 0) throw new HintError('hintStart');
     if (start > 0) h.mediaStart = Math.round(start * 100) / 100;
   }
   if (isObj(body.chart)) {
@@ -69,9 +71,9 @@ export function parseHints(body: unknown, mediaIds: ReadonlySet<string>): Senten
     const labels = Array.isArray(c.labels) ? c.labels.map((l, i) => text(l, 60, `chart.labels[${i}]`) ?? '') : [];
     const values = Array.isArray(c.values) ? c.values.map((v, i) => num(v, `chart.values[${i}]`)) : [];
     if (labels.length || values.length) {
-      if (!['barChart', 'lineChart', 'pieChart'].includes(c.kind as string)) throw new HintError('chart.kind : barChart, lineChart ou pieChart');
-      if (!labels.length || labels.length !== values.length || values.some((v) => v === undefined) || labels.some((l) => !l)) throw new HintError('graphique : autant de libellés que de valeurs, tous remplis');
-      if (labels.length > 12) throw new HintError('graphique : 12 valeurs au plus');
+      if (!['barChart', 'lineChart', 'pieChart'].includes(c.kind as string)) throw new HintError('hintChartKind');
+      if (!labels.length || labels.length !== values.length || values.some((v) => v === undefined) || labels.some((l) => !l)) throw new HintError('hintChartRows');
+      if (labels.length > 12) throw new HintError('hintChartMax');
       const unit = text(c.unit, 12, 'chart.unit');
       const title = text(c.title, 120, 'chart.title');
       const source = text(c.source, 200, 'chart.source');
@@ -82,7 +84,7 @@ export function parseHints(body: unknown, mediaIds: ReadonlySet<string>): Senten
     const value = num(body.share.value, 'share.value');
     if (value !== undefined) {
       const of = num(body.share.of, 'share.of');
-      if (value < 0 || value > (of ?? 100)) throw new HintError(`part : une valeur entre 0 et ${of ?? 100}`);
+      if (value < 0 || value > (of ?? 100)) throw new HintError('hintShare', { max: of ?? 100 });
       const label = text(body.share.label, 80, 'share.label');
       h.share = { value, ...(of !== undefined ? { of } : {}), ...(label ? { label } : {}) };
     }

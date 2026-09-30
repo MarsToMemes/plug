@@ -108,3 +108,9 @@ img, video { max-width: none; }
 .plan__cta--hot { background: var(--grad); }
 
 .visually-hidden { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* FR / EN switch (nav of the site and top bar of the editor) */
+.lang-switch { display: inline-flex; align-items: center; gap: 2px; padding: 3px; border-radius: 999px; border: 1px solid currentColor; opacity: .9; }
+.lang-switch button { border: 0; background: transparent; color: inherit; font: inherit; font-size: 12px; font-weight: 700; letter-spacing: .04em; padding: 5px 9px; border-radius: 999px; cursor: pointer; opacity: .65; }
+.lang-switch button:hover { opacity: 1; }
+.lang-switch button.is-on { background: #fff; color: #111013; opacity: 1; }

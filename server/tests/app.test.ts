@@ -105,7 +105,7 @@ describe('Plug API', () => {
   it('validates the project fields', async () => {
     const r = await app.app.inject({ method: 'POST', url: '/api/projects', payload: { pacing: 'turbo' } });
     expect(r.statusCode).toBe(400);
-    expect(r.json().error).toMatch(/pacing/);
+    expect(r.json().error).toMatch(/calm, standard/);
   });
 
   it('generates an ElevenLabs voice, then an Apple-style plan timed on it', async () => {
@@ -230,6 +230,27 @@ describe('Plug API', () => {
     // null clears a sentence.
     await app.app.inject({ method: 'PUT', url, payload: { line: 'Une autre phrase.', hints: { strike: 'phrase' } } });
     expect(((await app.app.inject({ method: 'PUT', url, payload: { line: 'Une autre phrase.', hints: null } })).json() as Project).hints).toEqual({});
+  }, 60_000);
+
+  it('answers in the language of the reader', async () => {
+    const en = { 'x-plug-lang': 'en' };
+    const bad = await app.app.inject({ method: 'POST', url: '/api/projects', payload: { pacing: 'turbo' }, headers: en });
+    expect(bad.json().error).toBe('Pacing: calm, standard or dynamic.');
+    expect((await app.app.inject({ method: 'GET', url: '/api/projects/nope123', headers: { 'accept-language': 'en-US,en;q=0.9' } })).json().error).toBe('Project not found.');
+    const created = (await app.app.inject({ method: 'POST', url: '/api/projects', payload: { script: SCRIPT, voice: { mode: 'none' } } })).json() as Project;
+    await app.app.inject({ method: 'POST', url: `/api/projects/${created.id}/direct` });
+    await app.jobs.idle();
+    const pEn = (await app.app.inject({ method: 'GET', url: `/api/projects/${created.id}`, headers: en })).json() as Project;
+    const pFr = (await app.app.inject({ method: 'GET', url: `/api/projects/${created.id}`, headers: { 'x-plug-lang': 'fr' } })).json() as Project;
+    expect(pEn.job!.message).toMatch(/^Plan ready: \d+ shots$/);
+    expect(pFr.job!.message).toMatch(/^Plan prêt : \d+ plans$/);
+    expect(pEn.plan!.notes).toContain('Without a voice-over, timings are estimated and the video will be silent.');
+    expect(pFr.plan!.notes).toContain('Sans voix off, les durées sont estimées et la vidéo sera muette.');
+    expect(pFr.plan!.decisions.join(' ')).not.toMatch(/\b(the|with|shot)\b/);
+    // A job answered on its own (POST …/direct) follows the language too.
+    const job = await app.app.inject({ method: 'POST', url: `/api/projects/${created.id}/direct`, headers: en });
+    expect(job.json().message).toBe('Waiting');
+    await app.jobs.idle();
   }, 60_000);
 
   it('rejects unsupported uploads', async () => {

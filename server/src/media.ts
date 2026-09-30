@@ -8,6 +8,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'no
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { ffprobeJson, LOUDNESS_TARGETS, loudnormSecondPass, measureLoudness, runFfmpeg, type FfmpegTools } from './engine.ts';
+import { MsgError } from './messages.ts';
 
 export function findFfmpeg(engineDir: string, env: Record<string, string | undefined> = process.env): FfmpegTools {
   const onPath = (tool: string) => spawnSync(tool, ['-version'], { stdio: 'ignore' }).status === 0;
@@ -54,7 +55,7 @@ export function probe(tools: FfmpegTools, file: string): Probe {
     };
   }
   if (audio) return { kind: 'audio', ...(Number.isFinite(duration) ? { durationInSeconds: duration } : {}), hasAudio: true };
-  throw new Error("aucune piste audio ou vidéo dans ce fichier");
+  throw new MsgError('noStream');
 }
 
 /** The voice at -16 LUFS, true peak -1 dBTP (bible MUS-01), WAV 48 kHz mono. */

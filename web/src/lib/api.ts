@@ -1,4 +1,6 @@
 // Client of the Plug API (server/). In development Vite proxies /api to the server.
+// Every call tells the server the site's language (X-Plug-Lang): its messages follow.
+import { currentLang, dict } from '../i18n';
 
 export type Pacing = 'calm' | 'standard' | 'dynamic';
 export type EditStyle = 'apple' | 'default';
@@ -6,14 +8,6 @@ export type VoiceMode = 'tts' | 'upload' | 'none';
 export type MediaRole = 'visual' | 'voice' | 'music';
 /** What a visual is: the engine prefers the most authentic (studio-engine bible §27). */
 export type MediaNature = 'real_video' | 'real_photo' | 'archive' | 'screenshot' | 'document' | 'generated';
-export const NATURE_LABEL: Record<MediaNature, string> = {
-  real_video: 'Vidéo réelle',
-  real_photo: 'Photo réelle',
-  archive: 'Archive',
-  screenshot: "Capture d'écran",
-  document: 'Document',
-  generated: 'Généré par IA'
-};
 export const NATURES_OF: Record<'image' | 'video', MediaNature[]> = {
   video: ['real_video', 'generated'],
   image: ['real_photo', 'archive', 'screenshot', 'document', 'generated']
@@ -60,19 +54,8 @@ export const REAL_SUBJECT_NEEDS: readonly MediaNeed[] = ['historical_context', '
 
 export const INTENTS = ['hook', 'context', 'fact', 'important_fact', 'keyword', 'number', 'statistic', 'comparison', 'quote', 'proof', 'location', 'process', 'contradiction', 'revelation', 'aftermath', 'chapter', 'conclusion'] as const;
 export type Intent = (typeof INTENTS)[number];
-export const INTENT_LABEL: Record<Intent, string> = {
-  hook: 'Accroche', context: 'Contexte', fact: 'Fait', important_fact: 'Fait important', keyword: 'Mot-clé', number: 'Nombre',
-  statistic: 'Statistique', comparison: 'Comparaison', quote: 'Citation', proof: 'Preuve', location: 'Lieu', process: 'Processus',
-  contradiction: 'Contradiction', revelation: 'Révélation', aftermath: 'Conséquence', chapter: 'Chapitre', conclusion: 'Conclusion'
-};
 export const MEDIA_NEEDS = ['explain_number', 'show_relation', 'connect_concepts', 'abstract_mechanism', 'historical_context', 'introduce_entity', 'archival_evidence', 'human_behavior', 'product_in_use', 'atmosphere', 'platform_reference', 'financial_document', 'source_interface', 'none'] as const;
 export type MediaNeed = (typeof MEDIA_NEEDS)[number];
-export const NEED_LABEL: Record<MediaNeed, string> = {
-  explain_number: 'Expliquer un chiffre', show_relation: 'Montrer une relation', connect_concepts: 'Relier des idées', abstract_mechanism: 'Mécanisme abstrait',
-  historical_context: 'Contexte historique', introduce_entity: 'Présenter une personne, une marque', archival_evidence: 'Preuve d’archive',
-  human_behavior: 'Comportement humain', product_in_use: 'Produit utilisé', atmosphere: 'Ambiance', platform_reference: 'Plateforme citée',
-  financial_document: 'Document financier', source_interface: 'Source, interface', none: 'Aucun (texte seul)'
-};
 
 /** What the author sets on one sentence of the script (studio-engine UnitHints). */
 export interface SentenceHints {
@@ -198,20 +181,19 @@ const BASE = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/
 
 async function call<T>(path: string, init: RequestInit = {}): Promise<T> {
   let res: Response;
+  const t = dict().api;
   try {
-    res = await fetch(BASE + path, init);
+    res = await fetch(BASE + path, { ...init, headers: { ...(init.headers as Record<string, string> | undefined), 'x-plug-lang': currentLang() } });
   } catch {
-    throw new Error('Serveur Plug injoignable. Lancez-le avec « npm start » dans server/.');
+    throw new Error(t.unreachable);
   }
   if (res.status === 204) return undefined as T;
   // Another program on the API's port answers with HTML, not Plug's JSON.
   if (!(res.headers.get('content-type') ?? '').includes('application/json')) {
-    throw new Error(res.status === 502 || res.status === 504
-      ? 'Serveur Plug injoignable. Relancez Plug (icône du Bureau, ou « npm start » dans server/).'
-      : 'Le programme qui répond sur le port de l’API n’est pas le serveur Plug. Relancez Plug avec l’icône du Bureau : elle choisit un port libre.');
+    throw new Error(res.status === 502 || res.status === 504 ? t.unreachableRestart : t.wrongServer);
   }
   const body = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error((body as { error?: string }).error ?? `Erreur ${res.status}`);
+  if (!res.ok) throw new Error((body as { error?: string }).error ?? t.error(res.status));
   return body as T;
 }
 
@@ -232,13 +214,14 @@ export const api = {
       form.set('file', file); // the file last: the server reads the fields before it
       const xhr = new XMLHttpRequest();
       xhr.open('POST', `${BASE}/api/projects/${id}/media`);
+      xhr.setRequestHeader('x-plug-lang', currentLang());
       xhr.upload.onprogress = e => { if (e.lengthComputable) onProgress?.(e.loaded / e.total); };
-      xhr.onerror = () => reject(new Error('Serveur Plug injoignable.'));
+      xhr.onerror = () => reject(new Error(dict().api.uploadUnreachable));
       xhr.onload = () => {
         let body: { error?: string } = {};
         try { body = JSON.parse(xhr.responseText); } catch { /* not JSON */ }
         if (xhr.status >= 200 && xhr.status < 300) resolve(body as Project);
-        else reject(new Error(body.error ?? `Erreur ${xhr.status}`));
+        else reject(new Error(body.error ?? dict().api.error(xhr.status)));
       };
       xhr.send(form);
     }),

@@ -31,6 +31,7 @@ describe('formatters', () => {
   it('formats sizes and durations', () => {
     expect(fmtSize(1.48e9)).toBe('1,5 Go');
     expect(fmtSize(24.8e6)).toBe('24,8 Mo');
+    expect(fmtSize(24.8e6, '.')).toBe('24.8 MB');
     expect(fmtDur(24)).toBe('00:24');
     expect(fmtDur(8 * 60 + 42 + 3600 * 0)).toBe('08:42');
     expect(fmtDur(3725)).toBe('1:02:05');

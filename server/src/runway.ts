@@ -6,6 +6,7 @@
  * (MED-07), and the render's quality control reminds to disclose it (SRC-04).
  */
 import RunwayML, { TaskFailedError, TaskTimedOutError } from '@runwayml/sdk';
+import { MsgError } from './messages.ts';
 
 export interface GenerateRequest {
   prompt: string;
@@ -40,7 +41,7 @@ export class RunwayGenerator implements Generator {
 
   async generate(r: GenerateRequest): Promise<Generated> {
     const promptText = r.prompt.trim().slice(0, 1000);
-    if (!promptText) throw new Error('Décrivez ce que Runway doit générer.');
+    if (!promptText) throw new MsgError('promptEmpty');
     try {
       if (r.kind === 'video') {
         const task = await this.client.textToVideo
@@ -55,12 +56,12 @@ export class RunwayGenerator implements Generator {
     } catch (e) {
       if (e instanceof TaskFailedError) {
         const d = e.taskDetails as { failure?: string; failureCode?: string };
-        throw new Error(`Runway n’a pas pu générer ce visuel${d.failure ? ` : ${d.failure}` : ''}${d.failureCode ? ` (${d.failureCode})` : ''}`);
+        throw new MsgError('runwayFailed', { failure: d.failure ?? '', code: d.failureCode ?? '' });
       }
-      if (e instanceof TaskTimedOutError) throw new Error('Runway n’a pas terminé en 15 minutes : réessayez plus tard.');
-      if (e instanceof RunwayML.AuthenticationError) throw new Error('Clé Runway refusée : vérifiez RUNWAYML_API_SECRET dans server/.env.');
-      if (e instanceof RunwayML.RateLimitError) throw new Error('Runway est saturé ou vos crédits sont épuisés : réessayez plus tard.');
-      if (e instanceof RunwayML.BadRequestError) throw new Error(`Runway a refusé la demande : ${e.message}`);
+      if (e instanceof TaskTimedOutError) throw new MsgError('runwayTimeout');
+      if (e instanceof RunwayML.AuthenticationError) throw new MsgError('runwayBadKey');
+      if (e instanceof RunwayML.RateLimitError) throw new MsgError('runwayBusy');
+      if (e instanceof RunwayML.BadRequestError) throw new MsgError('runwayRefused', { detail: e.message });
       throw e;
     }
   }

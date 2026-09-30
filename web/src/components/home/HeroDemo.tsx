@@ -2,6 +2,7 @@ import { useEffect, useRef, type CSSProperties } from 'react';
 import { photo } from '../../media/catalog';
 import { DEMO_CLIPS, HERO_CL, HERO_TIMELINE, WAVE_BARS } from './demoClips';
 import { startHeroDemo } from './heroAnimation';
+import { useT } from '../../i18n';
 
 // Art-directed placement of the floating rush cards (same order as DEMO_CLIPS).
 // m=0 cards are hidden when the demo is narrow.
@@ -14,14 +15,13 @@ const CARD_POS: { pos: CSSProperties; z: number; tilt: string; m: 0 | 1 }[] = [
 ];
 
 const byId = Object.fromEntries(DEMO_CLIPS.map(c => [c.id, c]));
-const CAPTION = ['On', 'a', '48 heures', 'pour', 'tout', 'voir.'];
-
 export default function HeroDemo({ speed = 1 }: { speed?: number }) {
   const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => (ref.current ? startHeroDemo(ref.current, { speed }) : undefined), [speed]);
+  const d = useT().demo;
+  useEffect(() => (ref.current ? startHeroDemo(ref.current, { speed, status: d.heroStatus }) : undefined), [speed, d]);
 
   return (
-    <div ref={ref} className="hd" aria-label="Démonstration : Plug monte automatiquement une vidéo" role="img">
+    <div ref={ref} className="hd" aria-label={d.heroLabel} role="img">
       {DEMO_CLIPS.map((c, i) => {
         const cp = CARD_POS[i];
         return (
@@ -30,7 +30,7 @@ export default function HeroDemo({ speed = 1 }: { speed?: number }) {
               <img src={photo(c.photo, 360)} alt="" />
               <span data-h="cscan" className="hd-card__scan" />
               <span data-h="cbadge" className="hd-card__badge">{c.score}</span>
-              <div className="hd-card__bar"><span className="hd-card__play" /><span className="hd-card__label">{c.label}</span><span className="hd-card__dur">{c.dur}</span></div>
+              <div className="hd-card__bar"><span className="hd-card__play" /><span className="hd-card__label">{d.clips[c.id] ?? c.label}</span><span className="hd-card__dur">{c.dur}</span></div>
             </div>
           </div>
         );
@@ -38,8 +38,8 @@ export default function HeroDemo({ speed = 1 }: { speed?: number }) {
 
       <div data-h="panel" className="hd-panel">
         <div className="hd-status">
-          <span className="hd-ai">IA</span>
-          <span data-h="st" className="hd-status__text">VOS IMAGES</span>
+          <span className="hd-ai">{d.ai}</span>
+          <span data-h="st" className="hd-status__text">{d.heroStatus[0]}</span>
           <span data-h="ok" className="hd-status__ok">✓</span>
           <span data-h="pct" className="hd-status__pct">—</span>
         </div>
@@ -52,20 +52,20 @@ export default function HeroDemo({ speed = 1 }: { speed?: number }) {
           <div data-h="lbt" className="hd-lb hd-lb--top" />
           <div data-h="lbb" className="hd-lb hd-lb--bottom" />
           <div className="hd-title">
-            <div className="hd-mask"><div data-h="lt1" className="hd-title__line hd-title__line--gold">48 HEURES</div></div>
-            <div className="hd-mask"><div data-h="lt2" className="hd-title__line">À TOKYO</div></div>
+            <div className="hd-mask"><div data-h="lt1" className="hd-title__line hd-title__line--gold">{d.title1}</div></div>
+            <div className="hd-mask"><div data-h="lt2" className="hd-title__line">{d.title2}</div></div>
             <span data-h="ltr" className="hd-title__rule" />
           </div>
-          <div data-h="cap" className="hd-cap">{CAPTION.map(w => <span key={w} data-h="w">{w}</span>)}</div>
+          <div data-h="cap" className="hd-cap">{d.caption.map(w => <span key={w} data-h="w">{w}</span>)}</div>
           <img data-h="raw" className="hd-fill hd-raw" src={photo('tokyo', 720)} alt="" />
           <div data-h="veil" className="hd-fill hd-veil" />
-          <div data-h="box" className="hd-box"><span>SUJET 0.97</span></div>
-          <div data-h="dv" className="hd-fill hd-divider"><div className="hd-divider__line" /><span className="hd-divider__tag">MONTAGE IA</span></div>
-          <span data-h="lraw" className="hd-rawtag">BRUT</span>
+          <div data-h="box" className="hd-box"><span>{d.subject}</span></div>
+          <div data-h="dv" className="hd-fill hd-divider"><div className="hd-divider__line" /><span className="hd-divider__tag">{d.aiEdit}</span></div>
+          <span data-h="lraw" className="hd-rawtag">{d.raw}</span>
         </div>
 
         <div className="hd-tl">
-          <span>VIDÉO</span>
+          <span>{d.video}</span>
           <div className="hd-tl__video">
             {HERO_TIMELINE.map((id, j) => {
               const [l, w] = HERO_CL[j];
@@ -77,17 +77,17 @@ export default function HeroDemo({ speed = 1 }: { speed?: number }) {
             })}
             {[24, 42, 64].map(l => <span key={l} data-h="cut" className="hd-cut" style={{ left: l + '%' }} />)}
           </div>
-          <span>SOUS-TITRES</span>
+          <span>{d.captions}</span>
           <div className="hd-tl__caps">
             {[[6, 26], [36, 20], [60, 34]].map(([l, w]) => <span key={l} data-h="cb" style={{ left: l + '%', width: w + '%' }} />)}
           </div>
-          <span>MUSIQUE</span>
+          <span>{d.music}</span>
           <div className="hd-tl__music">
             <div data-h="wave" className="hd-wave">{WAVE_BARS.slice(0, 64).map((h, i) => <span key={i} style={{ height: h }} />)}</div>
           </div>
-          <span data-h="fxl">EFFETS</span>
+          <span data-h="fxl">{d.effects}</span>
           <div data-h="fxt" className="hd-tl__fx">
-            {[['FONDU', 20], ['ZOOM', 43], ['ÉTALONNAGE', 66]].map(([t, l]) => <span key={t} data-h="fx" style={{ left: l + '%' }}>{t}</span>)}
+            {([[d.fx[0], 20], [d.fx[1], 43], [d.fx[2], 66]] as const).map(([t, l]) => <span key={t} data-h="fx" style={{ left: l + '%' }}>{t}</span>)}
           </div>
           <div data-h="ph" className="hd-ph"><div><span /></div></div>
         </div>

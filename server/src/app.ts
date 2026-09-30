@@ -29,7 +29,9 @@ import { ClaudeDescriber, framesOf, type Describer } from './describe.ts';
 import { REAL_SUBJECT_NEEDS } from './engine.ts';
 import { RunwayGenerator, type Generator } from './runway.ts';
 import { HintError, hintKey, keepHints, parseHints } from './hints.ts';
-import { BusyError, JobQueue } from './jobs.ts';
+import { localizePayload } from './i18n.ts';
+import { failure as stored, BusyError, JobQueue } from './jobs.ts';
+import { langOf, MsgError, text, type MsgKey } from './messages.ts';
 import { probe, sha256File } from './media.ts';
 import { readProjectPlan } from './pipeline.ts';
 import { IMAGE_NATURES, newId, ProjectStore, VIDEO_NATURES, type EditStyle, type MediaItem, type MediaNature, type MediaRole, type Pacing, type Project, type VoiceMode } from './store.ts';
@@ -70,10 +72,11 @@ function pickNature(wanted: string | undefined, kind: 'image' | 'video'): MediaN
 
 const visualIds = (p: Project) => new Set(p.media.filter((m) => m.role === 'visual').map((m) => m.id));
 
-class HttpError extends Error {
+/** An HTTP error, answered in the language of the request (messages.ts). */
+class HttpError extends MsgError {
   readonly status: number;
-  constructor(status: number, message: string) {
-    super(message);
+  constructor(status: number, key: MsgKey, params?: Record<string, string | number>) {
+    super(key, params);
     this.status = status;
   }
 }
@@ -89,11 +92,11 @@ function projectFields(body: Body, partial: boolean): Partial<Project> {
   const script = str(body.script, 60_000);
   if (script !== undefined) out.script = script;
   if (body.pacing !== undefined) {
-    if (!PACINGS.includes(body.pacing as Pacing)) throw new HttpError(400, 'pacing: calm, standard ou dynamic');
+    if (!PACINGS.includes(body.pacing as Pacing)) throw new HttpError(400, 'badPacing');
     out.pacing = body.pacing as Pacing;
   }
   if (body.style !== undefined) {
-    if (!STYLES.includes(body.style as EditStyle)) throw new HttpError(400, 'style: apple ou default');
+    if (!STYLES.includes(body.style as EditStyle)) throw new HttpError(400, 'badStyle');
     out.style = body.style as EditStyle;
   }
   if (body.captions !== undefined) out.captions = body.captions === true;
@@ -101,9 +104,9 @@ function projectFields(body: Body, partial: boolean): Partial<Project> {
   if (body.rightsConfirmed !== undefined) out.rightsConfirmed = body.rightsConfirmed === true;
   if (body.voice !== undefined) {
     const v = body.voice as Body;
-    if (!v || !VOICE_MODES.includes(v.mode as VoiceMode)) throw new HttpError(400, 'voice.mode: tts, upload ou none');
+    if (!v || !VOICE_MODES.includes(v.mode as VoiceMode)) throw new HttpError(400, 'badVoiceMode');
     const voiceId = str(v.voiceId, 64);
-    if (voiceId !== undefined && !/^[A-Za-z0-9]+$/.test(voiceId)) throw new HttpError(400, 'voice.voiceId invalide');
+    if (voiceId !== undefined && !/^[A-Za-z0-9]+$/.test(voiceId)) throw new HttpError(400, 'badVoiceId');
     out.voice = { mode: v.mode as VoiceMode, ...(voiceId ? { voiceId } : {}) };
   }
   if (!partial) {
@@ -121,7 +124,7 @@ function projectFields(body: Body, partial: boolean): Partial<Project> {
 
 /** Streams a file, with HTTP Range (video seeking). */
 function sendFile(req: FastifyRequest, reply: FastifyReply, file: string) {
-  if (!existsSync(file)) throw new HttpError(404, 'fichier introuvable');
+  if (!existsSync(file)) throw new HttpError(404, 'fileNotFound');
   const size = statSync(file).size;
   const type = TYPES[extname(file).toLowerCase()] ?? 'application/octet-stream';
   reply.header('content-type', type).header('accept-ranges', 'bytes').header('cache-control', 'no-cache');
@@ -147,8 +150,8 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
   for (const p of store.list()) {
     if (p.media.some((m) => m.auto?.status === 'pending') || p.generations?.some((g) => g.status === 'pending'))
       store.update(p.id, (x) => {
-        x.media.forEach((m) => { if (m.auto?.status === 'pending') m.auto = { status: 'failed', error: 'interrompue par un redémarrage' }; });
-        x.generations?.forEach((g) => { if (g.status === 'pending') Object.assign(g, { status: 'failed', error: 'interrompue par un redémarrage : relancez-la (Runway a peut-être déjà compté les crédits)' }); });
+        x.media.forEach((m) => { if (m.auto?.status === 'pending') m.auto = { status: 'failed', ...stored(new MsgError('describeInterrupted')) }; });
+        x.generations?.forEach((g) => { if (g.status === 'pending') Object.assign(g, { status: 'failed', ...stored(new MsgError('generationInterrupted')) }); });
       });
   }
   const generator = options.generator !== undefined ? options.generator : config.runwayKey ? new RunwayGenerator({ apiKey: config.runwayKey }) : null;
@@ -158,17 +161,17 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
     const g = store.get(projectId)?.generations?.find((x) => x.id === genId);
     if (!g || !generator) return;
     const fail = (e: unknown) => {
-      app.log.warn({ err: e }, 'génération Runway impossible');
+      app.log.warn({ err: e }, 'Runway generation failed');
       if (!store.get(projectId)) return;
       store.update(projectId, (x) => {
         const y = x.generations?.find((z) => z.id === genId);
-        if (y) Object.assign(y, { status: 'failed', error: (e as Error).message.slice(0, 300) });
+        if (y) Object.assign(y, { status: 'failed', ...stored(e) });
       });
     };
     try {
       const out = await generator.generate({ prompt: g.prompt, kind: g.kind, seconds: g.seconds });
       const res = await fetch(out.url);
-      if (!res.ok || !res.body) throw new Error(`téléchargement du visuel impossible (${res.status})`);
+      if (!res.ok || !res.body) throw new MsgError('downloadFailed', { status: res.status });
       const type = res.headers.get('content-type') ?? '';
       const ext = g.kind === 'video' ? (type.includes('webm') ? '.webm' : '.mp4') : type.includes('png') ? '.png' : type.includes('webp') ? '.webp' : '.jpg';
       const id = newId('m');
@@ -176,7 +179,7 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
       const path = join(store.mediaDir(projectId), file);
       await pump(Readable.fromWeb(res.body as never), createWriteStream(path));
       const info = probe(tools, path);
-      if (info.kind === 'audio') throw new Error('Runway a renvoyé un fichier sans image');
+      if (info.kind === 'audio') throw new MsgError('runwayNoImage');
       const item: MediaItem = {
         id,
         role: 'visual',
@@ -234,11 +237,11 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
         y.auto = { status: 'done', model: config.anthropicModel, at: new Date().toISOString() };
       });
     } catch (e) {
-      app.log.warn({ err: e }, 'description automatique impossible');
+      app.log.warn({ err: e }, 'automatic description failed');
       if (!store.get(projectId)) return;
       store.update(projectId, (x) => {
         const y = x.media.find((z) => z.id === mediaId);
-        if (y) y.auto = { status: 'failed', error: (e as Error).message.slice(0, 200) };
+        if (y) y.auto = { status: 'failed', ...stored(e) };
       });
     }
   }
@@ -256,15 +259,20 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
     }
   });
 
-  app.setErrorHandler((err: Error & { statusCode?: number }, _req, reply) => {
+  app.setErrorHandler((err: Error & { statusCode?: number }, req, reply) => {
     const status = err instanceof HttpError ? err.status : err instanceof HintError ? 400 : err instanceof BusyError ? 409 : err.statusCode && err.statusCode < 500 ? err.statusCode : 500;
     if (status >= 500) app.log.error(err);
-    reply.code(status).send({ error: status >= 500 ? `Erreur serveur : ${err.message}` : err.message });
+    const lang = langOf(req.headers);
+    const said = err instanceof MsgError ? text(err.msg, lang) : err.message;
+    reply.code(status).send({ error: status >= 500 ? (lang === 'fr' ? `Erreur serveur : ${said}` : `Server error: ${said}`) : said });
   });
+
+  // Projects and jobs are answered in the reader's language (i18n.ts); what is stored never changes.
+  app.addHook('preSerialization', async (req, _reply, payload) => localizePayload(payload, langOf(req.headers)));
 
   const project = (id: string) => {
     const p = store.get(id);
-    if (!p) throw new HttpError(404, 'projet introuvable');
+    if (!p) throw new HttpError(404, 'projectNotFound');
     return p;
   };
 
@@ -299,7 +307,7 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
 
   app.delete<{ Params: { id: string } }>('/api/projects/:id', async (req, reply) => {
     const p = project(req.params.id);
-    if (p.job?.status === 'running') throw new HttpError(409, 'Une tâche tourne sur ce projet.');
+    if (p.job?.status === 'running') throw new HttpError(409, 'jobRunning');
     store.remove(p.id);
     return reply.code(204).send();
   });
@@ -307,40 +315,40 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
   app.post<{ Params: { id: string } }>('/api/projects/:id/media', async (req, reply) => {
     const p = project(req.params.id);
     const part = await req.file();
-    if (!part) throw new HttpError(400, 'fichier manquant');
+    if (!part) throw new HttpError(400, 'noFile');
     const ext = extname(part.filename).toLowerCase();
     if (!UPLOAD_EXT.has(ext)) {
       part.file.resume();
-      throw new HttpError(400, `format non pris en charge : ${ext || 'inconnu'}`);
+      throw new HttpError(400, 'badFormat', { ext });
     }
     const field = (name: string) => {
       const f = part.fields[name] as { value?: unknown } | undefined;
       return typeof f?.value === 'string' ? f.value : undefined;
     };
     const role = (field('role') ?? 'visual') as MediaRole;
-    if (!ROLES.includes(role)) throw new HttpError(400, 'role: visual, voice ou music');
+    if (!ROLES.includes(role)) throw new HttpError(400, 'badRole');
     const id = newId('m');
     const file = `${id}${ext}`;
     const path = join(store.mediaDir(p.id), file);
     await pump(part.file, createWriteStream(path));
     if (part.file.truncated) {
       await rm(path, { force: true });
-      throw new HttpError(413, 'fichier trop lourd (4 Go maximum)');
+      throw new HttpError(413, 'tooLarge');
     }
     let info;
     try {
       info = probe(tools, path);
     } catch {
       await rm(path, { force: true });
-      throw new HttpError(400, 'fichier illisible');
+      throw new HttpError(400, 'unreadable');
     }
     if ((role === 'voice' || role === 'music') && !info.hasAudio) {
       await rm(path, { force: true });
-      throw new HttpError(400, 'ce fichier ne contient pas de son');
+      throw new HttpError(400, 'noSound');
     }
     if (role === 'visual' && info.kind === 'audio') {
       await rm(path, { force: true });
-      throw new HttpError(400, 'un visuel doit être une image ou une vidéo');
+      throw new HttpError(400, 'visualKind');
     }
     const description = (field('description') ?? part.filename.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ')).slice(0, 300);
     const declaredNature = field('nature') ?? (field('synthetic') === 'true' ? 'generated' : undefined);
@@ -375,7 +383,7 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
 
   app.patch<{ Params: { id: string; mediaId: string } }>('/api/projects/:id/media/:mediaId', async (req) => {
     const p = project(req.params.id);
-    if (!p.media.some((m) => m.id === req.params.mediaId)) throw new HttpError(404, 'média introuvable');
+    if (!p.media.some((m) => m.id === req.params.mediaId)) throw new HttpError(404, 'mediaNotFound');
     const body = (req.body ?? {}) as Body;
     return store.update(p.id, (x) => {
       const m = x.media.find((y) => y.id === req.params.mediaId)!;
@@ -383,10 +391,10 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
       if (description !== undefined) m.description = description;
       if (Array.isArray(body.tags)) m.tags = body.tags.filter((t): t is string => typeof t === 'string').map((t) => t.slice(0, 40)).slice(0, 20);
       if (body.nature !== undefined || body.synthetic !== undefined) {
-        if (m.role !== 'visual') throw new HttpError(400, 'seul un visuel a une nature');
+        if (m.role !== 'visual') throw new HttpError(400, 'natureOnlyVisual');
         const wanted = body.nature !== undefined ? String(body.nature) : body.synthetic === true ? 'generated' : undefined;
         const allowed = m.kind === 'video' ? VIDEO_NATURES : IMAGE_NATURES;
-        if (wanted !== undefined && !allowed.includes(wanted as MediaNature)) throw new HttpError(400, `nature : ${allowed.join(', ')}`);
+        if (wanted !== undefined && !allowed.includes(wanted as MediaNature)) throw new HttpError(400, 'badNature', { list: allowed.join(', ') });
         m.nature = wanted as MediaNature | undefined ?? (m.kind === 'video' ? 'real_video' : 'real_photo');
         m.natureSet = true;
         delete m.synthetic;
@@ -405,10 +413,10 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
   app.post<{ Params: { id: string; mediaId: string } }>('/api/projects/:id/media/:mediaId/describe', async (req, reply) => {
     const p = project(req.params.id);
     const m = p.media.find((y) => y.id === req.params.mediaId);
-    if (!m) throw new HttpError(404, 'média introuvable');
-    if (m.role !== 'visual') throw new HttpError(400, 'seul un visuel se décrit');
-    if (!describer) throw new HttpError(400, 'Ajoutez ANTHROPIC_API_KEY dans server/.env pour que Claude décrive les visuels.');
-    if (m.auto?.status === 'pending') throw new HttpError(409, 'Claude décrit déjà ce visuel.');
+    if (!m) throw new HttpError(404, 'mediaNotFound');
+    if (m.role !== 'visual') throw new HttpError(400, 'describeOnlyVisual');
+    if (!describer) throw new HttpError(400, 'describeNoKey');
+    if (m.auto?.status === 'pending') throw new HttpError(409, 'describing');
     const updated = store.update(p.id, (x) => {
       x.media.find((y) => y.id === m.id)!.auto = { status: 'pending' };
     });
@@ -419,7 +427,7 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
   app.delete<{ Params: { id: string; mediaId: string } }>('/api/projects/:id/media/:mediaId', async (req) => {
     const p = project(req.params.id);
     const m = p.media.find((y) => y.id === req.params.mediaId);
-    if (!m) throw new HttpError(404, 'média introuvable');
+    if (!m) throw new HttpError(404, 'mediaNotFound');
     await rm(join(store.mediaDir(p.id), m.file), { force: true });
     return store.update(p.id, (x) => {
       x.media = x.media.filter((y) => y.id !== m.id);
@@ -430,21 +438,21 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
 
   app.post<{ Params: { id: string } }>('/api/projects/:id/generate', async (req, reply) => {
     const p = project(req.params.id);
-    if (!generator) throw new HttpError(400, 'Ajoutez RUNWAYML_API_SECRET dans server/.env pour générer des visuels avec Runway.');
+    if (!generator) throw new HttpError(400, 'runwayNoKey');
     const body = (req.body ?? {}) as Body;
     const prompt = (str(body.prompt, 1000) ?? '').trim();
-    if (!prompt) throw new HttpError(400, 'Décrivez ce que Runway doit générer.');
+    if (!prompt) throw new HttpError(400, 'promptEmpty');
     const kind: 'image' | 'video' = body.kind === 'image' ? 'image' : 'video';
     const seconds = Math.min(10, Math.max(2, Math.round(Number(body.seconds) || 5)));
     const line = typeof body.line === 'string' ? hintKey(body.line) : undefined;
     if (line) {
-      if (!p.script.split(/\r?\n/).some((l) => hintKey(l) === line)) throw new HttpError(400, 'Cette phrase n’est plus dans le script.');
+      if (!p.script.split(/\r?\n/).some((l) => hintKey(l) === line)) throw new HttpError(400, 'lineGone');
       // Bible MED-07: a generated picture never stands for something real. The engine would not use it anyway.
       const need = p.hints?.[line]?.mediaNeed ?? p.plan?.needs?.[line];
       if (need && (REAL_SUBJECT_NEEDS as readonly string[]).includes(need))
-        throw new HttpError(400, 'Cette phrase montre du réel (une personne, une marque, l’histoire, un document, une plateforme) : une image générée ne peut pas la représenter. Cherchez une vraie photo ou vidéo (Wikimedia Commons, kit presse, Pexels).');
+        throw new HttpError(400, 'realSubject');
     }
-    if ((p.generations ?? []).filter((g) => g.status === 'pending').length >= 3) throw new HttpError(409, 'Trois générations sont déjà en cours sur ce projet : attendez qu’une se termine.');
+    if ((p.generations ?? []).filter((g) => g.status === 'pending').length >= 3) throw new HttpError(409, 'tooManyGenerations');
     const g = { id: newId('g'), prompt, kind, seconds, ...(line ? { line } : {}), status: 'pending' as const, createdAt: new Date().toISOString() };
     const updated = store.update(p.id, (x) => {
       x.generations = [g, ...(x.generations ?? [])].slice(0, 20);
@@ -457,8 +465,8 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
     const p = project(req.params.id);
     const body = (req.body ?? {}) as Body;
     const line = typeof body.line === 'string' ? hintKey(body.line) : '';
-    if (!line) throw new HttpError(400, 'line : la phrase du script');
-    if (!p.script.split(/\r?\n/).some((l) => hintKey(l) === line)) throw new HttpError(400, 'Cette phrase n’est plus dans le script.');
+    if (!line) throw new HttpError(400, 'lineMissing');
+    if (!p.script.split(/\r?\n/).some((l) => hintKey(l) === line)) throw new HttpError(400, 'lineGone');
     const hints = body.hints === null ? {} : parseHints(body.hints, visualIds(p));
     return store.update(p.id, (x) => {
       const all = { ...(x.hints ?? {}) };
@@ -470,7 +478,7 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
 
   const requireRights = (p: Project) => {
     // A Runway visual comes with Runway's terms: only imported files need the confirmation.
-    if (p.media.some((m) => m.role !== 'voice' && !m.generated) && !p.rightsConfirmed) throw new HttpError(400, 'Confirmez que vous détenez les droits des médias importés.');
+    if (p.media.some((m) => m.role !== 'voice' && !m.generated) && !p.rightsConfirmed) throw new HttpError(400, 'rightsNeeded');
   };
 
   app.post<{ Params: { id: string } }>('/api/projects/:id/direct', async (req, reply) => {
@@ -481,13 +489,13 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
 
   app.post<{ Params: { id: string } }>('/api/projects/:id/stills', async (req, reply) => {
     const p = project(req.params.id);
-    if (!p.plan) throw new HttpError(400, 'Générez d’abord le plan de montage.');
+    if (!p.plan) throw new HttpError(400, 'planFirst');
     return reply.code(202).send(jobs.enqueue(p.id, 'stills'));
   });
 
   app.post<{ Params: { id: string } }>('/api/projects/:id/render', async (req, reply) => {
     const p = project(req.params.id);
-    if (!p.plan) throw new HttpError(400, 'Générez d’abord le plan de montage.');
+    if (!p.plan) throw new HttpError(400, 'planFirst');
     requireRights(p);
     const quality = ((req.body ?? {}) as Body).quality === 'final' ? 'final' : 'preview';
     return reply.code(202).send(jobs.enqueue(p.id, 'render', { scale: quality === 'final' ? 1 : 0.5 }));
@@ -497,14 +505,14 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
 
   app.get<{ Params: { id: string; name: string } }>('/api/projects/:id/files/:name', async (req, reply) => {
     const p = project(req.params.id);
-    if (!OUTPUTS.has(req.params.name) && !VERSION_FILE.test(req.params.name)) throw new HttpError(404, 'fichier introuvable');
+    if (!OUTPUTS.has(req.params.name) && !VERSION_FILE.test(req.params.name)) throw new HttpError(404, 'fileNotFound');
     return sendFile(req, reply, store.file(p.id, req.params.name));
   });
 
   app.get<{ Params: { id: string; file: string } }>('/api/projects/:id/files/media/:file', async (req, reply) => {
     const p = project(req.params.id);
     const m = p.media.find((x) => x.file === req.params.file);
-    if (!m) throw new HttpError(404, 'fichier introuvable');
+    if (!m) throw new HttpError(404, 'fileNotFound');
     return sendFile(req, reply, join(store.mediaDir(p.id), m.file));
   });
 

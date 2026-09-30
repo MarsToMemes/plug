@@ -2,58 +2,31 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { SiteFooter, SiteNav } from '../components/Site';
 import { photo, type PhotoKey } from '../media/catalog';
+import { useT } from '../i18n';
 import './tarifs.css';
 
 /** Annual billing selected by default (the prototype's "defaultYearly" tweak). */
 const DEFAULT_YEARLY = false;
 
-const PLANS: [name: string, monthly: number, tag: string, items: string[], cta: string, id: string, badge: string][] = [
-  ['Gratuit', 0, 'Pour essayer Plug sur votre sujet.', ['5 min de vidéo montée / mois', 'Export 1080p avec filigrane', 'Voix IA ou votre voix', '3 projets actifs', '5 Go de stockage'], 'Commencer', 'free', ''],
-  ['Créateur', 29, 'Pour les créateurs qui publient chaque semaine.', ['60 min de vidéo montée / mois', 'Export 1080p sans filigrane', 'Réalisation par Claude', 'Voix IA ElevenLabs incluse', 'Projets illimités', '100 Go de stockage'], 'Choisir Créateur', 'creator', 'Recommandé'],
-  ['Pro', 59, 'Pour les chaînes à fort volume.', ['180 min de vidéo montée / mois', 'Tout Créateur', 'Projets illimités', '500 Go de stockage'], 'Choisir Pro', 'pro', ''],
-  ['Studio', 149, 'Pour les agences et les équipes éditoriales.', ['600 min de vidéo montée / mois', 'Tout Pro', 'Support dédié', '2 To de stockage'], 'Choisir Studio', 'studio', '']
-];
-
-const ROWS: [string, string[]][] = [
-  ['Vidéo montée / mois', ['5 min', '60 min', '180 min', '600 min']],
-  ['Minutes supplémentaires', ['—', '0,60 € / min', '0,50 € / min', '0,40 € / min']],
-  ['Résolution d’export', ['1080p', '1080p', '1080p', '1080p']],
-  ['Filigrane', ['Oui', 'Non', 'Non', 'Non']],
-  ['Voix IA ElevenLabs', ['Oui', 'Oui', 'Oui', 'Oui']],
-  ['Réalisation par Claude', ['Non', 'Oui', 'Oui', 'Oui']],
-  ['Description automatique des images', ['Non', 'Oui', 'Oui', 'Oui']],
-  ['Stockage', ['5 Go', '100 Go', '500 Go', '2 To']]
-];
-
-const PACKS: [string, string, string, string, PhotoKey][] = [
-  ['Style Apple', 'Inclus', 'Coupes franches, titres au rythme de la voix, chiffres qui comptent, parts qui s’allument, documents recomposés.', 'linear-gradient(135deg,#1a1a1a,#8a5cff)', 'cinema'],
-  ['Style classique', 'Inclus', 'Photos et vidéos plein cadre, mouvements de caméra, sous-titres mot à mot, transitions douces.', 'linear-gradient(135deg,#0f3340,#ff6fb0)', 'travel']
-];
-
-const FAQ: [string, string][] = [
-  ['Que compte une « minute de vidéo montée » ?', 'La durée de la vidéo finale exportée en 1080p. Les aperçus 540p, la planche de contrôle et les réglages de phrase ne consomment rien.'],
-  ['D’où viennent les images ?', 'De vous : vos photos, vidéos, captures et documents. Plug ne télécharge aucune image sans licence vérifiée. Quand une image manque, il vous dit laquelle chercher et où (Wikimedia Commons, kits presse, Pexels).'],
-  ['Dois-je enregistrer ma voix ?', 'Non. La voix IA est générée depuis votre script. Vous pouvez aussi importer votre propre voix : chaque mot est calé sur l’image.'],
-  ['Que se passe-t-il si je dépasse mon quota ?', 'Plug vous prévient à 80 %. Vous pouvez acheter des minutes à l’unité ou passer au plan supérieur, sans perdre votre travail.'],
-  ['Puis-je changer de plan à tout moment ?', 'Oui. Le passage à un plan supérieur est immédiat et calculé au prorata. La résiliation prend effet à la fin de la période.'],
-  ['Mes vidéos servent-elles à entraîner l’IA ?', 'Non. Vos fichiers restent privés et ne sont jamais utilisés pour entraîner des modèles.'],
-  ['Les styles sont-ils inclus ?', 'Oui. Les styles Apple et classique sont inclus dans tous les plans, y compris Gratuit.']
-];
+const PLAN_IDS = ['free', 'creator', 'pro', 'studio'] as const;
+const MONTHLY = { free: 0, creator: 29, pro: 59, studio: 149 };
+const PACK_ART: [string, PhotoKey][] = [['linear-gradient(135deg,#1a1a1a,#8a5cff)', 'cinema'], ['linear-gradient(135deg,#0f3340,#ff6fb0)', 'travel']];
 
 export default function Tarifs() {
   const [yearly, setYearly] = useState(DEFAULT_YEARLY);
   const [open, setOpen] = useState(0);
+  const t = useT(), pr = t.pricing;
 
   return (
     <div className="page">
       <header className="pr-hero">
         <SiteNav packsHref="#packs" />
         <div className="pr-hero__body">
-          <h1>Payez pour la vidéo, pas pour la complexité</h1>
-          <p>Chaque plan inclut des minutes de vidéo montée. Les aperçus, la planche de contrôle et les réglages, eux, sont illimités.</p>
-          <div className="pr-toggle" role="group" aria-label="Période de facturation">
-            <button type="button" aria-pressed={!yearly} className={!yearly ? 'is-on' : ''} onClick={() => setYearly(false)}>Mensuel</button>
-            <button type="button" aria-pressed={yearly} className={yearly ? 'is-on' : ''} onClick={() => setYearly(true)}>Annuel <span>−20 %</span></button>
+          <h1>{pr.h1}</h1>
+          <p>{pr.lead}</p>
+          <div className="pr-toggle" role="group" aria-label={pr.billing}>
+            <button type="button" aria-pressed={!yearly} className={!yearly ? 'is-on' : ''} onClick={() => setYearly(false)}>{pr.monthly}</button>
+            <button type="button" aria-pressed={yearly} className={yearly ? 'is-on' : ''} onClick={() => setYearly(true)}>{pr.yearly} <span>−20 %</span></button>
           </div>
         </div>
       </header>
@@ -61,14 +34,16 @@ export default function Tarifs() {
       <main className="pr-main">
         <section className="pr-plans" aria-label="Plans">
           <div className="pr-plans__grid">
-            {PLANS.map(([name, m, tag, items, cta, id, badge]) => {
+            {PLAN_IDS.map(id => {
+              const m = MONTHLY[id], name = t.plans.names[id], { tag, items } = pr.plans[id];
               const hot = id === 'creator', price = yearly ? Math.round(m * 0.8) : m;
-              const billing = m === 0 ? 'Gratuit pour toujours' : yearly ? 'soit ' + price * 12 + ' € facturés par an' : 'facturé chaque mois';
+              const cta = id === 'free' ? t.plans.start : t.plans.choose(name), badge = hot ? t.plans.recommended : '';
+              const billing = m === 0 ? pr.freeForever : yearly ? pr.billedYearly(price * 12) : pr.billedMonthly;
               return (
                 <div key={id} className={'plan pr-plan' + (hot ? ' plan--hot' : '')}>
                   <div className="plan__head"><span className="plan__name pr-plan__name">{name}</span>{badge && <span className="plan__badge">{badge}</span>}</div>
                   <div className="pr-plan__tag">{tag}</div>
-                  <div className="plan__price"><span className="plan__amount pr-plan__amount">{price}</span><span className="plan__per">€/mois</span></div>
+                  <div className="plan__price"><span className="plan__amount pr-plan__amount">{t.plans.amount(price)}</span><span className="plan__per">{t.plans.perMonth}</span></div>
                   <div className="pr-plan__billing">{billing}</div>
                   <Link to={'/inscription?plan=' + id} className={'plan__cta' + (hot ? ' plan__cta--hot' : id === 'free' ? ' plan__cta--free' : '')}>{cta}</Link>
                   <div className="pr-plan__sep" />
@@ -79,19 +54,19 @@ export default function Tarifs() {
               );
             })}
           </div>
-          <div className="pr-note"><span>Sans carte bancaire pour l’offre Gratuit</span><span>·</span><span>Résiliable en 1 clic</span><span>·</span><span>TVA incluse</span></div>
+          <div className="pr-note">{pr.note.flatMap((n, i) => [...(i ? [<span key={'s' + i}>·</span>] : []), <span key={n}>{n}</span>])}</div>
         </section>
 
         <section className="pr-compare">
-          <h2 className="pr-h2">Comparer en détail</h2>
-          <div className="pr-table" role="region" aria-label="Tableau comparatif" tabIndex={0}>
+          <h2 className="pr-h2">{pr.compareTitle}</h2>
+          <div className="pr-table" role="region" aria-label={pr.compareLabel} tabIndex={0}>
             {/* Rows are CSS grids (display changes drop native table roles, so they are restated). */}
             <table role="table">
               <thead role="rowgroup">
-                <tr role="row"><td role="cell" /><th role="columnheader" scope="col">Gratuit</th><th role="columnheader" scope="col" className="is-hot">Créateur</th><th role="columnheader" scope="col">Pro</th><th role="columnheader" scope="col">Studio</th></tr>
+                <tr role="row"><td role="cell" />{PLAN_IDS.map(id => <th key={id} role="columnheader" scope="col" className={id === 'creator' ? 'is-hot' : undefined}>{t.plans.names[id]}</th>)}</tr>
               </thead>
               <tbody role="rowgroup">
-                {ROWS.map(([label, vals]) => (
+                {pr.rows.map(([label, vals]) => (
                   <tr key={label} role="row"><th role="rowheader" scope="row">{label}</th>{vals.map((v, i) => <td key={i} role="cell">{v}</td>)}</tr>
                 ))}
               </tbody>
@@ -102,18 +77,18 @@ export default function Tarifs() {
         <section id="packs" className="pr-packs">
           <div className="pr-packs__head">
             <div>
-              <span className="pr-packs__kicker">STYLES DE MONTAGE</span>
-              <h2 className="pr-h2">Un style, choisi en un clic.</h2>
-              <p>Inclus dans tous les plans, y compris Gratuit. Le même script peut être monté dans chaque style.</p>
+              <span className="pr-packs__kicker">{pr.stylesKicker}</span>
+              <h2 className="pr-h2">{pr.stylesTitle}</h2>
+              <p>{pr.stylesText}</p>
             </div>
-            <span className="pr-packs__range">Inclus</span>
+            <span className="pr-packs__range">{pr.included}</span>
           </div>
           <div className="pr-packs__grid">
-            {PACKS.map(([name, price, desc, bg, img]) => (
+            {pr.styles.map(([name, desc], i) => (
               <div key={name} className="pack">
-                <img src={photo(img, 720)} alt="" style={{ background: bg }} />
+                <img src={photo(PACK_ART[i]![1], 720)} alt="" style={{ background: PACK_ART[i]![0] }} />
                 <div className="pack__body">
-                  <div className="pack__row"><span>{name}</span><span>{price}</span></div>
+                  <div className="pack__row"><span>{name}</span><span>{pr.included}</span></div>
                   <span className="pack__desc">{desc}</span>
                 </div>
               </div>
@@ -122,9 +97,9 @@ export default function Tarifs() {
         </section>
 
         <section className="pr-faq">
-          <h2 className="pr-h2">Questions fréquentes</h2>
+          <h2 className="pr-h2">{pr.faqTitle}</h2>
           <div>
-            {FAQ.map(([q, a], i) => {
+            {pr.faq.map(([q, a], i) => {
               const isOpen = open === i;
               return (
                 <div key={q} className="faq">
@@ -140,10 +115,10 @@ export default function Tarifs() {
       </main>
 
       <section className="cta-final cta-final--tarifs">
-        <h2>5 minutes de vidéo offertes pour essayer</h2>
-        <Link to="/inscription" className="cta-final__btn">Créer mon compte gratuit →</Link>
+        <h2>{pr.finalTitle}</h2>
+        <Link to="/inscription" className="cta-final__btn">{pr.finalCta}</Link>
       </section>
-      <SiteFooter links={[['Accueil', '/'], ['Éditeur', '/editeur'], ['CGU', '#']]} />
+      <SiteFooter links={[[t.nav.home, '/'], [t.nav.editor, '/editeur'], [t.nav.terms, '#']]} />
     </div>
   );
 }

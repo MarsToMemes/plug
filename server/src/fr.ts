@@ -44,6 +44,10 @@ const DECISIONS: Rule[] = [
 ];
 
 const NOTES: Rule[] = [
+  // Plug's own notes (pipeline.ts)
+  [/^Claude \((\S+)\): (\w+), (\d+) call\(s\)$/, (model, accepted, n) => `Claude (${model}) : analyse ${accepted === 'full' ? 'acceptée' : accepted === 'partial' ? 'acceptée en partie' : 'refusée'}, ${n} appel(s).`],
+  [/^No ANTHROPIC_API_KEY: the automatic editor \(without Claude\) edited the episode\.$/, () => 'Pas de clé ANTHROPIC_API_KEY : le monteur automatique (sans Claude) a monté l’épisode.'],
+  [/^Without a voice-over, timings are estimated and the video will be silent\.$/, () => 'Sans voix off, les durées sont estimées et la vidéo sera muette.'],
   [/^(\S+): \[CAP-03\] no captions, the on-screen text already says it$/, (id) => `${cap(frId(id))} : pas de sous-titres, le texte à l’écran le dit déjà (CAP-03).`],
   [/^(\S+): motion skill "(.*)" not applied, the HyperFrames block animates itself$/, (id) => `${cap(frId(id))} : le bloc studio s’anime lui-même, pas d’animation ajoutée.`],
   [/^(\S+): motion skill "(.*)" not applied \(no skill registry\)$/, (id, s) => `${cap(frId(id))} : animation « ${s} » non appliquée (catalogue absent).`],

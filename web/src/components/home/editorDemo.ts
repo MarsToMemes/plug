@@ -10,13 +10,18 @@ const E = {
 };
 /** Clip slots on V1 [left %, width %]. */
 const CL: [number, number][] = [[0, 16], [16, 20], [36, 14], [50, 18], [68, 12], [80, 20]];
-const SUB = ['ANALYSE', 'CHOIX DES IMAGES', 'RYTHME', 'ANIMATION', 'ÉTALONNAGE', 'MIXAGE'];
 
 const GRAIN_SVG = "<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(#n)'/></svg>";
 
 type El = HTMLElement;
 
-export function startEditorDemo(root: HTMLElement): () => void {
+/** The texts the animation writes, in the language of the site. */
+export interface EditorDemoTexts {
+  ready: string; importing: string; analyzing: string; aiEdit: string; steps: readonly string[];
+  beforeAfter: string; exporting: string; done: string;
+}
+
+export function startEditorDemo(root: HTMLElement, L: EditorDemoTexts): () => void {
   const all = (k: string) => Array.from(root.querySelectorAll<El>(`[data-a="${k}"]`));
   const one = (k: string) => root.querySelector<El>(`[data-a="${k}"]`)!;
   const A = {
@@ -114,12 +119,12 @@ export function startEditorDemo(root: HTMLElement): () => void {
     A.lraw.style.opacity = String(clamp((x - 14) / 10) * dvo); A.lai.style.opacity = String(clamp((96 - x) / 10) * dvo);
     const eb = sg(12.0, 12.75, E.io); A.exp.style.opacity = String(sg(11.95, 12.15) * (1 - sg(13.2, 13.5)));
     A.expb.style.transform = `scaleX(${eb.toFixed(3)})`;
-    txt(A.expt, eb < 1 ? 'EXPORT ' + Math.round(eb * 100) + ' %' : 'MONTAGE TERMINÉ ✓');
+    txt(A.expt, eb < 1 ? `${L.exporting} ${Math.round(eb * 100)} %` : `${L.done} ✓`);
     // status
-    const st = t < 1.4 ? 'PRÊT' : t < 2.8 ? 'IMPORT DES MÉDIAS' : t < ES ? 'ANALYSE DES IMAGES' : t < EE ? 'MONTAGE IA · ' + SUB[Math.min(5, Math.floor((t - ES) / 0.7))]
-      : t < 9.8 ? 'MONTAGE IA' : t < 11.95 ? 'AVANT / APRÈS' : t < 12.75 ? 'EXPORT' : t < 13.35 ? 'MONTAGE TERMINÉ' : 'PRÊT';
+    const st = t < 1.4 ? L.ready : t < 2.8 ? L.importing : t < ES ? L.analyzing : t < EE ? `${L.aiEdit} · ${L.steps[Math.min(5, Math.floor((t - ES) / 0.7))]}`
+      : t < 9.8 ? L.aiEdit : t < 11.95 ? L.beforeAfter : t < 12.75 ? L.exporting : t < 13.35 ? L.done : L.ready;
     txt(A.status, st);
-    const done = st === 'MONTAGE TERMINÉ', busy = t >= 1.4 && t < 12.75;
+    const done = st === L.done, busy = t >= 1.4 && t < 12.75;
     A.sdot.style.background = done ? '#5ee0a0' : '#a06bff';
     A.sdot.style.opacity = busy ? (0.55 + 0.45 * Math.sin(t * 7)).toFixed(3) : '1';
     const secs = Math.round(t < ES ? 0 : t < EE ? p * 552 : 552);

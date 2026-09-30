@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { api, INTENT_LABEL, INTENTS, MEDIA_NEEDS, NEED_LABEL, REAL_SUBJECT_NEEDS, type Intent, type MediaNeed, type Project, type SentenceHints } from '../../lib/api';
+import { useT } from '../../i18n';
+import { api, INTENTS, MEDIA_NEEDS, REAL_SUBJECT_NEEDS, type Intent, type MediaNeed, type Project, type SentenceHints } from '../../lib/api';
 
 type ChartKind = NonNullable<SentenceHints['chart']>['kind'];
-const CHART_KINDS: [ChartKind, string][] = [['barChart', 'Barres'], ['lineChart', 'Courbe'], ['pieChart', 'Camembert']];
+const CHART_KINDS: ChartKind[] = ['barChart', 'lineChart', 'pieChart'];
 
 /** Form state: every field as typed (strings), turned into hints on save. */
 interface Form {
@@ -69,6 +70,7 @@ const toHints = (f: Form): Record<string, unknown> => {
 };
 
 function Rows({ rows, onChange, labels, max }: { rows: Array<[string, string]>; onChange: (r: Array<[string, string]>) => void; labels: [string, string]; max: number }) {
+  const t = useT().sentence;
   const set = (i: number, k: 0 | 1, v: string) => onChange(rows.map((r, j) => (j === i ? (k === 0 ? [v, r[1]] : [r[0], v]) : r)));
   return (
     <div className="se-rows">
@@ -76,10 +78,10 @@ function Rows({ rows, onChange, labels, max }: { rows: Array<[string, string]>; 
         <div key={i} className="se-rows__row">
           <input className="ed-input" value={r[0]} placeholder={labels[0]} aria-label={`${labels[0]} ${i + 1}`} onChange={e => set(i, 0, e.target.value)} />
           <input className="ed-input se-rows__val" value={r[1]} placeholder={labels[1]} aria-label={`${labels[1]} ${i + 1}`} onChange={e => set(i, 1, e.target.value)} />
-          <button type="button" className="se-x" aria-label={`Retirer la ligne ${i + 1}`} onClick={() => onChange(rows.filter((_, j) => j !== i))}>×</button>
+          <button type="button" className="se-x" aria-label={t.removeRow(i + 1)} onClick={() => onChange(rows.filter((_, j) => j !== i))}>×</button>
         </div>
       ))}
-      {rows.length < max && <button type="button" className="se-add" onClick={() => onChange([...rows, ['', '']])}>+ Ajouter une ligne</button>}
+      {rows.length < max && <button type="button" className="se-add" onClick={() => onChange([...rows, ['', '']])}>{t.addRow}</button>}
     </div>
   );
 }
@@ -95,13 +97,14 @@ function Section({ title, on, onToggle, children, hint }: { title: string; on: b
 
 /**
  * What the author fixes on one sentence: the engine guesses the rest. Saved on the
- * server keyed by the script line; "Enregistrer et remonter" re-runs the edit.
+ * server keyed by the script line; "save and re-edit" re-runs the edit.
  */
 /**
  * Runway makes a visual for this sentence (on request: it costs credits). Refused when the
  * sentence must show something real (bible MED-07): a generated picture never stands for it.
  */
 function RunwayBox({ project, line, need, onSaved, onError }: { project: Project; line: string; need: MediaNeed | undefined; onSaved: (p: Project) => void; onError: (m: string) => void }) {
+  const T = useT(), t = T.sentence;
   const [prompt, setPrompt] = useState(line);
   const [kind, setKind] = useState<'video' | 'image'>('video');
   const [seconds, setSeconds] = useState('5');
@@ -109,25 +112,25 @@ function RunwayBox({ project, line, need, onSaved, onError }: { project: Project
   const mine = (project.generations ?? []).filter(g => g.line === line);
   const pending = mine.some(g => g.status === 'pending');
   if (need && REAL_SUBJECT_NEEDS.includes(need))
-    return <span className="ed-sub">Cette phrase montre du réel ({NEED_LABEL[need].toLowerCase()}) : une image générée ne peut pas la représenter. Cherchez une vraie photo ou vidéo (Wikimedia Commons, kit presse, Pexels).</span>;
+    return <span className="ed-sub">{t.realSubject(T.labels.needs[need].toLowerCase())}</span>;
   const go = async () => {
     setSending(true);
     try { onSaved(await api.generate(project.id, { prompt, kind, seconds: Number(seconds) || 5, line })); } catch (e) { onError((e as Error).message); } finally { setSending(false); }
   };
   return (
     <>
-      <textarea className="ed-input se-area" value={prompt} onChange={e => setPrompt(e.target.value)} aria-label="Ce que Runway doit montrer" placeholder="Décrivez l’image : sujet, lieu, lumière, mouvement de caméra." />
+      <textarea className="ed-input se-area" value={prompt} onChange={e => setPrompt(e.target.value)} aria-label={t.promptLabel} placeholder={t.promptPlaceholder} />
       <div className="se-pair">
-        <div className="ed-seg se-grow">{([['video', 'Vidéo'], ['image', 'Image']] as const).map(([k, l]) => <button key={k} type="button" className={kind === k ? 'is-on' : ''} onClick={() => setKind(k)}>{l}</button>)}</div>
-        {kind === 'video' && <input className="ed-input se-sec-input" inputMode="numeric" value={seconds} onChange={e => setSeconds(e.target.value)} aria-label="Durée en secondes (2 à 10)" title="Durée en secondes (2 à 10)" />}
+        <div className="ed-seg se-grow">{([['video', t.video], ['image', t.image]] as const).map(([k, l]) => <button key={k} type="button" className={kind === k ? 'is-on' : ''} onClick={() => setKind(k)}>{l}</button>)}</div>
+        {kind === 'video' && <input className="ed-input se-sec-input" inputMode="numeric" value={seconds} onChange={e => setSeconds(e.target.value)} aria-label={t.seconds} title={t.seconds} />}
       </div>
-      <button type="button" className="se-btn" disabled={sending || pending || !prompt.trim()} onClick={() => void go()}>{pending ? 'Runway génère… (quelques minutes)' : `Générer ${kind === 'video' ? 'une vidéo' : 'une image'} avec Runway`}</button>
+      <button type="button" className="se-btn" disabled={sending || pending || !prompt.trim()} onClick={() => void go()}>{pending ? t.generating : t.generate(kind)}</button>
       {mine.slice(0, 3).map(g => (
         <span key={g.id} className={g.status === 'failed' ? 'ed-warn' : 'ed-sub'}>
-          {g.status === 'pending' ? `En cours : « ${g.prompt.slice(0, 60)} »` : g.status === 'done' ? `Généré et choisi pour cette phrase : « ${g.prompt.slice(0, 60)} »` : `Échec : ${g.error ?? 'erreur inconnue'}`}
+          {g.status === 'pending' ? t.genPending(g.prompt.slice(0, 60)) : g.status === 'done' ? t.genDone(g.prompt.slice(0, 60)) : t.genFailed(g.error ?? t.unknownError)}
         </span>
       ))}
-      <span className="ed-sub">Chaque génération consomme des crédits Runway. Un visuel généré passe après vos vraies images, et YouTube demande de signaler les contenus réalistes générés par IA.</span>
+      <span className="ed-sub">{t.runwayNote}</span>
     </>
   );
 }
@@ -141,6 +144,7 @@ export default function SentenceEditor({ project, line, onClose, onSaved, onReru
   busy: boolean;
   canGenerate?: boolean;
 }) {
+  const T = useT(), t = T.sentence;
   const [f, setF] = useState<Form>(() => toForm(project.hints?.[line]));
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -174,89 +178,89 @@ export default function SentenceEditor({ project, line, onClose, onSaved, onReru
 
   return (
     <>
-      <button type="button" className="se-back" onClick={onClose}>‹ Retour</button>
-      <h1>Cette phrase</h1>
+      <button type="button" className="se-back" onClick={onClose}>{t.back}</button>
+      <h1>{t.title}</h1>
       <blockquote className="se-line">{line}</blockquote>
-      <div className="ed-hint">Laissez « Automatique » : le monteur décide. Ce que vous fixez ici passe avant son analyse.</div>
+      <div className="ed-hint">{t.intro}</div>
 
       <div className="ed-box">
-        <label className="se-field"><span className="ed-box__label">Rôle dans le récit</span>
+        <label className="se-field"><span className="ed-box__label">{t.role}</span>
           <select className="ed-input" value={f.intent} onChange={e => set({ intent: e.target.value as Intent | '' })}>
-            <option value="">Automatique</option>
-            {INTENTS.filter(i => i !== 'chapter').map(i => <option key={i} value={i}>{INTENT_LABEL[i]}</option>)}
+            <option value="">{t.auto}</option>
+            {INTENTS.filter(i => i !== 'chapter').map(i => <option key={i} value={i}>{T.labels.intents[i]}</option>)}
           </select>
         </label>
-        <label className="se-field"><span className="ed-box__label">Ce que l’image doit faire</span>
+        <label className="se-field"><span className="ed-box__label">{t.need}</span>
           <select className="ed-input" value={f.mediaNeed} onChange={e => set({ mediaNeed: e.target.value as MediaNeed | '' })}>
-            <option value="">Automatique</option>
-            {MEDIA_NEEDS.map(n => <option key={n} value={n}>{NEED_LABEL[n]}</option>)}
+            <option value="">{t.auto}</option>
+            {MEDIA_NEEDS.map(n => <option key={n} value={n}>{T.labels.needs[n]}</option>)}
           </select>
         </label>
       </div>
 
       <div className="ed-box">
-        <label className="se-field"><span className="ed-box__label">Visuel</span>
+        <label className="se-field"><span className="ed-box__label">{t.visual}</span>
           <select className="ed-input" value={f.media} onChange={e => set({ media: e.target.value })}>
-            <option value="">Automatique</option>
+            <option value="">{t.auto}</option>
             {visuals.map(m => <option key={m.id} value={m.id}>{m.description || m.originalName}</option>)}
           </select>
         </label>
-        {!visuals.length && <span className="ed-sub">Importez des visuels dans Médias pour en imposer un.</span>}
+        {!visuals.length && <span className="ed-sub">{t.noVisuals}</span>}
         {clip && (
-          <label className="se-field"><span className="ed-box__label">Début dans le clip (secondes)</span>
+          <label className="se-field"><span className="ed-box__label">{t.clipStart}</span>
             <input className="ed-input" inputMode="decimal" value={f.mediaStart} placeholder="0" onChange={e => set({ mediaStart: e.target.value })} />
-            <span className="ed-sub">{clip.durationInSeconds ? `Clip de ${clip.durationInSeconds.toFixed(1).replace('.', ',')} s. ` : ''}Un clip plus court que le plan repart en boucle.</span>
+            <span className="ed-sub">{clip.durationInSeconds ? t.clipLength(clip.durationInSeconds.toFixed(1).replace('.', T.common.decimal)) : ''}{t.loops}</span>
           </label>
         )}
       </div>
 
       <div className="ed-box">
-        <span className="ed-box__label">Pas d’image pour cette phrase ?</span>
+        <span className="ed-box__label">{t.noImage}</span>
         {canGenerate
           ? <RunwayBox project={project} line={line} need={(f.mediaNeed || project.plan?.needs?.[line]) || undefined} onSaved={onSaved} onError={setError} />
-          : <span className="ed-sub">Ajoutez votre clé Runway (RUNWAYML_API_SECRET) dans server/.env pour en générer une.</span>}
+          : <span className="ed-sub">{t.runwayNoKey}</span>}
       </div>
 
-      <Section title="Graphique" on={f.chartOn} onToggle={() => set({ chartOn: !f.chartOn })} hint="Les vraies données derrière la phrase : le monteur les montre en barres, en courbe ou en camembert.">
-        <div className="ed-seg">{CHART_KINDS.map(([k, l]) => <button key={k} type="button" className={f.chartKind === k ? 'is-on' : ''} onClick={() => set({ chartKind: k })}>{l}</button>)}</div>
-        <Rows rows={f.chartRows} labels={['Libellé', 'Valeur']} max={12} onChange={chartRows => set({ chartRows })} />
+      <Section title={t.chart} on={f.chartOn} onToggle={() => set({ chartOn: !f.chartOn })} hint={t.chartHint}>
+        <div className="ed-seg">{CHART_KINDS.map(k => <button key={k} type="button" className={f.chartKind === k ? 'is-on' : ''} onClick={() => set({ chartKind: k })}>{t.chartKinds[k]}</button>)}</div>
+        <Rows rows={f.chartRows} labels={[t.label, t.value]} max={12} onChange={chartRows => set({ chartRows })} />
         <div className="se-pair">
-          <input className="ed-input" value={f.chartUnit} placeholder="Unité (%, M$…)" aria-label="Unité" onChange={e => set({ chartUnit: e.target.value })} />
-          <input className="ed-input" value={f.chartTitle} placeholder="Titre (facultatif)" aria-label="Titre du graphique" onChange={e => set({ chartTitle: e.target.value })} />
+          <input className="ed-input" value={f.chartUnit} placeholder={t.unit} aria-label={t.unitLabel} onChange={e => set({ chartUnit: e.target.value })} />
+          <input className="ed-input" value={f.chartTitle} placeholder={t.chartTitle} aria-label={t.chartTitleLabel} onChange={e => set({ chartTitle: e.target.value })} />
         </div>
-        <input className="ed-input" value={f.chartSource} placeholder="Source des données (ex. Rapport annuel 2023)" aria-label="Source des données" onChange={e => set({ chartSource: e.target.value })} />
+        <input className="ed-input" value={f.chartSource} placeholder={t.chartSource} aria-label={t.chartSourceLabel} onChange={e => set({ chartSource: e.target.value })} />
       </Section>
 
-      <Section title="Part d’un tout" on={f.shareOn} onToggle={() => set({ shareOn: !f.shareOn })} hint="« 57 % des terres » : des unités s’allument une à une (style Apple).">
+      <Section title={t.share} on={f.shareOn} onToggle={() => set({ shareOn: !f.shareOn })} hint={t.shareHint}>
         <div className="se-pair">
-          <input className="ed-input" inputMode="decimal" value={f.shareValue} placeholder="Valeur (57)" aria-label="Valeur" onChange={e => set({ shareValue: e.target.value })} />
-          <input className="ed-input" inputMode="decimal" value={f.shareOf} placeholder="Sur (100)" aria-label="Sur" onChange={e => set({ shareOf: e.target.value })} />
+          <input className="ed-input" inputMode="decimal" value={f.shareValue} placeholder={t.shareValue} aria-label={t.value} onChange={e => set({ shareValue: e.target.value })} />
+          <input className="ed-input" inputMode="decimal" value={f.shareOf} placeholder={t.shareOf} aria-label={t.shareOfLabel} onChange={e => set({ shareOf: e.target.value })} />
         </div>
-        <input className="ed-input" value={f.shareLabel} placeholder="Libellé (des terres)" aria-label="Libellé de la part" onChange={e => set({ shareLabel: e.target.value })} />
+        <input className="ed-input" value={f.shareLabel} placeholder={t.shareLabel} aria-label={t.shareLabelLabel} onChange={e => set({ shareLabel: e.target.value })} />
       </Section>
 
-      <Section title="Fiche document" on={f.docOn} onToggle={() => set({ docOn: !f.docOn })} hint="Le document recomposé en fiche lisible, la phrase clé surlignée quand elle est dite.">
-        <input className="ed-input" value={f.docHeader} placeholder="En-tête (ex. McDonald’s Corporation — Form 10-K)" aria-label="En-tête" onChange={e => set({ docHeader: e.target.value })} />
-        <input className="ed-input" value={f.docHeading} placeholder="Titre de section" aria-label="Titre de section" onChange={e => set({ docHeading: e.target.value })} />
-        <textarea className="ed-input se-area" value={f.docSentence} placeholder="La phrase du document. Entourez d’*astérisques* le mot à surligner." aria-label="Phrase du document" onChange={e => set({ docSentence: e.target.value })} />
-        <Rows rows={f.docRows} labels={['Ligne', 'Montant']} max={8} onChange={docRows => set({ docRows })} />
+      <Section title={t.doc} on={f.docOn} onToggle={() => set({ docOn: !f.docOn })} hint={t.docHint}>
+        <input className="ed-input" value={f.docHeader} placeholder={t.docHeader} aria-label={t.docHeaderLabel} onChange={e => set({ docHeader: e.target.value })} />
+        <input className="ed-input" value={f.docHeading} placeholder={t.docHeading} aria-label={t.docHeading} onChange={e => set({ docHeading: e.target.value })} />
+        <textarea className="ed-input se-area" value={f.docSentence} placeholder={t.docSentence} aria-label={t.docSentenceLabel} onChange={e => set({ docSentence: e.target.value })} />
+        <Rows rows={f.docRows} labels={[t.docRow, t.docAmount]} max={8} onChange={docRows => set({ docRows })} />
       </Section>
 
       <div className="ed-box">
-        <label className="se-field"><span className="ed-box__label">Source affichée</span>
-          <input className="ed-input" value={f.source} placeholder="Ex. Rapport annuel McDonald’s 2023" onChange={e => set({ source: e.target.value })} />
+        <label className="se-field"><span className="ed-box__label">{t.source}</span>
+          <input className="ed-input" value={f.source} placeholder={t.sourcePlaceholder} onChange={e => set({ source: e.target.value })} />
         </label>
-        <label className="se-field"><span className="ed-box__label">Mot barré</span>
-          <input className="ed-input" value={f.strike} placeholder="Un mot de la phrase, barré quand elle se termine" onChange={e => set({ strike: e.target.value })} />
+        <label className="se-field"><span className="ed-box__label">{t.strike}</span>
+          <input className="ed-input" value={f.strike} placeholder={t.strikePlaceholder} onChange={e => set({ strike: e.target.value })} />
         </label>
       </div>
 
       {error && <div className="ed-warn" role="alert">{error}</div>}
       <div className="se-actions">
-        <button type="button" className="se-btn" disabled={saving} onClick={() => save(false, true)}>Tout effacer</button>
-        <button type="button" className="se-btn" disabled={saving} onClick={() => save(false)}>Enregistrer</button>
+        <button type="button" className="se-btn" disabled={saving} onClick={() => save(false, true)}>{t.clearAll}</button>
+        <button type="button" className="se-btn" disabled={saving} onClick={() => save(false)}>{t.save}</button>
       </div>
-      <button type="button" className="ed-cta ed-cta--glow" disabled={saving || busy} onClick={() => save(true)}>Enregistrer et remonter</button>
+      <button type="button" className="ed-cta ed-cta--glow" disabled={saving || busy} onClick={() => save(true)}>{t.saveRerun}</button>
     </>
   );
 }

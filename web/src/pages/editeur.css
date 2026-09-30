@@ -241,3 +241,4 @@
 .se-btn:hover:not(:disabled) { border-color: #5a5260; }
 .se-grow { flex: 1; }
 .se-sec-input { flex: 0 0 64px; text-align: center; }
+.ed-lang { color: #fff; margin-right: 4px; }

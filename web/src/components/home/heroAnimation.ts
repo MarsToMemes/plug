@@ -28,9 +28,11 @@ type El = HTMLElement;
 export interface HeroDemoOptions {
   /** Playback speed multiplier (the prototype's "heroSpeed" tweak). */
   speed?: number;
+  /** The 9 status texts, in order (language of the site). */
+  status: readonly string[];
 }
 
-export function startHeroDemo(root: HTMLElement, { speed = 1 }: HeroDemoOptions = {}): () => void {
+export function startHeroDemo(root: HTMLElement, { speed = 1, status: S }: HeroDemoOptions): () => void {
   const all = (k: string) => Array.from(root.querySelectorAll<El>(`[data-h="${k}"]`));
   const one = (k: string) => root.querySelector<El>(`[data-h="${k}"]`)!;
   const H = {
@@ -155,8 +157,7 @@ export function startHeroDemo(root: HTMLElement, { speed = 1 }: HeroDemoOptions 
   }
 
   function status({ t, sg }: Frame) {
-    const st = t < 1.5 ? 'VOS IMAGES' : t < 3 ? 'ANALYSE IA' : t < 5 ? 'CHOIX DES IMAGES' : t < 8 ? 'MONTAGE IA'
-      : t < 8.67 ? 'ANIMATION' : t < 9.33 ? 'ÉTALONNAGE' : t < 10 ? 'MIXAGE' : t < 11.8 ? 'MONTAGE TERMINÉ' : 'PRÊT';
+    const st = S[t < 1.5 ? 0 : t < 3 ? 1 : t < 5 ? 2 : t < 8 ? 3 : t < 8.67 ? 4 : t < 9.33 ? 5 : t < 10 ? 6 : t < 11.8 ? 7 : 8]!;
     if (H.st.textContent !== st) H.st.textContent = st;
     const pr = sg(1.5, 10.0), pct = t < 1.5 || t >= 12.3 ? '—' : Math.round(pr * 100) + '%';
     if (H.pct.textContent !== pct) H.pct.textContent = pct;

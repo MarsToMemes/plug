@@ -13,6 +13,7 @@ import { join } from 'node:path';
 import { promisify } from 'node:util';
 import Anthropic from '@anthropic-ai/sdk';
 import type { FfmpegTools } from './engine.ts';
+import { MsgError } from './messages.ts';
 import type { MediaNature } from './store.ts';
 
 const run = promisify(execFile);
@@ -100,13 +101,13 @@ export class ClaudeDescriber implements Describer {
         },
       ],
     });
-    if (response.stop_reason === 'refusal') throw new Error(`Claude a refusé de décrire ce visuel (${response.stop_details?.category ?? 'sans catégorie'})`);
-    if (response.stop_reason === 'max_tokens') throw new Error('réponse de Claude coupée');
+    if (response.stop_reason === 'refusal') throw new MsgError('claudeRefused', { category: response.stop_details?.category ?? '' });
+    if (response.stop_reason === 'max_tokens') throw new MsgError('claudeCut');
     const text = response.content.find((b): b is Anthropic.TextBlock => b.type === 'text')?.text;
-    if (!text) throw new Error('Claude n’a pas répondu');
+    if (!text) throw new MsgError('claudeSilent');
     const out = JSON.parse(text) as { description?: unknown; tags?: unknown; nature?: unknown };
     const description = typeof out.description === 'string' ? out.description.trim().slice(0, 300) : '';
-    if (!description) throw new Error('description vide');
+    if (!description) throw new MsgError('claudeEmpty');
     const tags = Array.isArray(out.tags) ? [...new Set(out.tags.filter((t): t is string => typeof t === 'string').map((t) => t.trim().toLowerCase().slice(0, 40)).filter(Boolean))].slice(0, 12) : [];
     const nature = r.natures.includes(out.nature as MediaNature) ? (out.nature as MediaNature) : undefined;
     return { description, tags, ...(nature ? { nature } : {}) };

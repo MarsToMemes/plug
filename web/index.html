@@ -14,12 +14,22 @@
       // Errors only until the app has rendered once (App sets __plugStarted).
       (function () {
         var box;
+        // Same choice as the site (src/i18n): the saved language, else the browser's.
+        var fr = (function () {
+          try { var s = localStorage.getItem('plug.lang'); if (s) return s === 'fr'; } catch (e) {}
+          var l = navigator.languages || [navigator.language || ''];
+          for (var i = 0; i < l.length; i++) { var p = String(l[i]).toLowerCase().slice(0, 2); if (p === 'fr' || p === 'en') return p === 'fr'; }
+          return false;
+        })();
+        var T = fr
+          ? { head: 'Plug n’a pas pu s’afficher. Envoyez une capture de ce message :\n', file: 'fichier non chargé : ', error: 'erreur', promise: 'promesse rejetée : ', blank: 'rien ne s’est affiché après 15 s (navigateur : ' }
+          : { head: 'Plug could not be displayed. Send a screenshot of this message:\n', file: 'file not loaded: ', error: 'error', promise: 'rejected promise: ', blank: 'nothing was displayed after 15 s (browser: ' };
         function show(msg, always) {
           if (window.__plugStarted && !always) return;
           if (!box) {
             box = document.createElement('pre');
             box.style.cssText = 'position:fixed;left:16px;right:16px;bottom:16px;z-index:99999;margin:0;padding:14px 16px;max-height:45vh;overflow:auto;white-space:pre-wrap;font:12px/1.5 ui-monospace,Menlo,monospace;background:#3a1418;color:#ffd9dc;border:1px solid #7a2a33;border-radius:12px';
-            box.textContent = 'Plug n’a pas pu s’afficher. Envoyez une capture de ce message :\n';
+            box.textContent = T.head;
             document.body.appendChild(box);
           }
           box.textContent += '\n• ' + msg;
@@ -28,17 +38,17 @@
           var t = e.target;
           if (t && t !== window && t.tagName) {
             // Scripts and style sheets stop the site; a media that does not load does not.
-            if (t.tagName === 'SCRIPT' || t.tagName === 'LINK') show('fichier non chargé : ' + (t.src || t.href));
+            if (t.tagName === 'SCRIPT' || t.tagName === 'LINK') show(T.file + (t.src || t.href));
           }
-          else show((e.message || 'erreur') + (e.filename ? ' (' + e.filename.replace(location.origin, '') + ':' + e.lineno + ')' : ''));
+          else show((e.message || T.error) + (e.filename ? ' (' + e.filename.replace(location.origin, '') + ':' + e.lineno + ')' : ''));
         }, true);
         window.addEventListener('unhandledrejection', function (e) {
           var r = e.reason;
-          show('promesse rejetée : ' + (r && (r.stack || r.message) || r));
+          show(T.promise + (r && (r.stack || r.message) || r));
         });
         setTimeout(function () {
           var root = document.getElementById('root');
-          if (root && !root.childElementCount) show('rien ne s’est affiché après 15 s (navigateur : ' + navigator.userAgent + ')', true);
+          if (root && !root.childElementCount) show(T.blank + navigator.userAgent + ')', true);
         }, 15000);
       })();
     </script>

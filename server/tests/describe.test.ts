@@ -1,6 +1,7 @@
 /** ClaudeDescriber against a fake client: the request it sends, the answer it accepts. */
 import { describe, expect, it } from 'vitest';
 import { ClaudeDescriber } from '../src/describe.ts';
+import { text as say, type MsgError } from '../src/messages.ts';
 
 type Params = Record<string, unknown> & { messages: Array<{ content: Array<{ type: string; text?: string }> }> };
 
@@ -28,6 +29,8 @@ describe('ClaudeDescriber', () => {
     const unsure = await new ClaudeDescriber({ model: 'claude-sonnet-5-5', client: client(text(JSON.stringify({ description: 'Un bureau', tags: [], nature: 'unsure' }))).client }).describe({ ...request, natures: [...request.natures] });
     expect(unsure.nature).toBeUndefined();
     const refused = new ClaudeDescriber({ model: 'claude-sonnet-5-5', client: client({ stop_reason: 'refusal', stop_details: { category: 'general_harms' }, content: [] }).client });
-    await expect(refused.describe({ ...request, natures: [...request.natures] })).rejects.toThrow(/refusé/);
+    const e = (await refused.describe({ ...request, natures: [...request.natures] }).catch((x: MsgError) => x)) as MsgError;
+    expect(say(e.msg, 'fr')).toBe('Claude a refusé de décrire ce visuel (general_harms).');
+    expect(say(e.msg, 'en')).toBe('Claude declined to describe this visual (general_harms).');
   });
 });
