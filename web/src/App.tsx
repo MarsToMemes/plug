@@ -4,19 +4,17 @@ import Accueil from './pages/Accueil';
 import Editeur from './pages/Editeur';
 import Tarifs from './pages/Tarifs';
 import Inscription from './pages/Inscription';
-
-const TITLES: Record<string, string> = {
-  '/': 'Plug — Vos rushes, montés par l’IA',
-  '/editeur': 'Éditeur — Plug',
-  '/tarifs': 'Tarifs — Plug',
-  '/inscription': 'Inscription — Plug'
-};
+import { useT } from './i18n';
 
 /** Scrolls to #anchors after navigation, or to the top on a new page. */
 function ScrollManager() {
   const { pathname, hash } = useLocation();
+  const t = useT();
   useEffect(() => {
-    document.title = TITLES[pathname] || 'Plug';
+    const titles: Record<string, string> = { '/': t.titles.home, '/editeur': t.titles.editor, '/tarifs': t.titles.pricing, '/inscription': t.titles.signup };
+    document.title = titles[pathname] || 'Plug';
+  }, [pathname, t]);
+  useEffect(() => {
     if (hash) {
       const id = decodeURIComponent(hash.slice(1));
       requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView());

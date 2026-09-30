@@ -5,9 +5,9 @@ export interface DemoClip { id: string; label: string; dur: string; score: strin
 
 export const DEMO_CLIPS: DemoClip[] = [
   { id: 'tokyo', label: 'TOKYO', dur: '00:42', score: '0.97', photo: 'tokyo' },
-  { id: 'walk', label: 'SHIBUYA WALK', dur: '00:27', score: '0.91', photo: 'walk' },
+  { id: 'walk', label: 'SHIBUYA À PIED', dur: '00:27', score: '0.91', photo: 'walk' },
   { id: 'food', label: 'RAMEN', dur: '00:15', score: '0.88', photo: 'food' },
-  { id: 'city', label: 'CITY NIGHT', dur: '01:18', score: '0.93', photo: 'city' },
+  { id: 'city', label: 'VILLE LA NUIT', dur: '01:18', score: '0.93', photo: 'city' },
   { id: 'temple', label: 'TEMPLE', dur: '00:33', score: '0.62', photo: 'temple' }
 ];
 

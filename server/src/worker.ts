@@ -7,14 +7,15 @@
 import { parentPort, workerData } from 'node:worker_threads';
 import type { Config } from './config.ts';
 import type { FfmpegTools } from './engine.ts';
+import { isMsg, type Msg } from './messages.ts';
 import { STEPS, type JobArgs } from './steps.ts';
 import { ProjectStore, type JobKind, type Project } from './store.ts';
 
 export type WorkerMessage =
-  | { type: 'report'; progress: number; message: string }
+  | { type: 'report'; progress: number; msg: Msg }
   | { type: 'commit'; fields: Partial<Project> }
   | { type: 'done' }
-  | { type: 'error'; message: string };
+  | { type: 'error'; message: string; msg?: Msg };
 
 export interface WorkerInput {
   config: Config;
@@ -33,10 +34,11 @@ try {
     // Read-only here: results go back through commit().
     store: new ProjectStore(input.config.dataDir),
     tools: input.tools,
-    report: (progress, message) => post({ type: 'report', progress, message }),
+    report: (progress, msg) => post({ type: 'report', progress, msg }),
     commit: (fields) => post({ type: 'commit', fields }),
   }, input.args);
   post({ type: 'done' });
 } catch (e) {
-  post({ type: 'error', message: (e as Error).message ?? String(e) });
+  const m = (e as { msg?: unknown }).msg;
+  post({ type: 'error', message: (e as Error).message ?? String(e), ...(isMsg(m) ? { msg: m } : {}) });
 }

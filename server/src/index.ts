@@ -22,4 +22,4 @@ try {
 }
 console.log(`Plug API : http://${config.host}:${config.port}`);
 console.log(`  voix IA / transcription ElevenLabs : ${config.elevenLabsKey ? 'oui' : 'non (ELEVENLABS_API_KEY absente : alignement local)'}`);
-console.log(`  cerveau éditorial Claude : ${config.anthropicKey ? config.anthropicModel : 'non (ANTHROPIC_API_KEY absente : heuristique)'}`);
+console.log(`  cerveau éditorial Claude : ${config.anthropicKey ? config.anthropicModel : 'non (ANTHROPIC_API_KEY absente : monteur automatique)'}`);

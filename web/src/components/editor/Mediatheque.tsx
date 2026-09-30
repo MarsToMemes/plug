@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState, type DragEvent, type KeyboardEvent } from 'react';
-import { api, NATURE_LABEL, NATURES_OF, type MediaNature, type Project, type ProjectMedia } from '../../lib/api';
+import { useT } from '../../i18n';
+import { api, NATURES_OF, type MediaNature, type Project, type ProjectMedia } from '../../lib/api';
 import { fmtDur, fmtSize } from '../../lib/plugMedia';
 import './mediatheque.css';
 
@@ -13,13 +14,12 @@ const ICON: Record<Kind, string> = {
   audio: 'M4 10v4 M8 7v10 M12 4v16 M16 8v8 M20 11v2'
 };
 const ORDER: Kind[] = ['video', 'image', 'audio'];
-const SEC_LABEL: Record<Kind, string> = { video: 'VIDÉO', image: 'IMAGE', audio: 'AUDIO' };
 const ACCEPT = '.mp4,.mov,.m4v,.webm,.jpg,.jpeg,.png,.webp,.gif,.mp3,.wav,.m4a,.aac,.flac,.ogg,video/*,image/*,audio/*';
 const AUDIO_EXT = /\.(mp3|wav|m4a|aac|flac|ogg)$/i;
 
 const COMPARE: Record<Sort, (a: ProjectMedia, b: ProjectMedia) => number> = {
   date: () => 0, // server order is the import order; reversed below
-  name: (a, b) => a.originalName.localeCompare(b.originalName, 'fr', { numeric: true }),
+  name: (a, b) => a.originalName.localeCompare(b.originalName, undefined, { numeric: true }),
   type: (a, b) => ORDER.indexOf(a.kind) - ORDER.indexOf(b.kind),
   duration: (a, b) => (b.durationInSeconds || 0) - (a.durationInSeconds || 0),
   size: (a, b) => b.bytes - a.bytes
@@ -29,7 +29,6 @@ const Svg = ({ d, size = 18, sw = 1.6 }: { d: string; size?: number; sw?: number
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d} /></svg>
 );
 
-const plural = (n: number, one: string, many: string) => n + ' ' + (n > 1 ? many : one);
 
 /** Decorative waveform, stable for a given name (the real one would need decoding the file). */
 const pseudoWave = (name: string) => {
@@ -38,7 +37,7 @@ const pseudoWave = (name: string) => {
   return Array.from({ length: 56 }, (_, i) => { s = (s * 9301 + 49297) % 233280; return 0.25 + 0.75 * Math.abs(Math.sin(i / 4 + s / 5e4)) * (0.5 + (s % 100) / 200); });
 };
 
-/** Declared nature, else from the old "généré par IA" flag and the kind. */
+/** Declared nature, else from the old "AI-generated" flag and the kind. */
 const natureOf = (m: ProjectMedia): MediaNature => m.nature ?? (m.synthetic ? 'generated' : m.kind === 'video' ? 'real_video' : 'real_photo');
 
 interface Pending { id: string; name: string; kind: Kind; progress: number; error?: string; file: File }
@@ -48,7 +47,8 @@ interface Pending { id: string; name: string; kind: Kind; progress: number; erro
  * search, sort, multi-select. Visuals carry a description the editor brain matches to the
  * narration; an audio file is the voice-over or the music.
  */
-export default function Mediatheque({ project, onChange, onError }: { project: Project; onChange: (p: Project) => void; onError: (e: unknown) => void }) {
+export default function Mediatheque({ project, onChange, onError, canDescribe = false }: { project: Project; onChange: (p: Project) => void; onError: (e: unknown) => void; canDescribe?: boolean }) {
+  const T = useT(), t = T.library, SEC_LABEL = t.kinds;
   const [filter, setFilter] = useState<Filter>('ALL');
   const [q, setQ] = useState('');
   const [sort, setSort] = useState<Sort>('date');
@@ -102,7 +102,7 @@ export default function Mediatheque({ project, onChange, onError }: { project: P
   };
 
   const setRole = (m: ProjectMedia) => api.updateMedia(project.id, m.id, { role: m.role === 'voice' ? 'music' : 'voice' })
-    .then(p => { onChange(p); flash(m.role === 'voice' ? 'Utilisé comme musique' : 'Utilisé comme voix off'); }, onError);
+    .then(p => { onChange(p); flash(m.role === 'voice' ? t.usedAsMusic : t.usedAsVoice); }, onError);
 
   const togglePlay = (m: ProjectMedia) => {
     let a = audio.current;
@@ -110,7 +110,7 @@ export default function Mediatheque({ project, onChange, onError }: { project: P
       a = audio.current = new Audio();
       a.ontimeupdate = () => setPlayT(a!.duration ? a!.currentTime / a!.duration : 0);
       a.onended = () => { setPlay(null); setPlayT(0); };
-      a.onerror = () => { setPlay(null); flash('Lecture impossible'); };
+      a.onerror = () => { setPlay(null); flash(t.cannotPlay); };
     }
     if (play === m.id) { if (a.paused) a.play().catch(() => {}); else a.pause(); return; }
     a.pause(); a.src = api.mediaUrl(project.id, m.file); a.play().catch(() => {});
@@ -129,12 +129,8 @@ export default function Mediatheque({ project, onChange, onError }: { project: P
     return sort === 'date' ? list.reverse() : list.sort(COMPARE[sort]);
   }, [media, filter, q, sort]);
 
-  const counter = [
-    counts.video && plural(counts.video, 'vidéo', 'vidéos'),
-    counts.image && plural(counts.image, 'image', 'images'),
-    counts.audio && plural(counts.audio, 'audio', 'audios')
-  ].filter(Boolean).join(' · ') || 'Aucun média';
-  const FILTERS: [Filter, string, number][] = [['ALL', 'TOUT', media.length], ['video', 'VIDÉO', counts.video], ['image', 'IMAGE', counts.image], ['audio', 'AUDIO', counts.audio]];
+  const counter = ORDER.filter(k => counts[k]).map(k => `${counts[k]} ${t.counter[k]![counts[k] > 1 ? 1 : 0]}`).join(' · ') || t.empty;
+  const FILTERS: [Filter, string, number][] = [['ALL', t.all, media.length], ['video', SEC_LABEL.video, counts.video], ['image', SEC_LABEL.image, counts.image], ['audio', SEC_LABEL.audio, counts.audio]];
   const anySel = sel.length > 0;
 
   const hasFiles = (e: DragEvent) => Array.from(e.dataTransfer?.types || []).includes('Files');
@@ -152,13 +148,14 @@ export default function Mediatheque({ project, onChange, onError }: { project: P
   const meta = (m: ProjectMedia) => [
     m.kind !== 'image' && m.durationInSeconds ? fmtDur(m.durationInSeconds) : '',
     m.kind !== 'audio' && m.width ? `${m.width} × ${m.height}` : '',
-    fmtSize(m.bytes)
+    fmtSize(m.bytes, T.common.decimal),
+    m.generated ? `Runway${m.generated.credits !== undefined ? ` · ${t.credits(m.generated.credits)}` : ''}` : ''
   ].filter(Boolean).join(' · ');
 
   const renderVisual = (m: ProjectMedia) => {
     const selected = sel.includes(m.id), url = api.mediaUrl(project.id, m.file);
     return (
-      <div key={m.id} role="button" tabIndex={0} aria-pressed={selected} aria-label={`${m.kind === 'video' ? 'Vidéo' : 'Image'}, ${m.originalName}${selected ? ', sélectionné' : ''}`}
+      <div key={m.id} role="button" tabIndex={0} aria-pressed={selected} aria-label={`${m.kind === 'video' ? t.video : t.image}, ${m.originalName}${selected ? t.selected : ''}`}
         className={'mc mc--visual' + (selected ? ' is-sel' : '')} onClick={() => toggleSel(m.id)} onKeyDown={keys(m.id)}>
         <div className="mc__thumb">
           {m.kind === 'image' ? <img src={url} loading="lazy" alt="" /> : <video src={`${url}#t=0.5`} muted preload="metadata" />}
@@ -170,16 +167,24 @@ export default function Mediatheque({ project, onChange, onError }: { project: P
           <div className="mc__txt">
             <span className="mc__name" title={m.originalName}>{m.originalName}</span>
             <span className="mc__meta">{meta(m)}</span>
-            <input className="mc__desc" defaultValue={m.description} placeholder="Ce que montre ce média" aria-label={`Description de ${m.originalName}`}
+            {/* Keyed on the saved text: Claude's description replaces the field when it arrives. */}
+            <input key={m.description} className="mc__desc" defaultValue={m.description} disabled={m.auto?.status === 'pending'} placeholder={t.descPlaceholder} aria-label={t.descLabel(m.originalName)}
               onClick={e => e.stopPropagation()} onKeyDown={e => e.stopPropagation()}
               onBlur={e => { if (e.target.value !== m.description) api.updateMedia(project.id, m.id, { description: e.target.value }).then(onChange, onError); }} />
-            <select className="mc__nature" value={natureOf(m)} aria-label={`Nature de ${m.originalName}`} title="Le monteur préfère le média le plus authentique"
+            <select className="mc__nature" value={natureOf(m)} aria-label={t.natureLabel(m.originalName)} title={t.natureTitle}
               onClick={e => e.stopPropagation()} onKeyDown={e => e.stopPropagation()}
               onChange={e => api.updateMedia(project.id, m.id, { nature: e.target.value as MediaNature }).then(onChange, onError)}>
-              {NATURES_OF[m.kind === 'video' ? 'video' : 'image'].map(n => <option key={n} value={n}>{NATURE_LABEL[n]}</option>)}
+              {NATURES_OF[m.kind === 'video' ? 'video' : 'image'].map(n => <option key={n} value={n}>{T.labels.natures[n]}</option>)}
             </select>
+            {m.auto?.status === 'pending' && <span className="mc__auto">{t.describing}</span>}
+            {m.auto?.status === 'failed' && <span className="mc__auto mc__auto--err" title={m.auto.error}>{t.describeFailed}</span>}
+            {canDescribe && m.auto?.status !== 'pending' && (
+              <button type="button" className="mc__redo" onClick={e => { e.stopPropagation(); api.describeMedia(project.id, m.id).then(onChange, onError); }}>
+                {m.auto?.status === 'done' ? t.redescribe : t.describe}
+              </button>
+            )}
           </div>
-          <button type="button" className="mc__x" onClick={e => { e.stopPropagation(); void remove([m.id]); }} aria-label={'Retirer ' + m.originalName}>×</button>
+          <button type="button" className="mc__x" onClick={e => { e.stopPropagation(); void remove([m.id]); }} aria-label={t.remove(m.originalName)}>×</button>
         </div>
       </div>
     );
@@ -188,24 +193,24 @@ export default function Mediatheque({ project, onChange, onError }: { project: P
   const renderAudio = (m: ProjectMedia) => {
     const selected = sel.includes(m.id), playing = play === m.id, wf = pseudoWave(m.originalName);
     return (
-      <div key={m.id} role="button" tabIndex={0} aria-pressed={selected} aria-label={`Audio, ${m.originalName}${selected ? ', sélectionné' : ''}`}
+      <div key={m.id} role="button" tabIndex={0} aria-pressed={selected} aria-label={`${t.audio}, ${m.originalName}${selected ? t.selected : ''}`}
         className={'mc mc--row mc--audio' + (selected ? ' is-sel' : '')} onClick={() => toggleSel(m.id)} onKeyDown={keys(m.id)}>
-        <button type="button" className="mc__pbtn" onClick={e => { e.stopPropagation(); togglePlay(m); }} aria-label={(playing ? 'Pause ' : 'Écouter ') + m.originalName}>{playing && !audio.current?.paused ? '❚❚' : '▶'}</button>
+        <button type="button" className="mc__pbtn" onClick={e => { e.stopPropagation(); togglePlay(m); }} aria-label={playing ? t.pause(m.originalName) : t.listen(m.originalName)}>{playing && !audio.current?.paused ? '❚❚' : '▶'}</button>
         <div className="mc__col">
           <div className="mc__line">
             <span className="mc__ico"><Svg d={ICON.audio} size={13} sw={2} /></span>
             <span className="mc__name" title={m.originalName}>{m.originalName}</span>
-            <button type="button" className="mc__role" title={m.role === 'voice' ? 'Utiliser comme musique' : 'Utiliser comme voix off'} onClick={e => { e.stopPropagation(); void setRole(m); }}>{m.role === 'voice' ? 'VOIX OFF' : 'MUSIQUE'} ⇄</button>
+            <button type="button" className="mc__role" title={m.role === 'voice' ? t.useAsMusic : t.useAsVoice} onClick={e => { e.stopPropagation(); void setRole(m); }}>{m.role === 'voice' ? t.voice : t.music} ⇄</button>
           </div>
           <div className="mc__wave" aria-hidden="true">
             {wf.map((v, k) => <span key={k} style={{ height: Math.max(10, v * 100).toFixed(0) + '%', background: playing && k / wf.length < playT ? '#fff' : '#5a4d78' }} />)}
           </div>
           <div className="mc__line mc__line--meta">
             <span className="mc__meta mc__grow">{meta(m)}</span>
-            <span className="mc__st is-ok">PRÊT</span>
+            <span className="mc__st is-ok">{t.ready}</span>
           </div>
         </div>
-        <button type="button" className="mc__x" onClick={e => { e.stopPropagation(); void remove([m.id]); }} aria-label={'Retirer ' + m.originalName}>×</button>
+        <button type="button" className="mc__x" onClick={e => { e.stopPropagation(); void remove([m.id]); }} aria-label={t.remove(m.originalName)}>×</button>
       </div>
     );
   };
@@ -217,9 +222,9 @@ export default function Mediatheque({ project, onChange, onError }: { project: P
         <div className="mc__line"><span className="mc__name" title={it.name}>{it.name}</span><span className="mc__tag">{SEC_LABEL[it.kind]}</span></div>
         {it.error
           ? <span className="mc__meta">{it.error}</span>
-          : <><span className="mc__st">{it.progress < 1 ? `Import… ${Math.round(it.progress * 100)} %` : 'Analyse…'}</span><span className="mc__bar mc__bar--thin"><span style={{ width: `${Math.round(it.progress * 100)}%` }} /></span></>}
+          : <><span className="mc__st">{it.progress < 1 ? t.uploading(Math.round(it.progress * 100)) : t.analysing}</span><span className="mc__bar mc__bar--thin"><span style={{ width: `${Math.round(it.progress * 100)}%` }} /></span></>}
       </div>
-      {it.error && <button type="button" className="mc__x" onClick={() => setPending(ps => ps.filter(x => x.id !== it.id))} aria-label={'Retirer ' + it.name}>×</button>}
+      {it.error && <button type="button" className="mc__x" onClick={() => setPending(ps => ps.filter(x => x.id !== it.id))} aria-label={t.remove(it.name)}>×</button>}
     </div>
   );
 
@@ -227,23 +232,23 @@ export default function Mediatheque({ project, onChange, onError }: { project: P
 
   return (
     <div className={'ml' + (anySel ? ' has-sel' : '') + (drag ? ' is-drag' : '')} onDragEnter={onDragEnter} onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop}>
-      <input ref={input} type="file" multiple accept={ACCEPT} hidden aria-label="Importer des médias" onChange={e => { addFiles(e.target.files); e.target.value = ''; }} />
+      <input ref={input} type="file" multiple accept={ACCEPT} hidden aria-label={t.importMedia} onChange={e => { addFiles(e.target.files); e.target.value = ''; }} />
 
       <div className="ml-head">
         <div className="ml-head__title">
-          <span className="ml-kicker">MÉDIATHÈQUE</span>
+          <span className="ml-kicker">{t.title}</span>
           <span className="ml-counter" aria-live="polite">{counter}</span>
         </div>
         <div className="ml-tools">
-          <input type="search" value={q} onChange={e => setQ(e.target.value)} placeholder="Rechercher un média…" aria-label="Rechercher un média" className="ml-input ml-input--search" />
-          <select value={sort} onChange={e => setSort(e.target.value as Sort)} aria-label="Trier" className="ml-input">
-            <option value="date">Date d’ajout</option><option value="name">Nom</option><option value="type">Type</option><option value="duration">Durée</option><option value="size">Taille</option>
+          <input type="search" value={q} onChange={e => setQ(e.target.value)} placeholder={t.search} aria-label={t.searchLabel} className="ml-input ml-input--search" />
+          <select value={sort} onChange={e => setSort(e.target.value as Sort)} aria-label={t.sort} className="ml-input">
+            {(['date', 'name', 'type', 'duration', 'size'] as const).map(k => <option key={k} value={k}>{t.sorts[k]}</option>)}
           </select>
-          <button type="button" className="ml-browse" onClick={() => input.current?.click()}>Parcourir</button>
+          <button type="button" className="ml-browse" onClick={() => input.current?.click()}>{t.browse}</button>
         </div>
       </div>
 
-      <div role="tablist" aria-label="Filtrer par type" className="ml-filters">
+      <div role="tablist" aria-label={t.filter} className="ml-filters">
         {FILTERS.map(([id, label, count]) => (
           <button key={id} type="button" role="tab" aria-selected={filter === id} className={filter === id ? 'is-on' : ''} onClick={() => setFilter(id)}>{label}<span>{count}</span></button>
         ))}
@@ -252,58 +257,63 @@ export default function Mediatheque({ project, onChange, onError }: { project: P
       {media.some(m => m.role !== 'voice') && (
         <label className="ml-rights">
           <input type="checkbox" checked={project.rightsConfirmed} onChange={e => api.update(project.id, { rightsConfirmed: e.target.checked }).then(onChange, onError)} />
-          Je détiens les droits de ces médias (ou une licence qui autorise l’usage commercial).
+          {t.rights}
         </label>
       )}
 
       {anySel && (
         <div className="ml-selbar">
-          <span>{plural(sel.length, 'sélectionné', 'sélectionnés')}</span>
-          <button type="button" className="ml-selbar__btn" onClick={() => setSel(vis.map(m => m.id))}>Tout sélectionner</button>
-          <button type="button" className="ml-selbar__btn ml-selbar__btn--danger" onClick={() => void remove(sel)}>Retirer du projet</button>
-          <button type="button" className="ml-selbar__x" onClick={() => setSel([])} aria-label="Désélectionner">×</button>
+          <span>{t.selectedCount(sel.length)}</span>
+          <button type="button" className="ml-selbar__btn" onClick={() => setSel(vis.map(m => m.id))}>{t.selectAll}</button>
+          <button type="button" className="ml-selbar__btn ml-selbar__btn--danger" onClick={() => void remove(sel)}>{t.removeSelected}</button>
+          <button type="button" className="ml-selbar__x" onClick={() => setSel([])} aria-label={t.unselect}>×</button>
         </div>
       )}
 
       <div className="ml-body">
         {pending.length > 0 && <div className="ml-grid ml-grid--doc">{pending.map(renderPending)}</div>}
+        {project.generations?.some(g => g.status === 'pending') && (
+          <div className="ml-gen" role="status">
+            {project.generations.filter(g => g.status === 'pending').map(g => <span key={g.id}>{t.runwayMaking(g.kind, g.prompt.slice(0, 70))}</span>)}
+          </div>
+        )}
 
         {media.length === 0 && pending.length === 0 && (
           <div className="ml-empty">
             <div className="ml-empty__icons" aria-hidden="true">{ORDER.map(t => <span key={t}><Svg d={ICON[t]} /></span>)}</div>
-            <span className="ml-empty__title">DÉPOSEZ VOS MÉDIAS</span>
-            <span className="ml-empty__text">Glissez-déposez vos images, vidéos, voix off et musiques ici. Décrivez chaque visuel : le monteur le place sur la phrase qui en parle.</span>
-            <span className="ml-empty__or">ou</span>
-            <button type="button" className="ml-browse ml-browse--lg" onClick={() => input.current?.click()}>Parcourir les fichiers</button>
-            <span className="ml-empty__formats">Formats : MP4 · MOV · WEBM · JPG · PNG · WEBP · MP3 · WAV · M4A</span>
+            <span className="ml-empty__title">{t.dropTitle}</span>
+            <span className="ml-empty__text">{t.dropText}</span>
+            <span className="ml-empty__or">{T.common.or}</span>
+            <button type="button" className="ml-browse ml-browse--lg" onClick={() => input.current?.click()}>{t.browseFiles}</button>
+            <span className="ml-empty__formats">{t.formats}</span>
           </div>
         )}
 
-        {groups.map(({ t, list }) => {
-          const open = !closed[t];
+        {groups.map(({ t: k, list }) => {
+          const open = !closed[k];
           return (
-            <section key={t} className="ml-sec" aria-label={SEC_LABEL[t] + ', ' + list.length + ' fichiers'}>
-              <button type="button" className="ml-sec__head" aria-expanded={open} onClick={() => setClosed(c => ({ ...c, [t]: open }))}>
-                <Svg d={ICON[t]} size={15} sw={1.7} />
-                <span>{SEC_LABEL[t]} · {list.length}</span>
+            <section key={k} className="ml-sec" aria-label={SEC_LABEL[k] + ', ' + t.files(list.length)}>
+              <button type="button" className="ml-sec__head" aria-expanded={open} onClick={() => setClosed(c => ({ ...c, [k]: open }))}>
+                <Svg d={ICON[k]} size={15} sw={1.7} />
+                <span>{SEC_LABEL[k]} · {list.length}</span>
                 <span className="ml-sec__rule" />
                 <span className="ml-sec__chev" style={{ transform: `rotate(${open ? 90 : 0}deg)` }}>›</span>
               </button>
-              {open && (t === 'audio'
+              {open && (k === 'audio'
                 ? <div className="ml-grid ml-grid--audio">{list.map(renderAudio)}</div>
                 : <div className="ml-grid ml-grid--visual">{list.map(renderVisual)}</div>)}
             </section>
           );
         })}
 
-        {media.length > 0 && vis.length === 0 && <div className="ml-nomatch">Aucun média ne correspond.</div>}
+        {media.length > 0 && vis.length === 0 && <div className="ml-nomatch">{t.noMatch}</div>}
       </div>
 
       {drag && (
         <div className="ml-drop">
           <div>
-            <span className="ml-drop__title">Déposez vos médias ici</span>
-            <span className="ml-drop__types">IMAGE · VIDÉO · VOIX OFF · MUSIQUE</span>
+            <span className="ml-drop__title">{t.dropHere}</span>
+            <span className="ml-drop__types">{t.dropTypes}</span>
           </div>
         </div>
       )}

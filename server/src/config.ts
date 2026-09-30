@@ -20,8 +20,12 @@ export interface Config {
   elevenLabsVoiceId: string;
   elevenLabsModel: string;
   anthropicKey?: string;
+  /** Runway: generates a visual for a sentence, on request. */
+  runwayKey?: string;
   /** Claude model of the editorial brain (--llm). */
   anthropicModel: string;
+  /** Render cache (chunks, decoded media, mixes) kept after a render, bytes. */
+  renderCacheBytes: number;
   /** Chrome / Chromium Headless Shell for Remotion and the control sheet. */
   browser?: string;
   /** Origins allowed to call the API (the web app in development). */
@@ -53,7 +57,10 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     elevenLabsVoiceId: env.ELEVENLABS_VOICE_ID ?? 'JBFqnCBsd6RMkjVDRZzb',
     elevenLabsModel: env.ELEVENLABS_MODEL ?? 'eleven_multilingual_v2',
     ...(env.ANTHROPIC_API_KEY ? { anthropicKey: env.ANTHROPIC_API_KEY } : {}),
+    // RUNWAYML_API_SECRET is the name Runway's own SDK reads.
+    ...(env.RUNWAYML_API_SECRET || env.RUNWAY_API_KEY ? { runwayKey: (env.RUNWAYML_API_SECRET || env.RUNWAY_API_KEY)! } : {}),
     anthropicModel: env.ANTHROPIC_MODEL ?? 'claude-sonnet-5-5',
+    renderCacheBytes: Math.max(0, Number(env.RENDER_CACHE_GB ?? 10)) * 1e9,
     ...(browser ? { browser } : {}),
     corsOrigins: (env.CORS_ORIGINS ?? 'http://localhost:5173,http://127.0.0.1:5173').split(',').map((s) => s.trim()).filter(Boolean),
   };

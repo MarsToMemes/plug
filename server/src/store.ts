@@ -5,6 +5,8 @@
 import { randomBytes } from 'node:crypto';
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import type { HintsByLine } from './hints.ts';
+import type { Msg } from './messages.ts';
 
 export type Pacing = 'calm' | 'standard' | 'dynamic';
 /** `apple`: studio blocks timed to the voice. `default`: the engine's own compositions. */
@@ -37,6 +39,27 @@ export interface MediaItem {
   nature?: MediaNature;
   /** Projects made before `nature`: AI-generated realistic image or video. */
   synthetic?: boolean;
+  /** The user chose the nature (upload or library): Claude's guess never replaces it. */
+  natureSet?: boolean;
+  /** Claude's automatic description (describe.ts). */
+  auto?: { status: 'pending' | 'done' | 'failed'; error?: string; errorMsg?: Msg; model?: string; at?: string };
+  /** Made by Runway for this project (runway.ts). */
+  generated?: { provider: 'Runway'; model: string; prompt: string; credits?: number };
+}
+
+/** A visual asked of Runway: pending while Runway works, then a media of the project. */
+export interface Generation {
+  id: string;
+  prompt: string;
+  kind: 'image' | 'video';
+  seconds: number;
+  /** The script line the visual is for: it becomes that sentence's visual. */
+  line?: string;
+  status: 'pending' | 'done' | 'failed';
+  createdAt: string;
+  mediaId?: string;
+  error?: string;
+  errorMsg?: Msg;
 }
 
 export type JobKind = 'direct' | 'stills' | 'render';
@@ -47,8 +70,12 @@ export interface Job {
   status: 'queued' | 'running' | 'done' | 'failed';
   /** 0 to 1. */
   progress: number;
+  /** In English; `msg` gives it in the reader's language (messages.ts). */
   message: string;
+  msg?: Msg;
   error?: string;
+  /** The error in the reader's language, when the server wrote it (else `error`, from the engine, in English). */
+  errorMsg?: Msg;
   queuedAt: string;
   startedAt?: string;
   finishedAt?: string;
@@ -71,6 +98,10 @@ export interface Project {
   /** The user confirmed owning or licensing the uploaded media (bible SRC-01). */
   rightsConfirmed: boolean;
   media: MediaItem[];
+  /** What the author set on sentences, keyed by script line (hints.ts). */
+  hints?: HintsByLine;
+  /** Visuals asked of Runway, newest first. */
+  generations?: Generation[];
 
   voiceTrack?: {
     durationInSeconds: number;
@@ -85,11 +116,19 @@ export interface Project {
     durationInSeconds: number;
     valid: boolean;
     brain: 'llm' | 'heuristic';
+    /** Script line of each sentence (unit id → line). */
+    units?: Record<string, string>;
+    /** What the picture must do for each line (first sentence of the line), bible §27. */
+    needs?: Record<string, string>;
     decisions: string[];
     assetRequests: Array<{ unitId: string; need: string; description: string }>;
     errors: Array<{ message: string; rule?: string }>;
     warnings: Array<{ message: string; rule?: string }>;
     notes: string[];
+    /** Texts stored as the engine wrote them (English), translated when read. Older plans: already French. */
+    raw?: boolean;
+    /** What the engine wrote that has no French translation (English, for support). */
+    technical?: string[];
   };
   stills?: { createdAt: string; planCreatedAt: string };
   /** The latest render (also renders[0]). */
@@ -114,7 +153,8 @@ export interface RenderInfo {
   draft: boolean;
   scale: number;
   loudness?: { integrated: number; truePeak: number };
-  qc?: { pass: boolean; failed: string[]; warnings: string[] };
+  /** `checks` / `error` as the engine or the server wrote them (read in the reader's language); failed / warnings: plain text (older renders: French). */
+  qc?: { pass: boolean; failed: string[]; warnings: string[]; checks?: Array<{ status: 'fail' | 'warn'; message: string; rule?: string; shotId?: string }>; error?: Msg };
   notes: string[];
 }
 

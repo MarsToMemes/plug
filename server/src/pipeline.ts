@@ -16,6 +16,7 @@ import {
   directEpisodeWithLlm,
   ffmpegFilters,
   qcEpisode,
+  pruneCache,
   renderEpisode,
   runFfmpeg,
   type AssetRegistry,
@@ -28,6 +29,9 @@ import {
   type TranscriptWord,
 } from './engine.ts';
 import { concatAudio, decodePcm16k, normalizeVoice, probe, sha256File, writeJson } from './media.ts';
+import { frIssues, frLists } from './fr.ts';
+import { msg, MsgError, text, type Msg } from './messages.ts';
+import { hintKey, withHints } from './hints.ts';
 import { chunkText, parseScript, spokenText } from './script.ts';
 import { MAX_RENDERS, natureOf, newId, type MediaItem, type Project, type ProjectStore, type RenderInfo } from './store.ts';
 import { alignKnownText, wordsFromAlignment, wordsFromStt } from './words.ts';
@@ -36,8 +40,8 @@ export interface PipelineContext {
   config: Config;
   store: ProjectStore;
   tools: FfmpegTools;
-  /** Progress of the running step: 0..1 and a message in French. */
-  report: (progress: number, message: string) => void;
+  /** Progress of the running step: 0..1 and a message, written in the reader's language (messages.ts). */
+  report: (progress: number, message: Msg) => void;
   /**
    * Saves results into project.json. Steps never write project.json
    * themselves: they may run in a worker thread while the server keeps
@@ -80,7 +84,7 @@ export async function prepareVoice(project: Project, ctx: PipelineContext): Prom
   const wav = store.file(project.id, 'voice.wav');
   const wordsFile = store.file(project.id, 'words.json');
   if (project.voiceTrack?.key === key && existsSync(wav) && existsSync(wordsFile)) {
-    report(0.3, 'Voix off inchangée : réutilisée');
+    report(0.3, msg('voiceReused'));
     return { durationInSeconds: project.voiceTrack.durationInSeconds, words: JSON.parse(readFileSync(wordsFile, 'utf8')), timing: project.voiceTrack.timing, checksum: sha256File(wav) };
   }
 
@@ -88,13 +92,13 @@ export async function prepareVoice(project: Project, ctx: PipelineContext): Prom
   let timing: Voice['timing'];
   const raw = store.file(project.id, 'voice-raw.wav');
   if (project.voice.mode === 'tts') {
-    if (!config.elevenLabsKey) throw new Error('La voix IA demande une clé ElevenLabs (ELEVENLABS_API_KEY) sur le serveur. Importez plutôt votre propre voix off.');
+    if (!config.elevenLabsKey) throw new MsgError('ttsNeedsKey');
     const chunks = chunkText(text);
     const pieces: string[] = [];
     words = [];
     let offsetMs = 0;
     for (const [i, chunk] of chunks.entries()) {
-      report(0.05 + (0.2 * i) / chunks.length, `Génération de la voix IA (${i + 1}/${chunks.length})`);
+      report(0.05 + (0.2 * i) / chunks.length, msg('ttsProgress', { i: i + 1, n: chunks.length }));
       const piece = await textToSpeech({
         key: config.elevenLabsKey,
         voiceId: project.voice.voiceId ?? config.elevenLabsVoiceId,
@@ -115,23 +119,23 @@ export async function prepareVoice(project: Project, ctx: PipelineContext): Prom
     timing = 'tts';
   } else {
     const upload = project.media.find((m) => m.role === 'voice');
-    if (!upload) throw new Error('Aucune voix off importée.');
+    if (!upload) throw new MsgError('noVoiceUploaded');
     concatAudio(tools, [join(store.mediaDir(project.id), upload.file)], raw);
     if (config.elevenLabsKey) {
-      report(0.15, 'Transcription de la voix off (ElevenLabs)');
+      report(0.15, msg('transcribing'));
       const stt = await speechToText({ key: config.elevenLabsKey, audio: readFileSync(raw), fileName: 'voice.wav', ...(ctx.fetch ? { fetch: ctx.fetch } : {}) });
       words = wordsFromStt(stt);
       timing = 'stt';
     } else {
-      report(0.15, 'Alignement du script sur la voix off');
+      report(0.15, msg('aligning'));
       words = alignKnownText(decodePcm16k(tools, raw), text);
       timing = 'aligned';
     }
   }
-  report(0.28, 'Normalisation de la voix (−16 LUFS)');
+  report(0.28, msg('normalizing'));
   normalizeVoice(tools, raw, wav);
   rmSync(raw, { force: true });
-  if (!words.length) throw new Error('Aucun mot détecté dans la voix off.');
+  if (!words.length) throw new MsgError('noWords');
   writeJson(wordsFile, words);
   const durationInSeconds = probe(tools, wav).durationInSeconds ?? words[words.length - 1]!.endMs / 1000;
   ctx.commit({ voiceTrack: { durationInSeconds, timing, words: words.length, key } });
@@ -195,7 +199,7 @@ export function buildBrainInput(project: Project, config: Config, voice: Voice |
     fps: FPS,
     width: 1920,
     height: 1080,
-    script: parseScript(project.script),
+    script: withHints(parseScript(project.script), project.hints),
     assets,
     catalog,
     ...(voice ? { narration: { assetId: 'narration', words: voice.words } } : {}),
@@ -207,14 +211,52 @@ export function buildBrainInput(project: Project, config: Config, voice: Voice |
   };
 }
 
+/** An issue of the plan's validation, as stored: the engine's text, its rule, the shot. */
+const rawIssue = (e: { message: string; rule?: string; path?: string }) => ({ message: e.message, ...(e.rule ? { rule: e.rule } : {}) });
+
+/** What the engine says about the plan, in French; what cannot be translated goes to `technical`. */
+export function frPlanTexts(result: Pick<BrainResult, 'decisions' | 'qc'>, notes: string[]) {
+  const lists = frLists({ decisions: result.decisions, notes: [...notes, ...result.qc.notes] });
+  const technical = [...lists.technical];
+  const errors = frIssues(result.qc.errors, technical);
+  const warnings = frIssues(result.qc.warnings, technical);
+  return { decisions: lists.decisions, notes: lists.notes, errors, warnings, technical };
+}
+
+/** The script line of each analysed sentence (a line may hold several sentences): the editor opens a shot's line. */
+export function unitLines(script: string, units: ReadonlyArray<{ id: string; text: string }>): Record<string, string> {
+  const lines = parseScript(script).flatMap((b) => (b.kind === 'text' ? [hintKey(b.text)] : []));
+  const out: Record<string, string> = {};
+  let from = 0;
+  for (const u of units) {
+    const text = hintKey(u.text);
+    const i = lines.findIndex((l, k) => k >= from && l.includes(text));
+    if (i < 0) continue;
+    out[u.id] = lines[i]!;
+    from = i;
+  }
+  return out;
+}
+
+/** The media need of each script line: the need of its first sentence. */
+export function lineNeeds(script: string, units: ReadonlyArray<{ id: string; text: string; mediaNeed?: string }>): Record<string, string> {
+  const lines = unitLines(script, units);
+  const out: Record<string, string> = {};
+  for (const u of units) {
+    const line = lines[u.id];
+    if (line && u.mediaNeed && !(line in out)) out[line] = u.mediaNeed;
+  }
+  return out;
+}
+
 // ---------------------------------------------------------------------------
 // Steps
 
 export async function directStep(projectId: string, ctx: PipelineContext): Promise<void> {
   const { config, store, report } = ctx;
   const project = store.get(projectId)!;
-  if (!parseScript(project.script).some((b) => b.kind === 'text')) throw new Error('Le script est vide.');
-  report(0.02, 'Préparation de la voix off');
+  if (!parseScript(project.script).some((b) => b.kind === 'text')) throw new MsgError('emptyScript');
+  report(0.02, msg('preparingVoice'));
   const voice = await prepareVoice(project, ctx);
   const input = buildBrainInput(store.get(projectId)!, config, voice);
   writeJson(store.file(projectId, 'input.json'), input);
@@ -223,17 +265,17 @@ export async function directStep(projectId: string, ctx: PipelineContext): Promi
   let brain: 'llm' | 'heuristic' = 'heuristic';
   const notes: string[] = [];
   if (project.llm && config.anthropicKey) {
-    report(0.4, 'Claude écrit l’analyse éditoriale');
+    report(0.4, msg('claudeWriting'));
     const r = await directEpisodeWithLlm(input, { model: new AnthropicModel({ model: config.anthropicModel, apiKey: config.anthropicKey }) });
     result = r;
     brain = r.llm?.accepted === 'none' ? 'heuristic' : 'llm';
-    if (r.llm) notes.push(`Claude (${r.llm.model}) : ${r.llm.accepted}, ${r.llm.attempts} appel(s)`);
+    if (r.llm) notes.push(`Claude (${r.llm.model}): ${r.llm.accepted}, ${r.llm.attempts} call(s)`);
   } else {
-    if (project.llm) notes.push('Pas de clé ANTHROPIC_API_KEY : le cerveau heuristique a monté l’épisode.');
-    report(0.5, 'Le cerveau éditorial monte l’épisode (style Apple)');
+    if (project.llm) notes.push('No ANTHROPIC_API_KEY: the automatic editor (without Claude) edited the episode.');
+    report(0.5, msg('brainEditing'));
     result = directEpisode(input);
   }
-  if (!voice) notes.push('Sans voix off, les durées sont estimées et la vidéo sera muette.');
+  if (!voice) notes.push('Without a voice-over, timings are estimated and the video will be silent.');
   writeJson(store.file(projectId, 'plan.json'), result.plan);
   const frames = result.plan.shots.reduce((s, shot) => s + shot.durationInFrames, 0);
   ctx.commit({
@@ -243,19 +285,23 @@ export async function directStep(projectId: string, ctx: PipelineContext): Promi
       durationInSeconds: frames / result.plan.fps,
       valid: result.qc.valid,
       brain,
+      // Stored as the engine wrote them (English): the reader gets them in their language (i18n.ts).
+      raw: true,
       decisions: result.decisions,
-      assetRequests: result.assetRequests,
-      errors: result.qc.errors.map((e) => ({ message: e.message, ...(e.rule ? { rule: e.rule } : {}) })),
-      warnings: result.qc.warnings.map((e) => ({ message: e.message, ...(e.rule ? { rule: e.rule } : {}) })),
       notes: [...notes, ...result.qc.notes],
+      errors: result.qc.errors.map(rawIssue),
+      warnings: result.qc.warnings.map(rawIssue),
+      assetRequests: result.assetRequests,
+      units: unitLines(project.script, result.analysis),
+      needs: lineNeeds(project.script, result.analysis),
     },
   });
-  report(1, `Plan prêt : ${result.plan.shots.length} plans`);
+  report(1, msg('planReady', { n: result.plan.shots.length }));
 }
 
 export function readProjectPlan(store: ProjectStore, projectId: string): ShotPlan {
   const file = store.file(projectId, 'plan.json');
-  if (!existsSync(file)) throw new Error('Générez d’abord le plan de montage.');
+  if (!existsSync(file)) throw new MsgError('planFirst');
   return JSON.parse(readFileSync(file, 'utf8')) as ShotPlan;
 }
 
@@ -265,9 +311,9 @@ export async function stillsStep(projectId: string, ctx: PipelineContext): Promi
   const project = store.get(projectId)!;
   readProjectPlan(store, projectId);
   // The sheet is assembled with drawtext: Remotion's minimal FFmpeg does not have it.
-  if (!ffmpegFilters(tools).has('drawtext')) throw new Error('La planche de contrôle demande un FFmpeg complet (filtre drawtext) sur le serveur : installez FFmpeg (apt install ffmpeg, brew install ffmpeg) ou indiquez-le avec $FFMPEG.');
-  if (!config.browser) throw new Error('La planche de contrôle demande Google Chrome : installez-le, ou indiquez un navigateur avec REMOTION_BROWSER.');
-  report(0.05, 'Planche de contrôle : ouverture du navigateur');
+  if (!ffmpegFilters(tools).has('drawtext')) throw new MsgError('stillsNeedDrawtext');
+  if (!config.browser) throw new MsgError('stillsNeedBrowser');
+  report(0.05, msg('stillsBrowser'));
   const script = join(config.engineDir, 'packages', 'remotion', 'scripts', 'stills.mjs');
   const args = [script, store.file(projectId, 'plan.json'), '--out', store.file(projectId, 'stills.jpg'), ...(config.browser ? ['--browser', config.browser] : [])];
   await new Promise<void>((resolve, reject) => {
@@ -277,14 +323,14 @@ export async function stillsStep(projectId: string, ctx: PipelineContext): Promi
     // The script reports only at the end: progress is estimated (about 1.5 s per shot).
     const total = project.plan?.shots ?? 1;
     const t0 = Date.now();
-    const tick = setInterval(() => report(Math.min(0.95, 0.1 + (0.85 * (Date.now() - t0)) / (total * 1500)), 'Planche de contrôle : captures des plans'), 1000);
+    const tick = setInterval(() => report(Math.min(0.95, 0.1 + (0.85 * (Date.now() - t0)) / (total * 1500)), msg('stillsCapturing')), 1000);
     child.on('close', () => clearInterval(tick));
     child.stderr.on('data', (d: Buffer) => (err += d.toString()));
     child.on('error', reject);
-    child.on('close', (code) => (code === 0 ? resolve() : reject(new Error(`La planche de contrôle a échoué :\n${err.slice(-1500)}`))));
+    child.on('close', (code) => (code === 0 ? resolve() : reject(new MsgError('stillsFailed', { detail: err.slice(-1500) }))));
   });
   ctx.commit({ stills: { createdAt: new Date().toISOString(), planCreatedAt: project.plan!.createdAt } });
-  report(1, 'Planche prête');
+  report(1, msg('stillsReady'));
 }
 
 /** Remotion render by cached chunks, JS mix, -14 LUFS master, then QC. */
@@ -299,14 +345,20 @@ export async function renderStep(projectId: string, ctx: PipelineContext, scale:
   const output = store.file(projectId, file);
   const tmp = store.file(projectId, `video-${id}.tmp.mp4`);
   const onProgress = (e: RenderEvent) => {
-    if (e.phase === 'chunk') report(0.05 + (0.8 * (e.index + 1)) / e.total, `Rendu : morceau ${e.index + 1}/${e.total}${e.cached ? ' (cache)' : ''}`);
-    else report(e.phase === 'prepare' ? 0.03 : e.phase === 'mix' ? 0.87 : e.phase === 'concat' ? 0.86 : 0.9, { prepare: 'Préparation du rendu', mix: 'Mixage audio', concat: 'Assemblage', master: 'Mastering (−14 LUFS)' }[e.phase]);
+    if (e.phase === 'chunk') report(0.05 + (0.8 * (e.index + 1)) / e.total, msg('renderChunk', { i: e.index + 1, n: e.total, cached: e.cached ? 1 : 0 }));
+    else report(e.phase === 'prepare' ? 0.03 : e.phase === 'mix' ? 0.87 : e.phase === 'concat' ? 0.86 : 0.9, msg(({ prepare: 'renderPrepare', mix: 'renderMix', concat: 'renderConcat', master: 'renderMaster' } as const)[e.phase]));
   };
   const result = await renderEpisode(
     { plan, output: tmp, publicDir: config.enginePublicDir, cacheDir: join(config.dataDir, 'cache'), scale, master: true, onProgress },
     { engine: 'remotion', fallback: false, ffmpeg: tools.ffmpeg[0]!, ffprobe: tools.ffprobe[0]!, ...(config.browser ? { browserExecutable: config.browser } : {}) },
   );
   renameSync(tmp, output);
+  // The cache speeds up the next render of the same shots; beyond the limit the least recently used entries go.
+  try {
+    pruneCache(join(config.dataDir, 'cache'), config.renderCacheBytes);
+  } catch {
+    // A cache that could not be pruned does not fail the render.
+  }
   let poster: string | undefined;
   try {
     const at = Math.min(1.5, (result.durationInFrames / plan.fps) / 3);
@@ -315,17 +367,21 @@ export async function renderStep(projectId: string, ctx: PipelineContext, scale:
   } catch {
     // A version without a picture is still a version.
   }
-  report(0.95, 'Contrôle qualité');
+  report(0.95, msg('qualityControl'));
   let qc: RenderInfo['qc'];
   try {
     const r = await qcEpisode(tools, plan, output, { stage: scale >= 1 ? 'final' : 'preview' });
-    qc = {
-      pass: r.summary.pass,
-      failed: r.checks.filter((c) => c.status === 'fail').map((c) => `${c.rule ? `[${c.rule}] ` : ''}${c.message}`),
-      warnings: r.checks.filter((c) => c.status === 'warn').map((c) => `${c.rule ? `[${c.rule}] ` : ''}${c.message}`),
-    };
+    // As the engine wrote them: the reader gets them in their language (i18n.ts).
+    const checks = r.checks.filter((c) => c.status === 'fail' || c.status === 'warn').map((c) => ({
+      status: c.status as 'fail' | 'warn',
+      message: c.message,
+      ...(c.rule ? { rule: c.rule } : {}),
+      ...(c.at?.shotId ? { shotId: c.at.shotId } : {}),
+    }));
+    qc = { pass: r.summary.pass, checks, failed: checks.filter((c) => c.status === 'fail').map((c) => c.message), warnings: checks.filter((c) => c.status === 'warn').map((c) => c.message) };
   } catch (e) {
-    qc = { pass: false, failed: [`Contrôle qualité impossible : ${(e as Error).message.slice(0, 300)}`], warnings: [] };
+    const m = msg('qcImpossible', { detail: (e as Error).message.slice(0, 300) });
+    qc = { pass: false, error: m, failed: [text(m, 'en')], warnings: [] };
   }
   const info: RenderInfo = {
     id,
@@ -349,5 +405,5 @@ export async function renderStep(projectId: string, ctx: PipelineContext, scale:
     for (const f of [old.file, old.poster]) if (f) rmSync(store.file(projectId, f), { force: true });
   }
   ctx.commit({ render: info, renders: renders.slice(0, MAX_RENDERS) });
-  report(1, 'Vidéo prête');
+  report(1, msg('videoReady'));
 }

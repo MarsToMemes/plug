@@ -1,6 +1,6 @@
 #!/bin/bash
 # Starts Plug (API + site) and opens the editor. Ctrl+C or closing the window stops everything.
-# Optional keys in server/.env (KEY=value lines): ELEVENLABS_API_KEY, ANTHROPIC_API_KEY…
+# Optional keys in server/.env (KEY=value lines, see server/.env.example): ANTHROPIC_API_KEY, RUNWAYML_API_SECRET, ELEVENLABS_API_KEY.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"

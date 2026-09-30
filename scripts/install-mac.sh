@@ -113,6 +113,8 @@ chmod +x "$LAUNCHER" "$PLUG_DIR/scripts/start-mac.sh"
 
 say "Plug est installé"
 echo "Double-cliquez sur « Plug » sur votre Bureau pour le lancer (l’éditeur s’ouvre dans Google Chrome)."
-echo "Clés facultatives (voix IA, Claude) : ajoutez-les dans $PLUG_DIR/server/.env, par exemple :"
-echo "  ELEVENLABS_API_KEY=..."
-echo "  ANTHROPIC_API_KEY=..."
+# The keys file, created once from the template (never overwritten, never pushed to GitHub).
+if [ ! -f "$PLUG_DIR/server/.env" ]; then cp "$PLUG_DIR/server/.env.example" "$PLUG_DIR/server/.env"; fi
+echo "Clés (Claude, Runway, voix IA) : ouvrez le fichier des clés avec"
+echo "  open -e \"$PLUG_DIR/server/.env\""
+echo "collez chaque clé après son signe =, enregistrez (Cmd+S), puis relancez Plug."

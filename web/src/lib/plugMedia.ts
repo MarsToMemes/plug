@@ -194,8 +194,11 @@ export async function processItem(item: MediaItem): Promise<MediaMeta> {
   return {};
 }
 
-export const fmtSize = (b: number) =>
-  b >= 1e9 ? (b / 1e9).toFixed(1) + ' Go' : b >= 1e6 ? (b / 1e6).toFixed(1) + ' Mo' : Math.max(1, Math.round(b / 1e3)) + ' Ko';
+/** A file size: Go / Mo / Ko and a decimal comma in French, GB / MB / KB in English. */
+export const fmtSize = (b: number, decimal = ',') => {
+  const [g, m, k] = decimal === ',' ? ['Go', 'Mo', 'Ko'] : ['GB', 'MB', 'KB'];
+  return (b >= 1e9 ? (b / 1e9).toFixed(1) + ' ' + g : b >= 1e6 ? (b / 1e6).toFixed(1) + ' ' + m : Math.max(1, Math.round(b / 1e3)) + ' ' + k).replace('.', decimal);
+};
 
 export const fmtDur = (s: number | null | undefined) => {
   if (s == null || !isFinite(s)) return '--:--';

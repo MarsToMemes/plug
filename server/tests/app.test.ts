@@ -9,6 +9,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { buildApp } from '../src/app.ts';
 import { loadConfig } from '../src/config.ts';
 import { findFfmpeg } from '../src/media.ts';
+import type { Describer, DescribeRequest } from '../src/describe.ts';
+import type { GenerateRequest, Generator } from '../src/runway.ts';
 import type { Project } from '../src/store.ts';
 
 /** A 16-bit mono WAV: bursts of noise (speech) separated by silences. */
@@ -103,7 +105,7 @@ describe('Plug API', () => {
   it('validates the project fields', async () => {
     const r = await app.app.inject({ method: 'POST', url: '/api/projects', payload: { pacing: 'turbo' } });
     expect(r.statusCode).toBe(400);
-    expect(r.json().error).toMatch(/pacing/);
+    expect(r.json().error).toMatch(/calm, standard/);
   });
 
   it('generates an ElevenLabs voice, then an Apple-style plan timed on it', async () => {
@@ -201,6 +203,56 @@ describe('Plug API', () => {
     expect(plan.shots.every((s: { mediaTier?: string }) => typeof s.mediaTier === 'string')).toBe(true);
   }, 60_000);
 
+  it('keeps what the author sets on a sentence, and gives it to the engine', async () => {
+    const created = (await app.app.inject({ method: 'POST', url: '/api/projects', payload: { script: SCRIPT, voice: { mode: 'none' }, rightsConfirmed: true } })).json() as Project;
+    const url = `/api/projects/${created.id}/hints`;
+    const line = 'Plus de 60 % de ses revenus viennent des franchisés.';
+    const chart = { kind: 'barChart', labels: ['Franchisés', 'Restaurants en propre'], values: [62, 38], unit: '%', source: 'Rapport annuel 2023' };
+    let r = await app.app.inject({ method: 'PUT', url, payload: { line, hints: { intent: 'statistic', chart, source: '' } } });
+    expect(r.statusCode).toBe(200);
+    expect((r.json() as Project).hints).toEqual({ [line]: { intent: 'statistic', chart } });
+    expect((await app.app.inject({ method: 'PUT', url, payload: { line, hints: { chart: { ...chart, values: [62] } } } })).json().error).toMatch(/autant de libellés/);
+    expect((await app.app.inject({ method: 'PUT', url, payload: { line, hints: { mediaNeed: 'decoration' } } })).statusCode).toBe(400);
+    expect((await app.app.inject({ method: 'PUT', url, payload: { line: 'Une phrase absente.', hints: {} } })).statusCode).toBe(400);
+    expect((await app.app.inject({ method: 'PUT', url, payload: { line, hints: { media: 'm_nope' } } })).json().error).toMatch(/pas dans le projet/);
+
+    const p = await run(created.id, 'direct');
+    const input = JSON.parse((await import('node:fs')).readFileSync(join(dataDir, 'projects', p.id, 'input.json'), 'utf8'));
+    expect(input.script.find((b: { text?: string }) => b.text === line).hints).toMatchObject({ intent: 'statistic', chart: { values: [62, 38] } });
+    const plan = (await app.app.inject({ method: 'GET', url: `/api/projects/${p.id}/plan` })).json();
+    expect(JSON.stringify(plan.shots)).toContain('Rapport annuel 2023');
+    // Each sentence knows its script line: the editor opens a shot's line.
+    expect(Object.values(p.plan!.units!)).toContain(line);
+
+    // The sentence leaves the script: its hints go with it.
+    const edited = (await app.app.inject({ method: 'PATCH', url: `/api/projects/${p.id}`, payload: { script: SCRIPT.replace(line, 'Une autre phrase.') } })).json() as Project;
+    expect(edited.hints).toEqual({});
+    // null clears a sentence.
+    await app.app.inject({ method: 'PUT', url, payload: { line: 'Une autre phrase.', hints: { strike: 'phrase' } } });
+    expect(((await app.app.inject({ method: 'PUT', url, payload: { line: 'Une autre phrase.', hints: null } })).json() as Project).hints).toEqual({});
+  }, 60_000);
+
+  it('answers in the language of the reader', async () => {
+    const en = { 'x-plug-lang': 'en' };
+    const bad = await app.app.inject({ method: 'POST', url: '/api/projects', payload: { pacing: 'turbo' }, headers: en });
+    expect(bad.json().error).toBe('Pacing: calm, standard or dynamic.');
+    expect((await app.app.inject({ method: 'GET', url: '/api/projects/nope123', headers: { 'accept-language': 'en-US,en;q=0.9' } })).json().error).toBe('Project not found.');
+    const created = (await app.app.inject({ method: 'POST', url: '/api/projects', payload: { script: SCRIPT, voice: { mode: 'none' } } })).json() as Project;
+    await app.app.inject({ method: 'POST', url: `/api/projects/${created.id}/direct` });
+    await app.jobs.idle();
+    const pEn = (await app.app.inject({ method: 'GET', url: `/api/projects/${created.id}`, headers: en })).json() as Project;
+    const pFr = (await app.app.inject({ method: 'GET', url: `/api/projects/${created.id}`, headers: { 'x-plug-lang': 'fr' } })).json() as Project;
+    expect(pEn.job!.message).toMatch(/^Plan ready: \d+ shots$/);
+    expect(pFr.job!.message).toMatch(/^Plan prêt : \d+ plans$/);
+    expect(pEn.plan!.notes).toContain('Without a voice-over, timings are estimated and the video will be silent.');
+    expect(pFr.plan!.notes).toContain('Sans voix off, les durées sont estimées et la vidéo sera muette.');
+    expect(pFr.plan!.decisions.join(' ')).not.toMatch(/\b(the|with|shot)\b/);
+    // A job answered on its own (POST …/direct) follows the language too.
+    const job = await app.app.inject({ method: 'POST', url: `/api/projects/${created.id}/direct`, headers: en });
+    expect(job.json().message).toBe('Waiting');
+    await app.jobs.idle();
+  }, 60_000);
+
   it('rejects unsupported uploads', async () => {
     const created = (await app.app.inject({ method: 'POST', url: '/api/projects', payload: {} })).json() as Project;
     const bad = multipart({ role: 'visual' }, { name: 'virus.exe', type: 'application/octet-stream', data: Buffer.from('MZ') });
@@ -208,4 +260,139 @@ describe('Plug API', () => {
     const silent = multipart({ role: 'visual' }, { name: 'son.wav', type: 'audio/wav', data: wav([[0, 500]], 500) });
     expect((await app.app.inject({ method: 'POST', url: `/api/projects/${created.id}/media`, ...silent })).json().error).toMatch(/image ou une vidéo/);
   });
+});
+
+describe('automatic description of visuals', () => {
+  const dataDir = mkdtempSync(join(tmpdir(), 'plug-describe-'));
+  const base = loadConfig({ DATA_DIR: dataDir });
+  const tools = findFfmpeg(base.engineDir);
+  const requests: DescribeRequest[] = [];
+  let answer: Awaited<ReturnType<Describer['describe']>> | Error = { description: 'Une file de clients devant un comptoir', tags: ['clients', 'comptoir', 'file'], nature: 'archive' };
+  const describer: Describer = { describe: async (r) => { requests.push(r); if (answer instanceof Error) throw answer; return answer; } };
+  let app: Awaited<ReturnType<typeof buildApp>>;
+  beforeAll(async () => {
+    app = await buildApp({ config: { ...base, anthropicKey: undefined }, tools, describer, inlineJobs: true });
+  });
+  afterAll(async () => {
+    await app.app.close();
+    rmSync(dataDir, { recursive: true, force: true });
+  });
+  const picture = async (name: string, video = false) => {
+    const { execFileSync } = await import('node:child_process');
+    const f = join(dataDir, name);
+    execFileSync(tools.ffmpeg[0]!, ['-v', 'error', '-y', '-f', 'lavfi', '-i', `testsrc=s=320x180:d=${video ? 2 : 1}`, ...(video ? ['-pix_fmt', 'yuv420p'] : ['-frames:v', '1']), f]);
+    return (await import('node:fs')).readFileSync(f);
+  };
+  const settle = async (projectId: string) => {
+    for (let i = 0; i < 100; i++) {
+      const p = (await app.app.inject({ method: 'GET', url: `/api/projects/${projectId}` })).json() as Project;
+      if (!p.media.some((m) => m.auto?.status === 'pending')) return p;
+      await new Promise((r) => setTimeout(r, 50));
+    }
+    throw new Error('description still pending');
+  };
+
+  it('describes an upload in the background, without overriding what the user chose', async () => {
+    const created = (await app.app.inject({ method: 'POST', url: '/api/projects', payload: { script: SCRIPT } })).json() as Project;
+    const up = multipart({ role: 'visual' }, { name: 'IMG_2044.png', type: 'image/png', data: await picture('a.png') });
+    const first = (await app.app.inject({ method: 'POST', url: `/api/projects/${created.id}/media`, ...up })).json() as Project;
+    expect(first.media[0]!.auto).toEqual({ status: 'pending' });
+    let p = await settle(created.id);
+    expect(p.media[0]).toMatchObject({ description: 'Une file de clients devant un comptoir', tags: ['clients', 'comptoir', 'file'], nature: 'archive', auto: { status: 'done' } });
+    expect(requests[0]).toMatchObject({ kind: 'image', fileName: 'IMG_2044.png', script: SCRIPT });
+    expect(requests[0]!.frames).toHaveLength(1);
+    expect(requests[0]!.frames[0]!.subarray(0, 2).toString('hex')).toBe('ffd8'); // JPEG
+
+    // A typed description and a declared nature stay; the tags are added.
+    const typed = multipart({ role: 'visual', description: 'le comptoir en 1955', nature: 'real_photo' }, { name: 'b.png', type: 'image/png', data: await picture('b.png') });
+    await app.app.inject({ method: 'POST', url: `/api/projects/${created.id}/media`, ...typed });
+    p = await settle(created.id);
+    expect(p.media[1]).toMatchObject({ description: 'le comptoir en 1955', nature: 'real_photo', natureSet: true, tags: ['clients', 'comptoir', 'file'] });
+
+    // A video is described from three frames.
+    const clip = multipart({ role: 'visual' }, { name: 'c.mp4', type: 'video/mp4', data: await picture('c.mp4', true) });
+    await app.app.inject({ method: 'POST', url: `/api/projects/${created.id}/media`, ...clip });
+    answer = { description: 'Une mire de test', tags: ['mire'] };
+    p = await settle(created.id);
+    expect(requests.at(-1)!.frames).toHaveLength(3);
+    expect(requests.at(-1)!.natures).toEqual(['real_video', 'generated']);
+  }, 60_000);
+
+  it('reports a failure, and describes again on request', async () => {
+    const created = (await app.app.inject({ method: 'POST', url: '/api/projects', payload: { script: SCRIPT } })).json() as Project;
+    answer = new Error('quota dépassé');
+    const up = multipart({ role: 'visual' }, { name: 'd.png', type: 'image/png', data: await picture('d.png') });
+    await app.app.inject({ method: 'POST', url: `/api/projects/${created.id}/media`, ...up });
+    let p = await settle(created.id);
+    expect(p.media[0]!.auto).toEqual({ status: 'failed', error: 'quota dépassé' });
+    expect(p.media[0]!.description).toBe('d');
+    answer = { description: 'Une mire colorée', tags: ['mire', 'couleurs'] };
+    const again = await app.app.inject({ method: 'POST', url: `/api/projects/${created.id}/media/${p.media[0]!.id}/describe` });
+    expect(again.statusCode).toBe(202);
+    p = await settle(created.id);
+    expect(p.media[0]).toMatchObject({ description: 'Une mire colorée', tags: ['mire', 'couleurs'], nature: 'real_photo', auto: { status: 'done' } });
+  }, 60_000);
+});
+
+describe('visuals generated by Runway', () => {
+  const dataDir = mkdtempSync(join(tmpdir(), 'plug-runway-'));
+  const base = loadConfig({ DATA_DIR: dataDir });
+  const tools = findFfmpeg(base.engineDir);
+  const asked: GenerateRequest[] = [];
+  let clip = '';
+  const generator: Generator = { generate: async (r) => { asked.push(r); return { url: clip, model: 'gen4.5', credits: 50 }; } };
+  let app: Awaited<ReturnType<typeof buildApp>>;
+  beforeAll(async () => {
+    const { execFileSync } = await import('node:child_process');
+    const f = join(dataDir, 'gen.mp4');
+    execFileSync(tools.ffmpeg[0]!, ['-v', 'error', '-y', '-f', 'lavfi', '-i', 'testsrc=s=320x180:d=2', '-pix_fmt', 'yuv420p', f]);
+    clip = `data:video/mp4;base64,${(await import('node:fs')).readFileSync(f).toString('base64')}`;
+    app = await buildApp({ config: { ...base, anthropicKey: undefined }, tools, generator, describer: null, inlineJobs: true });
+  });
+  afterAll(async () => {
+    await app.app.close();
+    rmSync(dataDir, { recursive: true, force: true });
+  });
+  const settle = async (id: string) => {
+    for (let i = 0; i < 100; i++) {
+      const p = (await app.app.inject({ method: 'GET', url: `/api/projects/${id}` })).json() as Project;
+      if (!p.generations?.some((g) => g.status === 'pending')) return p;
+      await new Promise((r) => setTimeout(r, 50));
+    }
+    throw new Error('generation still pending');
+  };
+
+  it('makes a visual for a sentence, which becomes its visual', async () => {
+    expect((await app.app.inject({ method: 'GET', url: '/api/health' })).json().runway).toBe(true);
+    const created = (await app.app.inject({ method: 'POST', url: '/api/projects', payload: { script: SCRIPT, voice: { mode: 'none' } } })).json() as Project;
+    const line = 'Ils possèdent le terrain.';
+    const r = await app.app.inject({ method: 'POST', url: `/api/projects/${created.id}/generate`, payload: { prompt: 'Un terrain vague au coucher du soleil', kind: 'video', seconds: 6, line } });
+    expect(r.statusCode).toBe(202);
+    const p = await settle(created.id);
+    const g = p.generations![0]!;
+    expect(g).toMatchObject({ status: 'done', line, kind: 'video' });
+    const m = p.media.find((x) => x.id === g.mediaId)!;
+    expect(m).toMatchObject({ kind: 'video', nature: 'generated', natureSet: true, description: 'Un terrain vague au coucher du soleil', generated: { provider: 'Runway', model: 'gen4.5', credits: 50 } });
+    expect(m.durationInSeconds).toBeGreaterThan(1.5);
+    expect(p.hints![line]).toEqual({ media: m.id });
+    expect(asked[0]).toEqual({ prompt: 'Un terrain vague au coucher du soleil', kind: 'video', seconds: 6 });
+    // A Runway visual needs no rights confirmation: the edit runs.
+    const direct = await app.app.inject({ method: 'POST', url: `/api/projects/${p.id}/direct` });
+    expect(direct.statusCode).toBe(202);
+    await app.jobs.idle();
+  }, 60_000);
+
+  it('never generates what must be real (MED-07), and reports failures', async () => {
+    const created = (await app.app.inject({ method: 'POST', url: '/api/projects', payload: { script: SCRIPT + '\nRay Kroc vendait des machines à milkshake.', voice: { mode: 'none' } } })).json() as Project;
+    await app.app.inject({ method: 'POST', url: `/api/projects/${created.id}/direct` });
+    await app.jobs.idle();
+    const refused = await app.app.inject({ method: 'POST', url: `/api/projects/${created.id}/generate`, payload: { prompt: 'Ray Kroc', kind: 'image', line: 'Ray Kroc vendait des machines à milkshake.' } });
+    expect(refused.statusCode).toBe(400);
+    expect(refused.json().error).toMatch(/montre du réel/);
+    clip = 'data:text/plain,pas une video';
+    await app.app.inject({ method: 'POST', url: `/api/projects/${created.id}/generate`, payload: { prompt: 'Une ville la nuit', kind: 'video' } });
+    const p = await settle(created.id);
+    expect(p.generations![0]!.status).toBe('failed');
+    expect((await app.app.inject({ method: 'POST', url: `/api/projects/${created.id}/generate`, payload: { prompt: ' ' } })).statusCode).toBe(400);
+  }, 60_000);
 });
