@@ -58,6 +58,12 @@ export interface Generation {
   status: 'pending' | 'done' | 'failed';
   createdAt: string;
   mediaId?: string;
+  /** The project image animated (image to video). */
+  sourceMediaId?: string;
+  /** What Runway charged (0 when reused). */
+  credits?: number;
+  /** The same request was already made: its visual is reused, no call to Runway. */
+  reused?: boolean;
   error?: string;
   errorMsg?: Msg;
 }

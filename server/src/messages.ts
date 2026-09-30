@@ -42,6 +42,9 @@ const CATALOG = {
     fr: () => 'Cette phrase montre du réel (une personne, une marque, l’histoire, un document, une plateforme) : une image générée ne peut pas la représenter. Cherchez une vraie photo ou vidéo (Wikimedia Commons, kit presse, Pexels).',
     en: () => 'This sentence shows something real (a person, a brand, history, a document, a platform): a generated picture cannot stand for it. Look for a real photo or video (Wikimedia Commons, press kit, Pexels).',
   },
+  runwayBudget: { fr: (p) => `Plafond Runway du mois atteint : ${p.used} crédits utilisés sur ${p.cap} (RUNWAY_MONTHLY_CREDITS dans server/.env).`, en: (p) => `Runway monthly cap reached: ${p.used} of ${p.cap} credits used (RUNWAY_MONTHLY_CREDITS in server/.env).` },
+  sourceNotImage: { fr: () => 'L’image à animer doit être une image du projet.', en: () => 'The picture to animate must be an image of the project.' },
+  promptNoKey: { fr: () => 'Ajoutez ANTHROPIC_API_KEY dans server/.env pour que Claude écrive le prompt.', en: () => 'Add ANTHROPIC_API_KEY to server/.env for Claude to write the prompt.' },
   tooManyGenerations: { fr: () => 'Trois générations sont déjà en cours sur ce projet : attendez qu’une se termine.', en: () => 'Three generations are already running on this project: wait for one to finish.' },
   rightsNeeded: { fr: () => 'Confirmez que vous détenez les droits des médias importés.', en: () => 'Confirm that you own the rights to the imported media.' },
   planFirst: { fr: () => 'Générez d’abord le plan de montage.', en: () => 'Generate the edit plan first.' },
@@ -66,6 +69,7 @@ const CATALOG = {
   hintShare: { fr: (p) => `Part : une valeur entre 0 et ${p.max}.`, en: (p) => `Share: a value between 0 and ${p.max}.` },
   // Claude's descriptions (describe.ts)
   claudeRefused: { fr: (p) => `Claude a refusé de décrire ce visuel (${p.category || 'sans catégorie'}).`, en: (p) => `Claude declined to describe this visual (${p.category || 'no category'}).` },
+  claudeRefusedPrompt: { fr: (p) => `Claude a refusé d’écrire ce prompt (${p.category || 'sans catégorie'}).`, en: (p) => `Claude declined to write this prompt (${p.category || 'no category'}).` },
   claudeCut: { fr: () => 'La réponse de Claude a été coupée.', en: () => 'Claude’s answer was cut off.' },
   claudeSilent: { fr: () => 'Claude n’a pas répondu.', en: () => 'Claude did not answer.' },
   claudeEmpty: { fr: () => 'Description vide.', en: () => 'Empty description.' },

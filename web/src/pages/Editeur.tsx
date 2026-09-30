@@ -314,7 +314,8 @@ export default function Editeur() {
 
         <section className="ed-panel" hidden={isMedias} data-screen-label={E.tools}>
           {sentence && (
-            <SentenceEditor key={sentence} project={p} line={sentence} busy={active} canGenerate={!!health?.runway} onClose={() => setSentence(null)} onSaved={setP}
+            <SentenceEditor key={sentence} project={p} line={sentence} busy={active} canGenerate={!!health?.runway} canWritePrompt={!!health?.anthropic}
+              lineSeconds={plan ? plan.shots.filter(s => s.metadata?.unit && p.plan?.units?.[s.metadata.unit] === sentence).reduce((n, s) => n + s.durationInFrames, 0) / plan.fps || undefined : undefined} onClose={() => setSentence(null)} onSaved={setP}
               onRerun={() => { setSentence(null); void start('direct'); }} />
           )}
           {!sentence && rail === 'montage' && (

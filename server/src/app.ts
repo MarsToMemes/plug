@@ -10,7 +10,9 @@
  *   POST   /api/projects/:id/direct          voice → timings → Apple-style plan
  *   POST   /api/projects/:id/stills          control sheet
  *   POST   /api/projects/:id/render          { quality: 'preview' | 'final' }
- *   POST   /api/projects/:id/generate           { prompt, kind, seconds, line }: Runway makes a visual
+ *   POST   /api/projects/:id/generate        { prompt, kind, seconds?, line?, sourceMediaId? }: Runway makes a visual
+ *   POST   /api/projects/:id/prompt          { line, draft, kind }: Claude writes the Runway prompt
+ *   GET    /api/runway/costs                 average credits and this month's use
  *   PUT    /api/projects/:id/hints            { line, hints }: what the author sets on one sentence
  *   GET    /api/projects/:id/plan
  *   GET    /api/projects/:id/files/:name     voice.wav, stills.jpg, video.mp4 (Range supported)
@@ -28,13 +30,15 @@ import type { FfmpegTools } from './engine.ts';
 import { ClaudeDescriber, framesOf, type Describer } from './describe.ts';
 import { REAL_SUBJECT_NEEDS } from './engine.ts';
 import { RunwayGenerator, type Generator } from './runway.ts';
+import { RunwayLedger } from './ledger.ts';
+import { ClaudePrompter, type Prompter } from './prompt.ts';
 import { HintError, hintKey, keepHints, parseHints } from './hints.ts';
 import { localizePayload } from './i18n.ts';
 import { failure as stored, BusyError, JobQueue } from './jobs.ts';
 import { langOf, MsgError, text, type MsgKey } from './messages.ts';
 import { probe, sha256File } from './media.ts';
 import { readProjectPlan } from './pipeline.ts';
-import { IMAGE_NATURES, newId, ProjectStore, VIDEO_NATURES, type EditStyle, type MediaItem, type MediaNature, type MediaRole, type Pacing, type Project, type VoiceMode } from './store.ts';
+import { IMAGE_NATURES, newId, ProjectStore, VIDEO_NATURES, type EditStyle, type Generation, type MediaItem, type MediaNature, type MediaRole, type Pacing, type Project, type VoiceMode } from './store.ts';
 
 export interface AppOptions {
   config: Config;
@@ -47,6 +51,8 @@ export interface AppOptions {
   describer?: Describer | null;
   /** Generates visuals. Default: Runway when RUNWAYML_API_SECRET is set; null turns it off. */
   generator?: Generator | null;
+  /** Writes Runway prompts. Default: Claude when ANTHROPIC_API_KEY is set; null turns it off. */
+  prompter?: Prompter | null;
 }
 
 const OUTPUTS = new Set(['voice.wav', 'stills.jpg', 'video.mp4', 'plan.json']);
@@ -155,6 +161,17 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
       });
   }
   const generator = options.generator !== undefined ? options.generator : config.runwayKey ? new RunwayGenerator({ apiKey: config.runwayKey }) : null;
+  const prompter = options.prompter !== undefined ? options.prompter : config.anthropicKey ? new ClaudePrompter({ model: config.anthropicModel, apiKey: config.anthropicKey }) : null;
+  const ledger = new RunwayLedger(config.dataDir);
+
+  /** How long the sentence stays on screen in the last plan: the video asked is that long, not a default 5 s. */
+  function lineSeconds(p: Project, line: string): number | undefined {
+    if (!p.plan?.units) return undefined;
+    let plan;
+    try { plan = readProjectPlan(store, p.id); } catch { return undefined; }
+    const frames = plan.shots.filter((s) => typeof s.metadata?.unit === 'string' && p.plan!.units![s.metadata.unit] === line).reduce((n, s) => n + s.durationInFrames, 0);
+    return frames ? frames / plan.fps : undefined;
+  }
 
   /** Runway makes the visual, Plug downloads it into the project; with a line, it becomes that sentence's visual. */
   async function runGeneration(projectId: string, genId: string) {
@@ -169,7 +186,17 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
       });
     };
     try {
-      const out = await generator.generate({ prompt: g.prompt, kind: g.kind, seconds: g.seconds });
+      let image: string | undefined;
+      if (g.sourceMediaId) {
+        const p = store.get(projectId);
+        const src = p?.media.find((m) => m.id === g.sourceMediaId && m.kind === 'image');
+        if (!p || !src) throw new MsgError('sourceNotImage');
+        const [frame] = await framesOf(tools, join(store.mediaDir(p.id), src.file), 'image');
+        image = `data:image/jpeg;base64,${frame!.toString('base64')}`;
+      }
+      const out = await generator.generate({ prompt: g.prompt, kind: g.kind, seconds: g.seconds, ...(image ? { image } : {}) });
+      // Counted as soon as Runway made it: the credits are spent even if the download fails.
+      if (out.credits !== undefined) ledger.add({ at: new Date().toISOString(), projectId, model: out.model, kind: g.kind, seconds: g.kind === 'video' ? out.seconds ?? g.seconds : 0, credits: out.credits });
       const res = await fetch(out.url);
       if (!res.ok || !res.body) throw new MsgError('downloadFailed', { status: res.status });
       const type = res.headers.get('content-type') ?? '';
@@ -201,7 +228,7 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
       store.update(projectId, (x) => {
         x.media.push(item);
         const y = x.generations?.find((z) => z.id === genId);
-        if (y) Object.assign(y, { status: 'done', mediaId: id });
+        if (y) Object.assign(y, { status: 'done', mediaId: id, ...(out.credits !== undefined ? { credits: out.credits } : {}) });
         // The sentence gets this visual, unless the line left the script meanwhile.
         if (g.line && x.script.split(/\r?\n/).some((l) => hintKey(l) === g.line)) x.hints = { ...(x.hints ?? {}), [g.line]: { ...(x.hints?.[g.line] ?? {}), media: id } };
       });
@@ -442,9 +469,13 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
     const body = (req.body ?? {}) as Body;
     const prompt = (str(body.prompt, 1000) ?? '').trim();
     if (!prompt) throw new HttpError(400, 'promptEmpty');
-    const kind: 'image' | 'video' = body.kind === 'image' ? 'image' : 'video';
-    const seconds = Math.min(10, Math.max(2, Math.round(Number(body.seconds) || 5)));
+    const sourceMediaId = typeof body.sourceMediaId === 'string' ? body.sourceMediaId : undefined;
+    if (sourceMediaId && !p.media.some((m) => m.id === sourceMediaId && m.role === 'visual' && m.kind === 'image')) throw new HttpError(400, 'sourceNotImage');
+    const kind: 'image' | 'video' = sourceMediaId ? 'video' : body.kind === 'video' ? 'video' : 'image';
     const line = typeof body.line === 'string' ? hintKey(body.line) : undefined;
+    // Without a length asked, the sentence's own length in the plan (rounded up), else 5 s.
+    const planned = line ? lineSeconds(p, line) : undefined;
+    const seconds = kind === 'image' ? 0 : Math.min(10, Math.max(2, Math.ceil(Number(body.seconds) || planned || 5)));
     if (line) {
       if (!p.script.split(/\r?\n/).some((l) => hintKey(l) === line)) throw new HttpError(400, 'lineGone');
       // Bible MED-07: a generated picture never stands for something real. The engine would not use it anyway.
@@ -452,13 +483,42 @@ export async function buildApp(options: AppOptions): Promise<{ app: FastifyInsta
       if (need && (REAL_SUBJECT_NEEDS as readonly string[]).includes(need))
         throw new HttpError(400, 'realSubject');
     }
+    // The same request already made in this project, its visual still there: reused, nothing paid.
+    const same = (p.generations ?? []).find((x) => x.status === 'done' && x.prompt === prompt && x.kind === kind && (kind === 'image' || x.seconds === seconds)
+      && (x.sourceMediaId ?? '') === (sourceMediaId ?? '') && p.media.some((m) => m.id === x.mediaId));
+    if (same) {
+      const g: Generation = { id: newId('g'), prompt, kind, seconds, ...(line ? { line } : {}), ...(sourceMediaId ? { sourceMediaId } : {}), status: 'done', createdAt: new Date().toISOString(), mediaId: same.mediaId!, credits: 0, reused: true };
+      const updated = store.update(p.id, (x) => {
+        x.generations = [g, ...(x.generations ?? [])].slice(0, 20);
+        if (line) x.hints = { ...(x.hints ?? {}), [line]: { ...(x.hints?.[line] ?? {}), media: same.mediaId! } };
+      });
+      return reply.code(200).send(updated);
+    }
+    const cap = config.runwayMonthlyCredits;
+    if (cap) {
+      const used = ledger.costs(cap).monthUsed;
+      if (used >= cap) throw new HttpError(402, 'runwayBudget', { used, cap });
+    }
     if ((p.generations ?? []).filter((g) => g.status === 'pending').length >= 3) throw new HttpError(409, 'tooManyGenerations');
-    const g = { id: newId('g'), prompt, kind, seconds, ...(line ? { line } : {}), status: 'pending' as const, createdAt: new Date().toISOString() };
+    const g: Generation = { id: newId('g'), prompt, kind, seconds, ...(line ? { line } : {}), ...(sourceMediaId ? { sourceMediaId } : {}), status: 'pending', createdAt: new Date().toISOString() };
     const updated = store.update(p.id, (x) => {
       x.generations = [g, ...(x.generations ?? [])].slice(0, 20);
     });
     void runGeneration(p.id, g.id);
     return reply.code(202).send(updated);
+  });
+
+  app.get('/api/runway/costs', async () => ledger.costs(config.runwayMonthlyCredits));
+
+  app.post<{ Params: { id: string } }>('/api/projects/:id/prompt', async (req) => {
+    const p = project(req.params.id);
+    if (!prompter) throw new HttpError(400, 'promptNoKey');
+    const body = (req.body ?? {}) as Body;
+    const line = (str(body.line, 1000) ?? '').trim();
+    const draft = (str(body.draft, 1000) ?? '').trim();
+    if (!line && !draft) throw new HttpError(400, 'promptEmpty');
+    const prompt = await prompter.write({ line: line || draft, draft, kind: body.kind === 'video' ? 'video' : 'image', script: p.script });
+    return { prompt };
   });
 
   app.put<{ Params: { id: string } }>('/api/projects/:id/hints', async (req) => {
