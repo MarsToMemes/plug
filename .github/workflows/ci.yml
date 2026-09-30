@@ -1,0 +1,76 @@
+# Checks every push and pull request on Linux. macOS (the machine Plug runs on) is
+# checked on main and on demand: its minutes count ten times on a private repository.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && fromJSON('["ubuntu-latest", "macos-latest"]') || fromJSON('["ubuntu-latest"]') }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-node@v4
+        with:
+          # The server is TypeScript run directly by Node (type stripping): 22.18 or later.
+          node-version: '22.x'
+          cache: npm
+          cache-dependency-path: |
+            engine/package-lock.json
+            server/package-lock.json
+            web/package-lock.json
+
+      - name: FFmpeg (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update -q && sudo apt-get install -y -q ffmpeg
+
+      - name: FFmpeg (macOS)
+        if: runner.os == 'macOS'
+        run: brew install ffmpeg
+
+      - name: Shell scripts parse
+        run: for f in scripts/*.sh; do bash -n "$f"; done
+
+      - name: Server dependencies
+        working-directory: server
+        run: npm ci
+
+      - name: studio-engine (install, build, studio blocks)
+        working-directory: server
+        run: npm run setup-engine
+
+      - name: Server typecheck
+        working-directory: server
+        run: npm run typecheck
+
+      - name: Server tests
+        working-directory: server
+        run: npm test
+
+      - name: Web dependencies
+        working-directory: web
+        run: npm ci
+
+      - name: Web build (typecheck included)
+        working-directory: web
+        run: npm run build
+
+      - name: Web tests
+        working-directory: web
+        run: npm test
