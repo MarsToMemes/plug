@@ -14,7 +14,7 @@ Projet Remotion. Style : documentaire premium, motion design éditorial, infogra
   - `hotel.tsx` : Hotel, HotelFloor, HotelRoom, RoomGrid, Guest
   - `system.tsx` : AlgorithmNode, RevenueManager, Timeline, EventMarker, Booking
   - `editorial.tsx` : EditorialTitle, DataLabel, ScientificCallout, SplitScreen
-- `src/scenes/` : `Scene01` et `Library` (planche de tous les composants, pour relecture).
+- `src/scenes/` : `Scene01`, `Scene02` (+ `layout02.ts`, géométrie calculée depuis les capacités) et `Library` (planche de tous les composants, pour relecture).
 
 Les chiffres sont illustratifs : ils montrent le mécanisme, ce ne sont pas des tarifs relevés.
 

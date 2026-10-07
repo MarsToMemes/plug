@@ -49,3 +49,18 @@ export const Guest: React.FC<{ x?: number; y?: number; size?: number; color?: st
     <rect x={30} y={24} width={10} height={7} rx={1.5} fill={THEME.accent} />
   </g>
 );
+
+/** HotelFacade — the building around its room grid box: roof line, entrance. `fill` 1 = solid. */
+export const HotelFacade: React.FC<{ body: { x: number; y: number; w: number; h: number }; fill?: number; parts?: number; line?: number }> = ({ body: b, fill = 0, parts = 1, line = 1 }) => {
+  const style = { fill: THEME.ink, fillOpacity: fill * 0.92, stroke: THEME.ink, strokeOpacity: line * (0.35 + 0.65 * (1 - fill)), strokeWidth: 2 };
+  return (
+    <g>
+      <rect x={b.x} y={b.y} width={b.w} height={b.h} {...style} />
+      <g opacity={parts}>
+        <path d={`M${b.x - 18},${b.y} L${b.x + b.w + 18},${b.y}`} stroke={THEME.ink} strokeOpacity={line} strokeWidth={4} />
+        <rect x={b.x + b.w / 2 - 34} y={b.y + b.h - 44} width={68} height={44} fill="none" stroke={THEME.ink} strokeOpacity={line * 0.7} strokeWidth={1.6} />
+        <path d={`M${b.x - 60},${b.y + b.h} L${b.x + b.w + 60},${b.y + b.h}`} stroke={THEME.line} strokeOpacity={line} strokeWidth={1.4} />
+      </g>
+    </g>
+  );
+};
