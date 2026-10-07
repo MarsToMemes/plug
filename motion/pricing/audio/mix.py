@@ -48,198 +48,189 @@ def sfx(name):
 
 
 # ------------------------------------------------------------------ cue sheet
-# (time in s, sound, gain dB, options)  options: dur (cut + fade), rate (pitch/speed)
+# Rule: one sound = one visible event, starting when the event starts on screen (never before).
+# Times are seconds of the episode. Beats of the scenes built on the narration's timing are exact;
+# for the scenes stretched on the voice (anchors), `snap=True` moves the cue onto the first
+# visible motion within ±0.6 s, measured on the rendered picture (audio/out/motion.npy).
 C = []
 
 
 def cue(t, name, db, **o):
-    C.append((t, name, db, o))
+    C.append([t, name, db, o])
 
 
-def roll(t, n, db=-17, gap=0.055, rate=1.0, step=0.04):
-    """A price counter flipping digit after digit, landing on t."""
+def roll(t, n=3, db=-18, rate=1.0, snap=False):
+    """An odometer: one tick per digit, right to left, 2 frames apart."""
     for k in range(n):
-        cue(t - (n - 1 - k) * gap, 'price_tick', db, rate=rate + step * k)
+        cue(t + k * 2 / 30, 'price_tick', db - 2 * k, rate=rate + 0.05 * k, snap=snap)
 
 
-# Transitions: every cut is a camera move from one scene to the next (bridge of 2 s on the cut).
-for i, c in enumerate(CUTS):
-    cue(c - 1.05, 'whoosh_long', -21, rate=(0.92, 1.0, 1.06)[i % 3])
+# Chapter transitions only (not every cut): the whoosh peaks where the bridge morphs.
+for c in (27.3, 238.3, 275.3, 416.9, 489.6, 553.9):
+    cue(c - 1.15, 'whoosh_long', -22)
 
-# 01  287 -> 341 -> 476
-cue(0.0, 'airport_ambience', -29, dur=27.6)
-cue(w('cherchez', 2), 'search_swipe', -19)
-roll(w('287', 4), 3)
-cue(w('287', 4), 'impact_soft', -19)
-cue(w('fermez', 6), 'ui_click', -16)
-cue(w('revenez', 9), 'notification', -22)
-cue(w('341', 10) - 0.9, 'price_rise', -16)
-cue(w('476', 13) - 0.9, 'price_rise', -15)
-cue(w('476', 13), 'impact_soft', -16)
-cue(12.6, 'airplane_pass', -24)
-cue(w('pourquoi', 21) - 0.8, 'low_rumble', -19)
-cue(w('décide', 25) - 2.6, 'tension_riser', -22)
+# 01  (built on the voice)
+cue(4.4, 'impact_soft', -21)                       # 287 € appears
+cue(6.3, 'ui_click', -17)                          # the app closes
+cue(9.2, 'ui_click', -18, rate=1.12)               # opened again
+cue(10.22, 'price_rise', -16)                      # 287 -> 341
+cue(13.34, 'price_rise', -15)                      # 341 -> 476
+for t in (16.0, 17.7, 19.7):                       # même avion / siège / trajet
+    cue(t - 0.1, 'digital_tick', -19)
+cue(24.4, 'tension_riser', -24)                    # the question builds up to "qui décide"
+cue(24.4, 'impact_soft', -16)                      # "qui décide de ce prix ?"
 
-# 02  seats / rooms, expiry date
-cue(w('sièges', 34), 'ui_click', -20)
-cue(w('chambres', 36), 'room_lock', -21)
-cue(w('expiration', 42) - 1.6, 'clock_pulse', -20)
-cue(w('expiration', 42), 'impact_soft', -16)
+# 02
+cue(42.8, 'clock_pulse', -21, snap=True)           # date d'expiration
 
-# 04  180 seats, take-off, 1 euro, lost capacity
-cue(44.2, 'airport_ambience', -30, dur=21.6)
-for k in range(6):
-    cue(w('180', 46) + 0.08 * k, 'digital_tick', -22, rate=1 + 0.05 * k)
-cue(w('décollé', 52) - 4.4, 'airplane_pass', -16)
-cue(w('terminé', 53), 'impact_soft', -15)
-roll(w('1', 57.5), 4, rate=1.15, step=-0.06)
-cue(w('perdue', 63) - 0.6, 'low_rumble', -19)
+# 04  take-off
+cue(44.2, 'airport_ambience', -31, dur=21.4)
+cue(52.78 - 4.4, 'airplane_pass', -17)             # loudest when the aircraft takes off
+cue(54.0, 'impact_soft', -16, snap=True)           # "c'est terminé": zoom into the empty seats
+cue(63.6, 'low_rumble', -21)                       # capacité perdue
 
-# 05  Tuesday night, lost by Wednesday
-cue(65.6, 'hotel_ambience', -30, dur=25)
-cue(w('chambre', 68), 'notification', -23)
-cue(w('mercredi', 74) - 1.4, 'clock_pulse', -20)
-cue(w('définitivement', 75), 'room_lock', -16)
+# 05  the room tonight
+cue(65.6, 'hotel_ambience', -31, dur=24.8)
+cue(72.0, 'clock_pulse', -20, snap=True)           # 23:53
+cue(74.76, 'room_lock', -16, snap=True)            # 00:00, the night is lost
+cue(77.6, 'impact_soft', -19, snap=True)           # 1 chambre perdue
 
-# 06  100 rooms at 100 euros, the real question, Revenue Management
-cue(90.4, 'hotel_ambience', -31, dur=16)
-cue(w('hôtel', 91.5), 'ui_click', -19)
-roll(w('100', 95), 3)
-cue(w('chercheront', 105), 'notification', -24)
-cue(w('vraie', 121) - 0.6, 'low_rumble', -20)
-cue(w('Revenue', 128) - 3.0, 'tension_riser', -19)
-cue(w('Revenue', 128), 'impact_heavy', -13)
+# 06  100 rooms, demand > capacity, price rises, Revenue Management
+cue(110.5, 'data_stream', -22, snap=True)          # demand flows in
+cue(115.4, 'impact_soft', -17, snap=True)          # demande > capacité
+for t in (121.1, 123.4, 125.4):
+    cue(t, 'price_rise', -17, snap=True)           # 100 -> 130 -> 170 -> 220
+cue(129.0, 'tension_riser', -21)
+cue(129.0, 'impact_heavy', -14)                    # Revenue Management
 
-# 07  fare classes 79 / 109 / 149 / 219 / 349
-cue(131.4, 'airport_ambience', -32, dur=24)
-roll(w('79', 138), 3)
-cue(w('réservent', 140), 'ui_click', -19)
-cue(w('réservent', 140) + 0.35, 'ui_confirm', -20)
-cue(w('disparaître', 147), 'room_lock', -18)
-cue(w('109', 150) - 0.9, 'price_rise', -17)
-roll(w('149', 152), 4)
-roll(w('219', 153), 4)
-cue(w('219', 153), 'impact_soft', -17)
-cue(w('beaucoup', 156), 'price_rise', -19, rate=0.9)
-cue(w('fondamentale', 167), 'impact_soft', -17)
-for t, n in ((172.6, '79'), (174.0, '109'), (175.4, '149'), (176.7, '219'), (178.2, '349')):
-    cue(w(n, t - 0.2), 'digital_tick', -17)
-cue(w('349', 178), 'impact_soft', -18)
-cue(w('fermées', 191), 'room_lock', -18)
-cue(w('différents', 199), 'impact_soft', -16)
+# 07  fare classes (stretched), then layers (on the voice)
+roll(138.4, 2, snap=True)                          # 79 €
+cue(148.74, 'room_lock', -18, snap=True)           # the 79 class closes
+cue(151.0, 'price_rise', -17, snap=True)           # 109
+roll(152.6, 3, snap=True)                          # 149
+cue(153.74, 'price_rise', -16, snap=True)          # 219
+cue(155.3, 'digital_tick', -18)                    # 349, "beaucoup plus"
+cue(158.3, 'ui_click', -18)                        # one seat
+for k, t in enumerate((172.5, 173.9, 175.3, 176.6, 178.1)):
+    cue(t, 'digital_tick', -17, rate=1 + 0.08 * k) # the five layers
+cue(180.3, 'ui_click', -18)                        # 1 siège
+cue(190.8, 'room_lock', -17)                       # épuisé
+cue(191.7, 'room_lock', -18, rate=0.9)             # fermé
+cue(193.2, 'ui_confirm', -18)                      # ouvert
+cue(195.6, 'whoosh_short', -22)                    # two neighbours
+roll(198.8, 2)                                     # 79 €
+cue(199.5, 'impact_soft', -16)                     # 349 €
 
-# 08  same room, 89 / 129 / 179
-cue(203.9, 'hotel_ambience', -31, dur=34.5)
-roll(w('89', 210), 3)
-cue(w('129', 212.5) - 0.9, 'price_rise', -17)
-cue(w('179', 215) - 0.9, 'price_rise', -16)
-cue(w('179', 215), 'impact_soft', -17)
-cue(w('évoluer', 220), 'notification', -24)
-cue(w('changé', 222.5), 'impact_soft', -16)
-cue(w('contexte', 229), 'impact_soft', -17)
-cue(w('temps', 233), 'clock_pulse', -21)
-
-# 10  the engine: signals, forecasts
-cue(w('signaux', 246) - 1.2, 'data_stream', -21)
-cue(w('demande', 247.5), 'algorithm_pulse', -17)
-cue(w('marchés', 262) - 0.5, 'data_stream', -21)
-cue(w('prévision', 268), 'algorithm_pulse', -17)
-cue(w('subtil', 272.5), 'impact_soft', -17)
-
-# 19  two planes: 100 % cheap vs 85 % dear
-cue(272.8, 'airplane_pass', -21)
-for k in range(8):
-    cue(w('rempli', 278) + 0.07 * k, 'digital_tick', -23, rate=1 + 0.04 * k)
-cue(w('100%', 278.8), 'impact_soft', -18)
-roll(w('bas', 282.3), 3, rate=0.9, step=-0.05)
-for k in range(7):
-    cue(w('rempli', 284) + 0.07 * k, 'digital_tick', -23, rate=1 + 0.04 * k)
-cue(w('85%', 284.8), 'impact_soft', -18)
-cue(w('chère', 289.5) - 0.9, 'price_rise', -16)
-cue(w('revenus', 292) - 2.4, 'tension_riser', -22)
-cue(w('revenus', 292) + 0.3, 'impact_soft', -15)
-cue(w('optimiser', 304), 'algorithm_pulse', -18)
-cue(w('Revenue', 309), 'impact_soft', -14)
-
-# 09  demand -> close low fares / stimulate
-cue(w('changer', 312.3), 'notification', -23)
-cue(w('anticiper', 320.5), 'algorithm_pulse', -17)
-cue(w('fermer', 333), 'room_lock', -16)
-cue(w('inverse', 335.5), 'whoosh_short', -21)
-roll(w('attractifs', 341), 3, rate=0.9, step=-0.05)
-cue(w('signal', 346.5), 'impact_soft', -17)
-
-# 03  30 days before, time passing, last rooms
-cue(352.4, 'hotel_ambience', -31, dur=34)
-cue(w('30', 358), 'notification', -23)
-cue(w('passent', 369.5) - 0.3, 'clock_pulse', -20)
-cue(w('diminue', 374.5), 'room_lock', -19)
-cue(w('limite', 377) - 2.8, 'tension_riser', -22)
-cue(w('précieuse', 383), 'impact_soft', -15)
-
-# 11  the system is not "the later, the dearer"
-roll(w('réduire', 395), 3, rate=0.9, step=-0.05)
-cue(w('système', 402.5), 'algorithm_pulse', -18)
-cue(w('maximise', 411), 'impact_soft', -15)
-
-# 13  a big event, same 100 rooms
-cue(w('événement', 420) - 1.5, 'low_rumble', -18)
-cue(w('événement', 420), 'impact_soft', -15)
-cue(w('milliers', 422.5), 'data_stream', -19)
-cue(w('augmente', 431) - 0.9, 'price_rise', -16)
-cue(w('suivre', 438) - 0.9, 'price_rise', -15)
-
-# 12  school holidays, congress: scarcity changes
-cue(w('Vacances', 442.5), 'clock_pulse', -21)
-cue(w('voyager', 451) - 0.9, 'price_rise', -17)
-cue(w('rareté', 455), 'impact_soft', -15)
-
-# 14  book at 129, see 214, or wait and see it drop
-cue(w('réserver', 465) - 0.4, 'search_swipe', -19)
-cue(w('réserver', 465), 'ui_click', -16)
-roll(w('129', 466), 3)
-cue(w('129', 466) + 0.2, 'ui_confirm', -18)
-cue(w('attendre', 467.8), 'clock_pulse', -21)
-cue(w('214', 470) - 0.9, 'price_rise', -15)
-cue(w('attendre', 472.8), 'clock_pulse', -21)
-roll(w('baisser', 475.5), 4, rate=1.1, step=-0.07)
-cue(w('système', 481.5), 'algorithm_pulse', -17)
-cue(w('fixe', 485.6), 'impact_soft', -16)
-
-# 17  219 euros is a decision
-roll(w('219', 494), 3)
-cue(w('219', 500), 'impact_soft', -18)
-cue(w('situation', 506.5), 'algorithm_pulse', -17)
-cue(w('prévisions', 511.5) - 0.6, 'data_stream', -21)
-cue(w('219', 513.5), 'impact_soft', -16)
-cue(w('décision', 521) - 3.0, 'tension_riser', -19)
-cue(w('décision', 521), 'impact_heavy', -13)
-
-# 15  limited capacity, a seat after take-off, the clock
-cue(w('limitée', 531.3), 'room_lock', -19)
-cue(w('siège', 536) - 4.3, 'airplane_pass', -19)
-cue(w('nuit', 541.5), 'room_lock', -20)
-cue(w('Chaque', 545.5), 'clock_pulse', -20)
+# 08  same room, different price, then the context
+roll(210.3, 2, snap=True)                          # 89
+cue(213.0, 'price_rise', -17, snap=True)           # 129
+cue(215.72, 'price_rise', -16, snap=True)          # 179
+cue(220.5, 'price_rise', -19, snap=True)           # 249
+cue(224.5, 'ui_click', -19)                        # même lit
+cue(226.4, 'ui_click', -19, rate=1.1)              # même vue
+cue(228.9, 'impact_soft', -18)                     # le contexte
 for k in range(5):
-    cue(w('horloge', 550) + 0.5 * k, 'digital_tick', -19)
+    cue(231.2 + 0.25 * k, 'digital_tick', -20)     # rooms counting down
+cue(233.4, 'clock_pulse', -21)                     # days counting down
+cue(236.1, 'algorithm_pulse', -19)                 # anticipated demand
 
-# 18a  129 -> 219: the system around the ticket changed
-cue(w('129', 556.5) - 0.2, 'price_rise', -16)
-cue(w('système', 566.5), 'algorithm_pulse', -17)
-cue(w('demande', 569.5) - 0.4, 'data_stream', -21)
+# 10  the engine: each signal arrives when it is named
+for t in (243.6, 248.0, 250.0, 252.7, 255.6, 257.0, 258.4, 259.4, 263.6):
+    cue(t, 'digital_tick', -18)
+cue(246.0, 'data_stream', -22)                     # énormément de signaux
+cue(261.2, 'whoosh_short', -21)                    # pull out: many markets
+cue(265.6, 'whoosh_short', -22, rate=0.9)          # back to one engine
+cue(267.0, 'algorithm_pulse', -17)                 # prévision
 
-# 16  limited capacity at a precise moment
-cue(579.8, 'low_rumble', -22)
-cue(w('limitée', 588.5), 'impact_soft', -15)
-cue(w('moment', 590), 'clock_pulse', -21)
+# 19  two aircraft
+for k in range(6):
+    cue(277.7 + 0.22 * k, 'digital_tick', -21)     # A fills
+for k in range(5):
+    cue(283.4 + 0.3 * k, 'digital_tick', -21)      # B fills
+cue(286.3, 'price_rise', -18)                      # dear seats
+cue(291.0, 'impact_soft', -16)                     # revenue bars
+cue(299.1, 'search_swipe', -20)                    # the wave through A
+cue(304.0, 'data_stream', -22)                     # value flows to revenue
+cue(308.9, 'impact_soft', -17)                     # Revenue Management
 
-# 18b  the price was never really fixed
-cue(w('fixe', 597) - 3.0, 'tension_riser', -18)
-cue(w('fixe', 597), 'impact_heavy', -12)
+# 09  demand and price move together (stretched)
+cue(321.0, 'price_rise', -18, snap=True)
+cue(323.0, 'price_rise', -17, snap=True)
+cue(333.46, 'room_lock', -18, snap=True)           # low fares closed
+roll(338.5, 3, rate=0.85, snap=True)               # price comes back down
+
+# 03  inventory disappears with time
+cue(369.7, 'clock_pulse', -21, snap=True)          # les jours passent
+cue(378.7, 'room_lock', -17, snap=True)            # the deadline
+cue(383.0, 'impact_soft', -17, snap=True)          # précieuse
+
+# 11  the analytical engine
+cue(395.0, 'data_stream', -22, snap=True)
+cue(408.0, 'algorithm_pulse', -17, snap=True)
+cue(413.0, 'price_rise', -16, snap=True)           # prix recommandé 219 €
+
+# 13  a big event
+cue(419.0, 'low_rumble', -19)
+cue(420.38, 'impact_soft', -16, snap=True)         # grand événement
+cue(422.96, 'data_stream', -21, snap=True)         # thousands of people
+cue(438.1, 'price_rise', -16, snap=True)           # pression sur le prix
+
+# 12  days of the week
+cue(448.5, 'price_rise', -18, snap=True)
+roll(451.0, 3, snap=True)
+cue(455.5, 'impact_soft', -18, snap=True)          # rareté
+
+# 14  book now or wait
+cue(465.2, 'ui_click', -17)                        # réserver
+cue(470.08, 'price_rise', -15, snap=True)          # 214 €
+cue(471.1, 'impact_soft', -17, snap=True)          # freeze
+cue(472.0, 'whoosh_short', -21, rate=0.8, snap=True)  # rewind
+roll(475.8, 3, rate=0.85, snap=True)               # 119 €
+cue(485.6, 'impact_soft', -18, snap=True)          # un pari
+
+# 20  the ticket at 219 €
+cue(494.4, 'impact_soft', -17)                     # 219 € on the ticket
+cue(503.3, 'whoosh_short', -21, rate=1.2)          # struck through
+cue(504.4, 'digital_tick', -18)                    # becomes the price node
+
+# 17  the machine
+cue(512.5, 'algorithm_pulse', -17, snap=True)      # the loop starts
+cue(521.5, 'tension_riser', -22)
+cue(521.5, 'impact_heavy', -15)              # c'est une décision
+
+# 15  capacity and the clock
+cue(546.0, 'clock_pulse', -20, snap=True)          # chaque départ, chaque nuit
 for k in range(4):
-    cue(599.0 + 0.4 * k, 'ui_click', -21, rate=1 + 0.06 * k)
-cue(600.6, 'impact_soft', -18)
+    cue(550.2 + 0.5 * k, 'digital_tick', -19)      # l'horloge
 
+# 18a / 16 / 18b
+cue(556.94, 'price_rise', -16, snap=True)          # 129 -> 219
+cue(567.02, 'algorithm_pulse', -17, snap=True)     # le système
+cue(569.66, 'data_stream', -22, snap=True)         # la demande…
+cue(588.78, 'impact_soft', -15, snap=True)         # capacité limitée
+cue(597.4, 'tension_riser', -18)
+cue(597.4, 'impact_heavy', -13)                    # jamais vraiment fixe
+cue(599.0, 'impact_soft', -19, snap=True)          # demande -> capacité -> temps -> prix
+
+# A tension riser is cued on the beat it leads to: it starts 2.8 s before.
+for c in C:
+    if c[1] == 'tension_riser':
+        c[0] -= 2.8
+
+# Snap to the picture.
+MOTION = os.path.join(HERE, 'out', 'motion.npy')
+if os.path.exists(MOTION):
+    ch = np.load(MOTION)  # visible change between frame i and i+1, 10 fps
+    for c in C:
+        if not c[3].get('snap'):
+            continue
+        t = c[0]
+        a, b = int((t - 0.6) * 10), int((t + 0.6) * 10)
+        base = np.median(ch[max(0, a - 10):a]) if a > 10 else 0.0
+        idx = np.where(ch[max(0, a):b] > max(3 * base, base + 0.004))[0]
+        if len(idx):
+            c[0] = (max(0, a) + idx[0]) / 10
+C = [tuple(c) for c in C]
 
 # ------------------------------------------------------------------ render
 def resample(x, rate):

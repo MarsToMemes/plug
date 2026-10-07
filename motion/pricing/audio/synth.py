@@ -140,11 +140,12 @@ def click(freq=2600, dur=0.05, body=0.012):
 # price_tick: one digit flipping (a dry mechanical-digital tick)
 save('price_tick', click(3100, 0.06, 0.01), -3)
 
-# price_rise: a short run of ticks that speeds up and climbs, over a soft rising tone (129 -> 349)
-dur = 1.3
-ticks = [(0.02 + 0.9 * (1 - (1 - k / 13) ** 1.6), click(2200 + 120 * k, 0.05, 0.008) * (0.5 + 0.04 * k)) for k in range(14)]
-rise = sine(lambda u: 420 + 540 * u ** 1.4, dur) * bell(dur, 0.85, 1.6) * 0.22
-rise += sine(lambda u: 840 + 1080 * u ** 1.4, dur) * bell(dur, 0.85, 1.6) * 0.06
+# price_rise: starts ON the change (the odometer rolls at once): a quick run of ticks that slows
+# down like the digits settling, over a short rising tone (129 -> 349)
+dur = 0.75
+ticks = [(0.5 * (k / 9) ** 1.7, click(2400 + 140 * k, 0.05, 0.008) * (1.0 - 0.06 * k)) for k in range(10)]
+rise = sine(lambda u: 520 + 420 * u ** 0.6, dur) * env(dur, 0.01, 0.6, 3) * 0.22
+rise += sine(lambda u: 1040 + 840 * u ** 0.6, dur) * env(dur, 0.01, 0.5, 3) * 0.06
 save('price_rise', place(dur, *ticks) + rise, -2)
 
 # ui_click: a soft touch on glass
