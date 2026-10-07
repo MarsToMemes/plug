@@ -5,7 +5,8 @@ import React from 'react';
  * each <Layer> sits at a depth: 1 = the plane the camera frames, < 1 = background (moves less),
  * > 1 = foreground (moves more). That difference IS the parallax.
  */
-export type CamPose = { x: number; y: number; zoom: number; roll: number };
+/** pan x/y (px), zoom, roll (deg), and the pivot: the screen point that a zoom keeps fixed. */
+export type CamPose = { x: number; y: number; zoom: number; roll: number; px?: number; py?: number };
 const Ctx = React.createContext<CamPose>({ x: 0, y: 0, zoom: 1, roll: 0 });
 
 export const Camera: React.FC<{ pose: CamPose; children: React.ReactNode }> = ({ pose, children }) => (
@@ -18,7 +19,7 @@ export const Layer: React.FC<{ depth?: number; children: React.ReactNode; style?
   const c = React.useContext(Ctx);
   const zoom = 1 + (c.zoom - 1) * depth;
   return (
-    <div style={{ position: 'absolute', inset: 0, transformOrigin: '960px 540px', transform: `rotate(${c.roll * depth}deg) scale(${zoom}) translate(${-c.x * depth}px, ${-c.y * depth}px)`, ...style }}>
+    <div style={{ position: 'absolute', inset: 0, transformOrigin: `${c.px ?? 960}px ${c.py ?? 540}px`, transform: `rotate(${c.roll * depth}deg) scale(${zoom}) translate(${-c.x * depth}px, ${-c.y * depth}px)`, ...style }}>
       {children}
     </div>
   );

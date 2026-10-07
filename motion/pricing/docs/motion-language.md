@@ -72,3 +72,22 @@ Rythme des plans : 1,5 · 1,2 · 0,9 · 1,5 · 2,3 · 1,8 · 0,8 s (irrégulier,
    ligne ; les lettres d'HEURES arrivent avec des décalages qui raccourcissent (accélération),
    puis freinage brusque et hold.
 7. **Sortie** (9,20–10,00) — pull back rapide, tout se replie vers un point orange, noir.
+
+## Composition avant le mouvement (méthode obligatoire)
+
+1. Contenu → hiérarchie (héros, secondaire, support, méta, graphique, décor).
+2. Composition sur la grille (`src/layout/grid.ts`) : 12 colonnes, marges 112 px, zone sûre,
+   échelle d'espacement 8·16·24·32·48·64·96·128, ancres sémantiques.
+3. Mesure réelle du texte (`src/layout/measure.ts`) : encre, chasse, hauteur de capitale (centrage
+   optique), ligne de base — jamais d'estimation au nombre de caractères. Une mesure faite avec une
+   fonte de secours n'est jamais gardée.
+4. Placement par bords d'encre et modes (`src/layout/layout.ts`) : `stack` (STACKED_EDITORIAL),
+   `dataEditorial` (DATA_EDITORIAL), `chooseBreaks` (coupures de lignes choisies par le sens),
+   `centerBlock` (centre optique).
+5. Contrôle (`qa()`) : chevauchements, proximité < 16 px, zone sûre, rognage, hiérarchie (poids
+   visuel du héros ≥ 1,6 × le suivant), bords partagés.
+6. Image fixe de diagnostic (`BenchmarkLayouts`, `<QAOverlay>`) → inspection → correction.
+7. Seulement ensuite : l'animation part de ces positions et y revient (`BenchmarkQA` superpose les
+   boîtes validées aux images animées, à travers la même caméra).
+8. La caméra pousse autour du héros (pivot), jamais autour du centre de l'image quand la
+   composition est alignée sur un bord.
