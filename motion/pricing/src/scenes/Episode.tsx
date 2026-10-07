@@ -1,5 +1,8 @@
 import React from 'react';
-import { Series, useVideoConfig } from 'remotion';
+import { TransitionSeries } from '@remotion/transitions';
+import { AbsoluteFill, useCurrentFrame, useVideoConfig } from 'remotion';
+import { THEME, clamp01, seg } from '../theme';
+import { BRIDGES } from './bridges';
 import { Scene01 } from './Scene01';
 import { Scene02 } from './Scene02';
 import { Scene03 } from './Scene03';
@@ -37,7 +40,8 @@ import { S16 } from '../data/scene16';
 import { S17 } from '../data/scene17';
 import { S18 } from '../data/scene18';
 
-/** The whole episode, scene after scene (cuts; each scene carries its own morphs). */
+/** The whole episode. Between two scenes, a bridge: the last key element of one becomes the first of the next. */
+export const BRIDGE = 60; // frames; the bridge straddles the cut (it does not shorten the episode)
 export const SCENES = [
   { name: '01 Le prix qui change', C: Scene01, d: S01.duration }, { name: '02 Le produit est déjà là', C: Scene02, d: S02.duration },
   { name: '03 Le temps', C: Scene03, d: S03.duration }, { name: '04 Le siège qui disparaît', C: Scene04, d: S04.duration },
@@ -51,13 +55,28 @@ export const SCENES = [
 ];
 export const EPISODE_DURATION = SCENES.reduce((a, s) => a + s.d, 0);
 
+/** A bridge over the cut: the scene behind steps back into the ground, the element morphs, the next scene comes up. */
+const BridgeOverlay: React.FC<{ k: number }> = ({ k }) => {
+  const f = useCurrentFrame();
+  const Bridge = BRIDGES[k]!;
+  const ground = seg(f, 0, BRIDGE * 0.28) * (1 - seg(f, BRIDGE * 0.74, BRIDGE));
+  const el = seg(f, 0, BRIDGE * 0.22) * (1 - seg(f, BRIDGE * 0.8, BRIDGE));
+  return (
+    <AbsoluteFill>
+      <AbsoluteFill style={{ background: k === 14 ? '#060607' : THEME.bg, opacity: ground }} />
+      <AbsoluteFill style={{ opacity: el }}><Bridge t={clamp01(seg(f, BRIDGE * 0.2, BRIDGE * 0.72))} /></AbsoluteFill>
+    </AbsoluteFill>
+  );
+};
+
 export const Episode: React.FC = () => {
   const { fps } = useVideoConfig();
   return (
-    <Series>
-      {SCENES.map(({ name, C, d }) => (
-        <Series.Sequence key={name} name={name} durationInFrames={d} premountFor={fps}><C /></Series.Sequence>
-      ))}
-    </Series>
+    <TransitionSeries>
+      {SCENES.flatMap(({ name, C, d }, i) => [
+        <TransitionSeries.Sequence key={name} name={name} durationInFrames={d} premountFor={fps}><C /></TransitionSeries.Sequence>,
+        ...(i < SCENES.length - 1 ? [<TransitionSeries.Overlay key={`b${i}`} durationInFrames={BRIDGE} premountFor={fps}><BridgeOverlay k={i} /></TransitionSeries.Overlay>] : []),
+      ])}
+    </TransitionSeries>
   );
 };

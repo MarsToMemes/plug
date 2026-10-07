@@ -7,7 +7,7 @@ import { EASE, THEME, clamp01, lerp, rng, seg } from '../theme';
 
 const B = S13.beats, C = { x: 960, y: 560 }, R = 400;
 // The city: blocks on a street grid, clipped to a rough circle; some blocks are hotels.
-const CITY = (() => {
+export const CITY = (() => {
   const r = rng(1313), blocks: Array<{ x: number; y: number; w: number; h: number; hotel: boolean; d: number }> = [];
   for (let gx = -9; gx <= 9; gx++) for (let gy = -6; gy <= 6; gy++) {
     const x = C.x + gx * 44, y = C.y + gy * 44, d = Math.hypot((x - C.x) / R, (y - C.y) / (R * 0.75));

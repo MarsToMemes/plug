@@ -11,6 +11,13 @@ if (mode === 'stills') {
     await renderStill({ serveUrl, composition, frame: f, output: `${out}/f${String(f).padStart(4, '0')}.png`, browserExecutable });
     console.log('still', f);
   }
+} else if (process.env.RANGES) {
+  // RANGES=a-b,c-d : one file per range, named <out>-<a>.mp4
+  for (const r of process.env.RANGES.split(',')) {
+    const [a, b] = r.split('-').map(Number);
+    await renderMedia({ serveUrl, composition, codec: 'h264', crf: 14, outputLocation: `${out}-${String(a).padStart(5, '0')}.mp4`, browserExecutable, concurrency: 3, frameRange: [a, b] });
+    console.log('range', a, b);
+  }
 } else {
   await renderMedia({ serveUrl, composition, codec: 'h264', crf: 14, outputLocation: out, browserExecutable, concurrency: 3,
     onProgress: ({ progress }) => { if (Math.round(progress * 100) % 10 === 0) process.stdout.write(`\r${Math.round(progress * 100)}%`); } });
