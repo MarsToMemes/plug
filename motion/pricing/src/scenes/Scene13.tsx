@@ -75,7 +75,7 @@ export const Scene13: React.FC = () => {
         <Bar y={840} label={S13.text.price} v={lerp(0.3, 0.92, Math.pow(pressure, 1.4))} hot={pressure > 0.05 && pressure < 1} />
       </div>
       {/* The mechanism, said in one line, piece by piece. */}
-      <div style={{ position: 'absolute', left: 0, width: 1920, top: 970, textAlign: 'center', fontFamily: THEME.serif, fontWeight: 300, fontSize: 44, color: THEME.ink, textTransform: 'uppercase', letterSpacing: '0.03em', textShadow: `0 0 20px ${THEME.bg}` }}>
+      <div style={{ position: 'absolute', left: 0, width: 1920, top: 900, textAlign: 'center', fontFamily: THEME.serif, fontWeight: 300, fontSize: 44, color: THEME.ink, textTransform: 'uppercase', letterSpacing: '0.03em', textShadow: `0 0 20px ${THEME.bg}` }}>
         {S13.text.chain.map((t, k) => {
           const o = EASE.out(seg(f, B.chain[k]!, B.chain[k]! + 24));
           return <span key={t} style={{ opacity: o, filter: `blur(${(1 - o) * 4}px)` }}>{k ? <span style={{ color: THEME.accent, margin: '0 22px' }}>→</span> : null}{t}</span>;

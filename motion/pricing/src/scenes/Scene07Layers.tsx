@@ -6,7 +6,7 @@ import { EASE, THEME, lerp, seg } from '../theme';
 
 const L = S07.layers, P = S07.pair;
 const ROW = (k: number) => 800 - k * 125; // cheapest at the bottom
-const X0 = 420, W = 840, H = 78;
+const X0 = 330, W = 780, H = 78;
 export const PAIR = [{ x: 665, y: 375, w: 170, h: 170 }, { x: 1085, y: 375, w: 170, h: 170 }]; // read by the bridge 07 → 08
 
 /** A seat seen from above, large: the cushion and its backrest. */
@@ -47,7 +47,7 @@ export const FareLayers: React.FC = () => {
                 {Array.from({ length: 16 }, (_, j) => <rect key={j} x={X0 + 300 + j * 30} y={y + H / 2 - 9} width={18} height={18} rx={4} fill="none" stroke={THEME.ink} strokeOpacity={0.35} strokeWidth={1.2} />)}
                 <text x={X0 + W + 40} y={y + H / 2 + 15} fontFamily={THEME.sans} fontWeight={300} fontSize={44} fill={open > 0 ? THEME.accent : THEME.ink} style={{ fontVariantNumeric: 'tabular-nums' }}>{fare.price} €</text>
                 <text x={X0 + 44} y={y + H / 2 + 7} fontFamily={THEME.sans} fontSize={22} letterSpacing="0.18em" fill={THEME.ink} opacity={seg(f, L.avail + k * 4, L.avail + k * 4 + 10)}>{fare.seats} PLACES</text>
-                <text x={X0 + W + 190} y={y + H / 2 + 7} fontFamily={THEME.sans} fontSize={22} letterSpacing="0.1em" fill={THEME.ink} opacity={seg(f, L.rules + k * 5, L.rules + k * 5 + 10) * (1 - closed)}>{L.conditions[k]!.toUpperCase()}</text>
+                <text x={X0 + W + 190} y={y + H / 2 + 7} fontFamily={THEME.sans} fontSize={22} letterSpacing="0.1em" fill={THEME.ink} opacity={seg(f, L.rules + k * 5, L.rules + k * 5 + 10) * (1 - closed) * (1 - open)}>{L.conditions[k]!.toUpperCase()}</text>
                 {k < 2 && strike > 0 && <line x1={X0 - 10} y1={y + H / 2} x2={X0 - 10 + (W + 20) * strike} y2={y + H / 2} stroke={THEME.accent} strokeWidth={2.4} />}
               </g>
             );

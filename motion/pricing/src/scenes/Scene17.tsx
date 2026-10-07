@@ -2,6 +2,7 @@ import React from 'react';
 import { AbsoluteFill, useCurrentFrame } from 'remotion';
 import { S17 } from '../data/scene17';
 import { EASE, THEME, clamp01, lerp, seg } from '../theme';
+import { measure } from '../layout/measure';
 
 type V3 = [number, number, number];
 const B = S17.beats, O = S17.orbit;
@@ -41,10 +42,16 @@ export const Scene17: React.FC = () => {
       const u = ((f - at) * 0.01 + j / 4) % 1, q = P(mix3(INPUTS[i]!, PRICE, u));
       if (f > at + 24) items.push({ z: q.z, el: <circle key={`p${i}-${j}`} cx={q.x} cy={q.y} r={3.2 * q.s} fill={THEME.ink} opacity={Math.sin(Math.PI * u) * fog(q.z)} /> });
     }
+    // An orbiting label never crosses the loop's labels: it steps back while it passes behind them.
+    const half = measure(label, { size: 21 * a.s, font: 'sans', tracking: 0.16, upper: true }).advance / 2;
+    const clear = Math.min(...[LOOP_AT.book!, LOOP_AT.avail!].map((n) => {
+      const gx = Math.abs(a.x - n.x) - half - 130, gy = Math.abs(a.y - 22 * a.s - (n.y + 8)) - 60;
+      return clamp01(Math.max(gx, gy) / 48);
+    }));
     items.push({ z: a.z - 1, el: (
       <g key={`n${i}`} opacity={t * fog(a.z)}>
         <circle cx={a.x} cy={a.y} r={9 * a.s} fill={THEME.bg} stroke={THEME.ink} strokeWidth={1.6} />
-        <text x={a.x} y={a.y - 22 * a.s} textAnchor="middle" fontFamily={THEME.sans} fontSize={21 * a.s} letterSpacing="0.16em" fill={THEME.ink}>{label.toUpperCase()}</text>
+        <text opacity={clear} x={a.x} y={a.y - 22 * a.s} textAnchor="middle" fontFamily={THEME.sans} fontSize={21 * a.s} letterSpacing="0.16em" fill={THEME.ink}>{label.toUpperCase()}</text>
       </g>
     ) });
   });
@@ -87,7 +94,7 @@ export const Scene17: React.FC = () => {
       <svg width={1920} height={1080} style={{ position: 'absolute', inset: 0 }}>
         {items.sort((a, b) => b.z - a.z).map((it) => it.el)}
       </svg>
-      <div style={{ position: 'absolute', left: 120, top: 70 }}>
+      <div style={{ position: 'absolute', left: 112, top: 96 }}>
         {S17.legend.map((t, k) => {
           const o = EASE.out(seg(f, B.loop[k]! + 6, B.loop[k]! + 30));
           return <div key={t} style={{ opacity: o, fontFamily: THEME.sans, fontSize: 22, letterSpacing: '0.18em', textTransform: 'uppercase', color: k === 2 ? THEME.accent : THEME.ink, lineHeight: 1.8 }}>{t}</div>;

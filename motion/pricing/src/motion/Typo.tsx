@@ -15,7 +15,7 @@ export type TypoProps = {
   preset: PresetName;
   params: Params;
   x?: number; y?: number; size: number;
-  font?: 'serif' | 'sans'; weight?: number; tracking?: number; italic?: boolean;
+  font?: 'serif' | 'sans' | 'mono'; weight?: number; tracking?: number; italic?: boolean;
   color?: string; upper?: boolean;
   /** extra pose applied to the whole piece (a later phase driven by the choreography). */
   over?: Partial<Pose>;
@@ -32,7 +32,7 @@ const Units: React.FC<TypoProps & { lineHeight?: string }> = ({ text, preset, pa
   const parts = R.split === 'line' ? [str] : R.split === 'word' ? str.split(' ') : Array.from(str);
   const o = { ...REST, ...over };
   return (
-    <div style={{ display: 'inline-flex', alignItems: 'baseline', whiteSpace: 'pre', fontFamily: font === 'sans' ? THEME.sans : THEME.serif, fontStyle: italic ? 'italic' : 'normal', fontSize: size, lineHeight, color, fontWeight: weight,
+    <div style={{ display: 'inline-flex', alignItems: 'baseline', whiteSpace: 'pre', fontFamily: font === 'sans' ? THEME.sans : font === 'mono' ? THEME.mono : THEME.serif, fontStyle: italic ? 'italic' : 'normal', fontSize: size, lineHeight, color, fontWeight: weight,
       transform: `translate(${o.x}em, ${o.y}em) rotate(${o.rot}deg) scale(${o.scale}) scale(${o.sx}, ${o.sy})`, transformOrigin: origin, opacity: o.o, filter: o.blur > 0.1 ? `blur(${o.blur}px)` : undefined, letterSpacing: `${tracking + o.track}em` }}>
       {parts.map((u, i) => {
         const t0 = p.at + (p.mode === 'accel' ? accel(i, p.stagger * p.speed) : gaps(i, p.stagger * p.speed));
@@ -41,7 +41,7 @@ const Units: React.FC<TypoProps & { lineHeight?: string }> = ({ text, preset, pa
           <span style={{
             display: 'inline-block', transformOrigin: '50% 80%',
             transform: `translate(${q.x}em, ${q.y + (R.mask ? (1 - q.reveal) * 1.4 : 0)}em) rotate(${q.rot}deg) scale(${q.scale}) scale(${q.sx}, ${q.sy})`,
-            opacity: q.o, letterSpacing: `${tracking + q.track + o.track}em`,
+            opacity: q.o, letterSpacing: `${tracking + (p.mode === 'fixed' ? 0 : q.track) + o.track}em`, // 'fixed': the line shares a row, its width must not move
             fontVariationSettings: `'wght' ${weight + q.weight + o.weight}`, fontWeight: weight + q.weight + o.weight,
             filter: q.blur > 0.1 ? `blur(${q.blur.toFixed(1)}px)` : undefined,
           }}>{u === ' ' ? ' ' : u}</span>
@@ -68,7 +68,7 @@ export const Typo: React.FC<TypoProps> = (props) => {
   let body: React.ReactNode;
   if (props.pen) {
     // On its baseline, exactly where the layout engine measured it.
-    const m = measure(props.text, { size: props.size, font: props.font, weight: props.weight, tracking: props.tracking, upper: props.upper });
+    const m = measure(props.text, { size: props.size, font: props.font, weight: props.weight, tracking: props.tracking, upper: props.upper, italic: props.italic });
     const lh = m.fontAscent + m.fontDescent;
     body = (
       <div style={{ position: 'absolute', left: props.pen.x, top: props.pen.baseline - m.fontAscent, height: lh, whiteSpace: 'pre' }}>

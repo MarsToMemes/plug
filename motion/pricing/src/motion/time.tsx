@@ -60,10 +60,13 @@ export const TimeOffset: React.FC<{ ms: number; children: React.ReactNode }> = (
   const parent = React.useContext(Offset);
   return <Offset.Provider value={parent + ms}>{children}</Offset.Provider>;
 };
+/** A clock override (ms): lets a title run in REAL time inside a scene stretched on the voice. */
+export const ClockContext = React.createContext<number | null>(null);
 export function useT() {
   const f = useCurrentFrame();
   const { fps } = useVideoConfig();
-  return (f / fps) * 1000 - React.useContext(Offset);
+  const clock = React.useContext(ClockContext);
+  return (clock ?? (f / fps) * 1000) - React.useContext(Offset);
 }
 
 export const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));

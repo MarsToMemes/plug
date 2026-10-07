@@ -5,11 +5,11 @@ import { EASE, THEME, clamp01, lerp, seg } from '../theme';
 import { aircraftLayout, gridLayout } from './layout02';
 import { BRIDGES } from './bridges';
 import { CITY } from './Scene13';
-import { CAB19 } from './Scene19';
+import { CAB19, Y19 } from './Scene19';
 import { PAIR } from './Scene07Layers';
 
 /** Bridges for the narration order (the pairs of neighbours that the voice-over creates). */
-type Bridge = React.FC<{ t: number }>;
+type Bridge = React.FC<{ t: number; u?: number }>;
 const svg = (c: React.ReactNode) => <svg width={1920} height={1080} style={{ position: 'absolute', inset: 0 }}>{c}</svg>;
 const scr = (u: U, s: number, cx: number, cy: number): U => ({ x: 960 + (u.x - cx) * s, y: 540 + (u.y - cy) * s, w: u.w * s, h: u.h * s });
 const fade = (v: string, x: number, y: number, size: number, o: number) => <div style={{ position: 'absolute', left: x - 600, width: 1200, top: y - size * 0.62, textAlign: 'center', fontFamily: THEME.sans, fontWeight: 300, fontSize: size, color: THEME.ink, opacity: o }}>{v}</div>;
@@ -21,7 +21,7 @@ const S09GRID = Array.from({ length: 120 }, (_, i) => ({ x: 760 + (i % 12) * 34,
 const MATRIX = Array.from({ length: 26 * 14 }, (_, k) => ({ x: 700 + (k % 26) * 20, y: 400 + Math.floor(k / 26) * 20, w: 14, h: 14 }));
 const BLOCKS = CITY.map((b) => ({ x: b.x, y: b.y, w: b.w, h: b.h }));
 const DAYS = Array.from({ length: 7 }, (_, i) => ({ x: 300 + i * 220 - 2, y: 790, w: 4, h: 20 }));
-const A19 = CAB19(330), B19 = CAB19(700);
+const A19 = CAB19(Y19.a), B19 = CAB19(Y19.b);
 const SYS = Array.from({ length: 6 }, (_, i) => { const a = -Math.PI / 2 + (i / 6) * Math.PI * 2; return { x: 960 + Math.cos(a) * 544 - 4, y: 540 + Math.sin(a) * 357 - 4, w: 8, h: 8 }; });
 
 // 02 → 04 : the seat grid goes back into the cabin; the room grid leaves.
@@ -53,7 +53,7 @@ const N1113: Bridge = ({ t }) => svg(<UnitsMorph a={MATRIX} b={BLOCKS} t={t} fil
 // 13 → 12 : the city flattens onto the days of the week.
 const N1312: Bridge = ({ t }) => { const e = EASE.inOut(t); return svg(<><UnitsMorph a={BLOCKS.map((b) => scr(b, 1.12, 960, 560))} b={DAYS} t={t} colorA={THEME.line} fillA={0.07} fillB={1} /><line x1={lerp(960, 260, e)} y1={800} x2={lerp(960, 1660, e)} y2={800} stroke={THEME.line} strokeWidth={1.6} opacity={e} /></>); };
 // 12 → 14 : the room becomes the booking card.
-const N1214: Bridge = ({ t }) => svg(<ShapeEl s={mixShape({ x: 720, y: 110, w: 480, h: 300, color: THEME.ink }, { x: 660, y: 70, w: 600, h: 330, rx: 18, ry: 18, color: THEME.line, stroke: 1.5 }, EASE.inOut(t))} />);
+const N1214: Bridge = ({ t }) => svg(<ShapeEl s={mixShape({ x: 748.8, y: 216.8, w: 422.4, h: 264, color: THEME.ink }, { x: 660, y: 70, w: 600, h: 330, rx: 18, ry: 18, color: THEME.line, stroke: 1.5 }, EASE.inOut(t))} />);
 // 14 → 20 : the two possible futures fold into the ticket.
 const N1420: Bridge = ({ t }) => {
   const e = EASE.inOut(t), card = { x: 610, y: 300, w: 700, h: 400, rx: 24, ry: 24, color: THEME.line, stroke: 1.6 };
@@ -71,8 +71,8 @@ const N1715: Bridge = ({ t }) => {
 const N1518: Bridge = ({ t }) => {
   const e = EASE.in(t);
   return (<>
-    <div style={{ position: 'absolute', left: 0, width: 1920, top: 480, textAlign: 'center', fontFamily: THEME.serif, fontWeight: 300, fontSize: 96, letterSpacing: `${0.03 + e * 0.4}em`, textTransform: 'uppercase', color: THEME.ink, opacity: 1 - clamp01(e * 1.8), filter: `blur(${e * 8}px)` }}>Gestion des revenus</div>
-    {svg(<><text x={960} y={lerp(560, 738, e)} textAnchor="middle" fontFamily={THEME.sans} fontWeight={300} fontSize={lerp(30, 576, e)} fill={THEME.ink} opacity={seg(t, 0.2, 0.5)}>219 €</text><text x={960} y={144} textAnchor="middle" fontFamily={THEME.sans} fontSize={117} letterSpacing="0.3em" fill={THEME.muted} opacity={seg(t, 0.8, 1)}>PRIX</text></>)}
+    <div style={{ position: 'absolute', left: 0, width: 1920, top: 480, textAlign: 'center', fontFamily: THEME.serif, fontWeight: 300, fontSize: 96, letterSpacing: `${0.03 + e * 0.4}em`, textTransform: 'uppercase', color: THEME.ink, opacity: 1 - seg(t, 0, 0.3), filter: `blur(${seg(t, 0, 0.3) * 10}px)` }}>Gestion des revenus</div>
+    {svg(<><text x={960} y={lerp(560, 738, e)} textAnchor="middle" fontFamily={THEME.sans} fontWeight={300} fontSize={lerp(30, 576, e)} fill={THEME.ink} opacity={seg(t, 0.34, 0.54)}>219 €</text><text x={960} y={144} textAnchor="middle" fontFamily={THEME.sans} fontSize={117} letterSpacing="0.3em" fill={THEME.muted} opacity={seg(t, 0.8, 1)}>PRIX</text></>)}
   </>);
 };
 // 18 → 16 : the whole system folds into a single line, where the question is written.

@@ -72,7 +72,7 @@ export const Scene18: React.FC = () => {
             <rect x={276} y={-70} width={48} height={60} fill="none" stroke={THEME.ink} strokeWidth={1.6} {...NS} />
             {Array.from({ length: 9 }, (_, k) => <rect key={k} x={282 + (k % 3) * 14} y={-62 + Math.floor(k / 3) * 16} width={8} height={10} fill={THEME.ink} />)}
             <text x={300} y={36} textAnchor="middle" fontFamily={THEME.sans} fontSize={20} letterSpacing="0.24em" fill={THEME.ink}>{S18.text.hotel.toUpperCase()}</text>
-            <text x={0} y={-44} textAnchor="middle" fontFamily={THEME.sans} fontSize={13} letterSpacing="0.3em" fill={THEME.muted}>{S18.text.price.toUpperCase()}</text>
+            <text x={0} y={-62} textAnchor="middle" fontFamily={THEME.sans} fontSize={13} letterSpacing="0.3em" fill={THEME.muted}>{S18.text.price.toUpperCase()}</text>
             <text x={0} y={22} textAnchor="middle" fontFamily={THEME.sans} fontWeight={300} fontSize={64} fill={THEME.ink}>{S18.price} €</text>
           </g>
         </g>
@@ -83,11 +83,11 @@ export const Scene18: React.FC = () => {
         return <div key={label} style={{ position: 'absolute', left: x - 200, width: 400, top: y + (Math.sin(a) < 0 ? -44 : 22), textAlign: 'center', opacity: sys * (1 - 0.45 * seg(f, B.never - 10, B.never + 20)) * (1 - endText * 0.85) }}><Caps size={18} color={THEME.ink}>{label}</Caps></div>;
       })}
       {/* Where we are in the system. */}
-      {lvl && f < B.never && <div style={{ position: 'absolute', left: 120, top: 980, opacity: EASE.out(seg(f, lvl.at, lvl.at + 20)) }}><Caps size={18} color={THEME.ink}>{lvl.label}</Caps></div>}
+      {lvl && f < B.never && <div style={{ position: 'absolute', left: 112, top: 928, opacity: EASE.out(seg(f, lvl.at, lvl.at + 20)) }}><Caps size={18} color={THEME.ink}>{lvl.label}</Caps></div>}
       <Statement family="TITLE_REVEAL_SLOW" focus={[1]} accent={THEME.accent} text={S18.text.never} at={B.never} out={B.chainAt - 30} top={430} size={72} />
       <Statement family="TITLE_SLIDE" text={S18.text.time} at={B.time} out={B.chainAt - 30} top={540} size={72} color={THEME.accent} />
       {/* The conclusion as a chain read left to right: each link slides in after the previous one. */}
-      <Title text={S18.text.chain.join('|→|')} at={B.chainAt - 30} top={500} size={64} family="TITLE_SLIDE" layout="inline" focus={[1, 3, 5]} accent={THEME.accent} tracking={0.04} speed={1.5} camera={false} />
+      <Title text={S18.text.chain.join('|→|')} at={B.chainAt - 30} top={500} size={64} family="TITLE_MASK" layout="inline" focus={[1, 3, 5]} accent={THEME.accent} tracking={0.04} speed={1.5} camera={false} />
       <AbsoluteFill style={{ background: '#000', opacity: black }} />
     </AbsoluteFill>
   );

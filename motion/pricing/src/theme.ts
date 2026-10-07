@@ -9,8 +9,9 @@ export const THEME = {
   line: '#5d5e61',
   accent: '#ff5b35', // a price that moves, a tension
   cool: '#8fb2d9', // the second series (hotel), never competing with the accent
-  serif: 'Newsreader, Georgia, serif',
-  sans: 'Inter, Helvetica, Arial, sans-serif',
+  serif: "'Instrument Serif', Geist, Georgia, serif", // Geist supplies the glyphs Instrument Serif lacks (→)
+  sans: 'Geist, Inter, Helvetica, Arial, sans-serif',
+  mono: "'Geist Mono', ui-monospace, monospace",
 } as const;
 
 export const EASE = {

@@ -44,6 +44,8 @@ export const Scene12: React.FC = () => {
 
   return (
     <AbsoluteFill style={{ background: THEME.bg }}>
+      {/* When the closing line arrives, the whole figure steps back to give it the top of the frame. */}
+      <div style={{ position: 'absolute', inset: 0, transformOrigin: '960px 1000px', transform: `scale(${1 - 0.12 * EASE.inOut(seg(f, B.message - 24, B.message + 6))})` }}>
       <svg width={1920} height={1080} style={{ position: 'absolute', inset: 0 }}>
         <g transform={`translate(960,${540 + oy}) scale(${s}) translate(-960,-540)`}>
           <line x1={X0 - 40} y1={BASE} x2={X1 + 40} y2={BASE} stroke={THEME.line} strokeWidth={1.6} opacity={ax} />
@@ -64,6 +66,7 @@ export const Scene12: React.FC = () => {
           <Caps size={20} color={THEME.ink} style={{ display: 'block', marginTop: 8 }}>{S12.days[clamp01(t2 / (N - 1)) >= 0 ? day : 0]}</Caps>
         </div>
       )}
+      </div>
       <Statement family="TITLE_SPLIT" focus={[1]} text={S12.text.message} at={B.message} top={44} size={56} />
     </AbsoluteFill>
   );

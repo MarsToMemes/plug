@@ -11,6 +11,7 @@ import { Scene20 } from './Scene20';
 import { S20 } from '../data/scene20';
 import { VOICE } from '../data/voice';
 import { TimeMapContext } from '../type/clock';
+import { TextQA } from '../layout/TextQA';
 
 /**
  * The episode cut on the voice-over: scenes in the order of the narration, each playing during
@@ -66,17 +67,20 @@ const BridgeOverlay: React.FC<{ k: number }> = ({ k }) => {
   const Bridge = BRIDGE_FOR[key];
   if (Bridge === null) return null; // the next scene starts exactly where this one ends: no bridge
   if (!Bridge) throw new Error(`No bridge for ${key}`);
-  const ground = seg(f, 0, BRIDGE * 0.28) * (1 - seg(f, BRIDGE * 0.74, BRIDGE));
-  const el = seg(f, 0, BRIDGE * 0.22) * (1 - seg(f, BRIDGE * 0.8, BRIDGE));
+  // Exact handoff (the bridge ends on the next scene's own image): the ground goes first, then the
+  // bridge, so the image never dips while both are half transparent.
+  const exact = key === '01>02';
+  const ground = seg(f, 0, BRIDGE * 0.28) * (1 - seg(f, BRIDGE * 0.74, BRIDGE * (exact ? 0.86 : 1)));
+  const el = seg(f, 0, BRIDGE * 0.22) * (1 - seg(f, BRIDGE * (exact ? 0.88 : 0.8), BRIDGE));
   return (
     <AbsoluteFill>
       <AbsoluteFill style={{ background: P[k + 1]!.scene === '16' ? '#060607' : THEME.bg, opacity: ground }} />
-      <AbsoluteFill style={{ opacity: el }}><Bridge t={clamp01(seg(f, BRIDGE * 0.2, BRIDGE * 0.72))} /></AbsoluteFill>
+      <AbsoluteFill style={{ opacity: el }}><Bridge t={clamp01(seg(f, BRIDGE * 0.2, BRIDGE * 0.72))} u={f / BRIDGE} /></AbsoluteFill>
     </AbsoluteFill>
   );
 };
 
-export const VoiceEpisode: React.FC = () => {
+export const VoiceEpisode: React.FC<{ qa?: boolean }> = ({ qa }) => {
   const { fps } = useVideoConfig();
   return (
     <AbsoluteFill style={{ background: THEME.bg }}>
@@ -88,6 +92,7 @@ export const VoiceEpisode: React.FC = () => {
       </TransitionSeries>
       {/* voice + music + sound effects, built by audio/mix.py */}
       <Audio src={staticFile('audio/mix.m4a')} />
+      {qa && <TextQA />}
     </AbsoluteFill>
   );
 };

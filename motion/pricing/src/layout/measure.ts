@@ -11,13 +11,13 @@ import { THEME } from '../theme';
  *  capAscent: height of a capital without accents — used for OPTICAL centring of caps text
  *  fontAscent / fontDescent : the font's line box, to place a DOM line on its baseline exactly
  */
-export type TextStyle = { size: number; font?: 'serif' | 'sans'; weight?: number; tracking?: number; italic?: boolean; upper?: boolean };
+export type TextStyle = { size: number; font?: 'serif' | 'sans' | 'mono'; weight?: number; tracking?: number; italic?: boolean; upper?: boolean };
 export type Metrics = { text: string; advance: number; inkLeft: number; inkRight: number; inkWidth: number; ascent: number; descent: number; capAscent: number; fontAscent: number; fontDescent: number };
 
 const cache = new Map<string, Metrics>();
 let ctx: CanvasRenderingContext2D | null = null;
 
-export const family = (s: TextStyle) => (s.font === 'sans' ? THEME.sans : THEME.serif);
+export const family = (s: TextStyle) => (s.font === 'sans' ? THEME.sans : s.font === 'mono' ? THEME.mono : THEME.serif);
 export const cssFont = (s: TextStyle) => `${s.italic ? 'italic ' : ''}${s.weight ?? 300} ${s.size}px ${family(s)}`;
 
 export function measure(raw: string, s: TextStyle): Metrics {

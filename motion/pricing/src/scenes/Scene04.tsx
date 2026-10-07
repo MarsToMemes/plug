@@ -122,17 +122,20 @@ export const Scene04: React.FC = () => {
         </svg>
       </CameraRig>
 
+      {/* Quiet zones: the runway lines fade out behind the title and the counter (text never sits on a line). */}
+      <div style={{ position: 'absolute', left: 0, right: 0, top: 0, height: 340, background: `linear-gradient(to bottom, ${THEME.bg} 0%, ${THEME.bg} 62%, transparent 100%)`, opacity: EASE.inOut(seg(f, B.takeoffTitle - 12, B.takeoffTitle + 8)) * (1 - EASE.inOut(seg(f, B.pullOut, B.pullOut + 30))) }} />
+      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 330, background: `linear-gradient(to top, ${THEME.bg} 0%, ${THEME.bg} 58%, transparent 100%)`, opacity: Math.max(EASE.out(seg(f, B.counter, B.counter + 20)), lostT) * lostFade }} />
       {/* Screen space: the counter, then the verdict. */}
-      <div style={{ position: 'absolute', left: 0, width: 1920, top: 900, textAlign: 'center', fontFamily: THEME.sans, color: THEME.ink, textShadow: `0 0 18px ${THEME.bg}, 0 0 8px ${THEME.bg}`, opacity: EASE.out(seg(f, B.counter, B.counter + 20)) * (1 - lostT) }}>
+      <div style={{ position: 'absolute', left: 0, width: 1920, top: 840, textAlign: 'center', fontFamily: THEME.sans, color: THEME.ink, textShadow: `0 0 18px ${THEME.bg}, 0 0 8px ${THEME.bg}`, opacity: EASE.out(seg(f, B.counter, B.counter + 20)) * (1 - lostT) }}>
         <span style={{ fontSize: 96, fontWeight: 300, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em' }}>{available}</span>
         <span style={{ fontSize: 26, letterSpacing: '0.34em', textTransform: 'uppercase', marginLeft: 22, color: THEME.muted }}>{S04.text.available}</span>
       </div>
-      <div style={{ position: 'absolute', left: 0, width: 1920, top: 880, textAlign: 'center', fontFamily: THEME.sans, textShadow: `0 0 18px ${THEME.bg}, 0 0 8px ${THEME.bg}`, opacity: lostT, transform: `translateY(${(1 - lostT) * 10}px)` }}>
+      <div style={{ position: 'absolute', left: 0, width: 1920, top: 800, textAlign: 'center', fontFamily: THEME.sans, textShadow: `0 0 18px ${THEME.bg}, 0 0 8px ${THEME.bg}`, opacity: lostT, transform: `translateY(${(1 - lostT) * 10}px)` }}>
         <div style={{ fontSize: 22, letterSpacing: '0.4em', textTransform: 'uppercase', color: THEME.accent, marginBottom: 6 }}>{S04.text.lost}</div>
         <span style={{ fontSize: 96, fontWeight: 300, color: THEME.ink, fontVariantNumeric: 'tabular-nums' }}>{S04.unsold}</span>
         <span style={{ fontSize: 26, letterSpacing: '0.34em', textTransform: 'uppercase', marginLeft: 22, color: THEME.muted }}>{S04.text.seats}</span>
       </div>
-      <Title text={S04.text.takeoff} at={B.takeoffTitle} out={B.pullOut} top={40} size={110} family="TITLE_PUSH" tracking={0.04} />
+      <Title text={S04.text.takeoff} at={B.takeoffTitle} out={B.pullOut} top={96} size={110} family="TITLE_PUSH" tracking={0.04} />
     </AbsoluteFill>
   );
 };

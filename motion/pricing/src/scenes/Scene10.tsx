@@ -37,6 +37,8 @@ export const Scene10: React.FC = () => {
   const out = EASE.out(seg(f, S10.output.at, S10.output.at + 24));
   const wide = seg(f, B.pull + 10, B.pull + 50) * (1 - seg(f, S10.camera[1]!.at, S10.camera[1]!.at + 40));
   const sig = seg(f, S10.signals, S10.signals + 30);
+  const hold = (a: number, b: number) => EASE.inOut(seg(f, a - 24, a + 6)) * (1 - EASE.inOut(seg(f, b, b + 24)));
+  const room = Math.max(hold(S10.question.at, S10.question.out), hold(S10.goal.at, S10.subtle.at - 8), hold(S10.subtle.at - 8, Infinity));
   // "Énormément de signaux": small marks drifting from everywhere towards the core, all along.
   const field = React.useMemo(() => { const r = rng(1011); return Array.from({ length: 90 }, () => ({ a: r() * Math.PI * 2, d: 0.55 + r() * 0.7, sp: 0.004 + r() * 0.006, ph: r() })); }, []);
   // Echoes: a lattice of the same engine, linked, revealed by the pull-back.
@@ -47,6 +49,9 @@ export const Scene10: React.FC = () => {
   }, []);
   return (
     <AbsoluteFill style={{ background: THEME.bg }}>
+      {/* While a title holds the top of the frame, the machine steps back and down to leave it room
+          (never a title over a label). */}
+      <div style={{ position: 'absolute', inset: 0, transformOrigin: '960px 660px', transform: `scale(${1 - 0.13 * room})` }}>
       <CameraRig shots={S10.camera}>
         <svg width={1920} height={1080} style={{ position: 'absolute', inset: 0, overflow: 'visible' }}>
           {/* The wider system (only seen from far away). */}
@@ -93,6 +98,7 @@ export const Scene10: React.FC = () => {
           </g>
         </svg>
       </CameraRig>
+      </div>
       <Statement family="TITLE_FOCUS" text={S10.question.text} at={S10.question.at} out={S10.question.out} top={40} size={52} fade={10} />
       <Statement family="TITLE_SLIDE" text={S10.goal.text} at={S10.goal.at} out={S10.subtle.at - 8} top={40} size={52} fade={10} />
       <Statement family="TITLE_MORPH" text={S10.subtle.text} at={S10.subtle.at} top={40} size={52} fade={10} />

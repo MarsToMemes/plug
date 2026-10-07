@@ -52,10 +52,16 @@ import { S20 } from './data/scene20';
 import { EPISODE_DURATION, Episode } from './scenes/Episode';
 import { VOICE_DURATION, VoiceEpisode } from './scenes/VoiceEpisode';
 
-// Local fonts: the render never depends on the network.
+// Local fonts (copied from github.com/google/fonts, OFL): the render never depends on the network.
+//   Instrument Serif — editorial display serif for the big titles (roman + italic for emphasis)
+//   Geist            — modern grotesque for figures and text (variable 100–900)
+//   Geist Mono       — data labels, counters, small captions (variable 100–900)
 const fonts: Array<[string, string, string, string]> = [
+  ['Instrument Serif', 'instrumentserif/InstrumentSerif-Regular.ttf', 'normal', '400'],
+  ['Instrument Serif', 'instrumentserif/InstrumentSerif-Italic.ttf', 'italic', '400'],
+  ['Geist', 'geist/Geist[wght].ttf', 'normal', '100 900'],
+  ['Geist Mono', 'geistmono/GeistMono[wght].ttf', 'normal', '100 900'],
   ['Newsreader', 'Newsreader.woff2', 'normal', '200 800'],
-  ['Newsreader', 'Newsreader-Italic.woff2', 'italic', '200 800'],
   ['Inter', 'Inter.woff2', 'normal', '100 900'],
 ];
 const handle = delayRender('fonts');

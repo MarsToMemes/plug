@@ -6,12 +6,15 @@ import { flight, hotel } from '../data/entities';
 import { EASE, THEME, clamp01, lerp, seg } from '../theme';
 import { aircraftLayout, gridLayout, hotelLayout, place } from './layout02';
 import { CITY } from './Scene13';
+import { cameraPose } from '../camera/CameraRig';
+import { S02 } from '../data/scene02';
+import { VOICE } from '../data/voice';
 
 /**
  * The bridges: each one starts from the last key element of a scene (where that scene left it on
  * screen) and becomes the first key element of the next scene. t = 0..1 across the morph.
  */
-type Bridge = React.FC<{ t: number }>;
+type Bridge = React.FC<{ t: number; u?: number }>; // u: raw progress through the overlay (0 → 1)
 const svg = (children: React.ReactNode) => <svg width={1920} height={1080} style={{ position: 'absolute', inset: 0 }}>{children}</svg>;
 const scr = (u: U, s: number, cx: number, cy: number): U => ({ x: 960 + (u.x - cx) * s, y: 540 + (u.y - cy) * s, w: u.w * s, h: u.h * s });
 const priceText = (v: string, x: number, y: number, size: number, o = 1, color: string = THEME.ink) => <div style={{ position: 'absolute', left: x - 600, width: 1200, top: y - size * 0.62, textAlign: 'center', fontFamily: THEME.sans, fontWeight: 300, fontSize: size, color, opacity: o, fontVariantNumeric: 'tabular-nums' }}>{v}</div>;
@@ -20,12 +23,25 @@ const AC = aircraftLayout(flight.seats, flight.layout);
 const HO = hotelLayout(hotel.rooms, hotel.perFloor);
 
 // 01 → 02 : the question's ring closes into the fuselage, seen nose first (scene 02 starts very close).
-const B01: Bridge = ({ t }) => {
-  const a = ellipse(960, 540, 215, 133, { fill: 0, stroke: 1.6, color: THEME.line });
-  const body = scr(AC.body, 2.6, 1480, 540);
-  const b = capsule(body.x, body.y, body.w + body.h, body.h, { fill: 0.92, stroke: 2 });
-  const end = seg(t, 0.72, 1); // the capsule hands over to the real aircraft, exactly where scene 02 starts
-  return svg(<><g opacity={1 - end}><ShapeEl s={mixShape(a, b, EASE.inOut(t))} /></g><g opacity={end} transform={`translate(960,540) scale(2.6) translate(-1480,-540)`}><AircraftPlan body={AC.body} fill={1} /></g><UnitsMorph a={pointsOnEllipse(960, 540, 550, 340, 8, 8)} b={pointsOnEllipse(960, 540, 215, 133, 8, 2)} t={clamp01(t * 2)} /></>);
+const B01: Bridge = ({ t, u = t }) => {
+  // The question's ring opens into a window through which the real aircraft of scene 02 appears
+  // (same scale, same place as scene 02's first frame): one silhouette only, never two.
+  const e = EASE.inOut(t);
+  // After the cut, follow scene 02's own camera (same frame, same pose): the two planes coincide.
+  const p02 = VOICE.passages[1]!, a02 = p02.anchors![0]!;
+  const sceneFrame = Math.max(0, u * 60 - 30) * (a02[0] / ((a02[1] - p02.start) * 30));
+  const cam = cameraPose(sceneFrame, S02.camera, S02.cameraStart);
+  const ring = ellipse(960, 540, 215, 133);
+  const win = { x: -40, y: -40, w: 2000, h: 1160, rx: 0, ry: 0 };
+  const w = mixShape(ring, win, e);
+  const rx = Math.min(w.w / 2, (ring.rx ?? 0) * (1 - e) + 0.001), ry = Math.min(w.h / 2, (ring.ry ?? 0) * (1 - e) + 0.001);
+  return svg(<>
+    <defs><clipPath id="b01win"><rect x={w.x} y={w.y} width={w.w} height={w.h} rx={Math.max(rx, w.w / 2 * (1 - e))} ry={Math.max(ry, w.h / 2 * (1 - e))} /></clipPath></defs>
+    {/* The aircraft in the window follows scene 02's own camera frame by frame, so when the ground
+        fades the two aircraft coincide exactly: one silhouette, never two. */}
+    <g clipPath="url(#b01win)" opacity={seg(t, 0.05, 0.3)}><g transform={`translate(960,540) scale(${cam.scale}) translate(${-cam.x},${-cam.y})`}><AircraftPlan body={AC.body} fill={1} /></g></g>
+    <rect x={w.x} y={w.y} width={w.w} height={w.h} rx={Math.max(rx, w.w / 2 * (1 - e))} ry={Math.max(ry, w.h / 2 * (1 - e))} fill="none" stroke={THEME.line} strokeWidth={1.6} opacity={1 - seg(t, 0.45, 0.7)} />
+  </>);
 };
 // 02 → 03 : the two capacity grids become the two lanes' grids at the start of the timeline.
 const lane = (n: number, y: number) => { const cols = Math.ceil(n / 10), gy = y - 34 - 150; return Array.from({ length: n }, (_, i) => ({ x: 430 + (i % cols) * 15, y: gy + (9 - Math.floor(i / cols)) * 15, w: 11, h: 11 })); };

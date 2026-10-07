@@ -1,6 +1,6 @@
 import React from 'react';
 import { THEME } from '../theme';
-import { Title } from '../type/Title';
+import { FAMILY_PRESET, Headline } from '../type/Headline';
 import type { Family } from '../type/presets';
 
 /**
@@ -8,8 +8,8 @@ import type { Family } from '../type/presets';
  * kinetic typography system (src/type). `family` says how it moves, for what it means; the text
  * can carry its hierarchy with "|" and name its focal block(s) with `focus`.
  */
-export const Statement: React.FC<{ text: string; at: number; out?: number; top?: number; size?: number; color?: string; fade?: number; family?: Family; focus?: number[]; layout?: 'stack' | 'inline'; accent?: string; speed?: number; style?: React.CSSProperties }> = ({ text, at, out, top = 900, size = 68, color = THEME.ink, family = 'TITLE_MASK', focus, layout = 'inline', accent, speed, style }) => (
-  <Title text={text} at={at} out={out} top={top} size={size} color={color} family={family} focus={focus} layout={layout} accent={accent} speed={speed} tracking={0.03} style={style} />
+export const Statement: React.FC<{ text: string; at: number; out?: number; top?: number; size?: number; color?: string; fade?: number; family?: Family; focus?: number[]; layout?: 'stack' | 'inline'; accent?: string; speed?: number; style?: React.CSSProperties }> = ({ text, at, out, top = 900, size = 68, color = THEME.ink, family, focus, layout = 'inline', accent, speed }) => (
+  <Headline text={text} at={at} out={out} top={top} size={size} color={color} focus={focus} layout={layout} accent={accent ?? (focus?.length ? THEME.accent : undefined)} speed={speed} motion={family ? FAMILY_PRESET[family] : undefined} />
 );
 
 /** Small spaced capitals (labels, kickers). */

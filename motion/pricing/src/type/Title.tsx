@@ -1,6 +1,7 @@
 import React from 'react';
 import { THEME, clamp01, lerp } from '../theme';
 import { useElapsed } from './clock';
+import { FAMILY_PRESET, Headline } from './Headline';
 import { E } from './ease';
 import { COUNT, PRESETS, ROLE_FAMILY, type CameraMove, type Family, type Pose, type Preset, type Role } from './presets';
 
@@ -77,108 +78,11 @@ const MotionBlurDefs: React.FC<{ id: string }> = ({ id }) => (
 
 const hash = (s: string) => { let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0; return `t${h.toString(36)}`; };
 
-export const Title: React.FC<TitleProps> = (p) => {
-  const elapsedSince = useElapsed();
-  const family = p.family ?? ROLE_FAMILY[p.role ?? 'main'];
-  if (family === 'TITLE_COUNT') throw new Error('TITLE_COUNT: use <TitleCount>');
-  const P = PRESETS[family];
-  const e = elapsedSince(p.at);
-  const eo = p.out === undefined ? -1 : elapsedSince(p.out);
-  const speed = p.speed ?? 1, I = p.intensity ?? 1, size = p.size ?? 72;
-  const blocks = p.text.split('|').map((b) => b.trim());
-  const U = units(blocks, P.split);
-  const focus = new Set(p.focus ?? []);
-  if (e < 0) return null;
-  // When does the unit start, how long does it take?
-  const timing = (u: Unit) => {
-    const f = focus.has(u.block) && P.focus;
-    const delay = u.k * P.stagger * speed + (f ? P.focus!.delay * speed : 0);
-    return { delay, dur: (f ? P.focus!.dur : P.dur) * speed, ease: f ? P.focus!.ease : P.ease, rest: f ? { scale: P.focus!.scale, tracking: P.focus!.tracking } : { scale: 1, tracking: 0 } };
-  };
-  const last = Math.max(...U.map((u) => { const t = timing(u); return t.delay + t.dur; }));
-  if (p.out !== undefined && eo > P.exit.dur + P.exit.stagger * U.length + 100) return null;
-
-  const pose = (u: Unit, ms: number): Required<Pose> => {
-    const t = timing(u);
-    const k = t.ease(clamp01((ms - t.delay) / t.dur));
-    const side = P.alternate ? (u.block % 2 ? -1 : 1) : 1;
-    const f = P.from;
-    let ps: Required<Pose> = {
-      x: (f.x ?? 0) * (1 - k) * side * I, y: (f.y ?? 0) * (1 - k) * (P.mask ? 1 : I),
-      scale: lerp(f.scale ?? 1, 1, k), scaleX: lerp(f.scaleX ?? 1, 1, k),
-      tracking: lerp(ADD(p.tracking, f.tracking), ADD(p.tracking, t.rest.tracking), k),
-      blur: Math.max(0, (f.blur ?? 0) * (1 - k)), rotate: (f.rotate ?? 0) * (1 - k) * side,
-      opacity: f.opacity === 0 ? clamp01(k * 1.8) : 1,
-    };
-    if (eo >= 0) {
-      const q = (P.exit.ease ?? E.power3Out)(clamp01((eo - u.k * P.exit.stagger) / P.exit.dur));
-      const x = P.exit.to;
-      ps = { ...ps, x: ps.x + (x.x ?? 0) * q * side, y: ps.y + (x.y ?? 0) * q, scale: ps.scale * lerp(1, x.scale ?? 1, q), scaleX: ps.scaleX * lerp(1, x.scaleX ?? 1, q), tracking: ps.tracking + (x.tracking ?? 0) * q, blur: ps.blur + (x.blur ?? 0) * q, opacity: ps.opacity * (x.opacity === 0 ? 1 - q : 1) };
-    }
-    return ps;
-  };
-
-  const id = hash(p.text + p.at);
-  const cam = cameraOf(p.camera === undefined ? P.camera : p.camera, e, last * 0.85);
-  const color = p.color ?? THEME.ink;
-  const lines = p.layout === 'inline' ? [U] : blocks.map((_, bi) => U.filter((u) => u.block === bi));
-
-  const renderUnit = (u: Unit) => {
-    const now = pose(u, e), prev = pose(u, e - 1000 / 30);
-    let mb = '';
-    if (P.motionBlur) {
-      const dx = Math.abs(now.x - prev.x) * size, dy = Math.abs(now.y - prev.y) * size;
-      const lv = Math.min(6, Math.round(Math.max(dx, dy) * 0.18 * P.motionBlur));
-      if (lv > 0) mb = ` url(#${id}${dx >= dy ? 'x' : 'y'}${lv})`;
-    }
-    const inner = (
-      <span style={{
-        display: 'inline-block', whiteSpace: 'pre', transformOrigin: '50% 60%',
-        transform: `translate(${now.x}em, ${now.y}em) rotate(${now.rotate}deg) scale(${now.scale}) scaleX(${now.scaleX})`,
-        letterSpacing: `${now.tracking}em`, opacity: now.opacity,
-        filter: `${now.blur > 0.05 ? `blur(${now.blur.toFixed(2)}px)` : ''}${mb}` || undefined,
-        color: focus.has(u.block) && p.accent ? p.accent : color,
-      }}>{u.text}</span>
-    );
-    // The space after a word (or after a block on an inline title) is a margin: it never collapses.
-    const gap = u.space ? '0.26em' : 0;
-    return P.mask
-      ? <span key={u.k} style={{ display: 'inline-block', overflow: 'hidden', padding: '0.1em 0.04em 0.16em', margin: '-0.1em -0.04em -0.16em', marginRight: gap ? `calc(${gap} - 0.04em)` : '-0.04em', verticalAlign: 'top' }}>{inner}</span>
-      : <span key={u.k} style={{ display: 'inline-block', marginRight: gap }}>{inner}</span>;
-  };
-
-  return (
-    <div style={{ position: 'absolute', left: p.left ?? 0, width: p.width ?? 1920, top: p.top ?? 480, textAlign: p.align ?? 'center', ...p.style }}>
-      {P.motionBlur ? <MotionBlurDefs id={id} /> : null}
-      <div style={{
-        transform: `translateX(${cam.x}px) scale(${cam.s})`, transformOrigin: '50% 50%',
-        fontFamily: p.font === 'sans' ? THEME.sans : THEME.serif, fontWeight: p.weight ?? 300, fontSize: size,
-        lineHeight: p.lineHeight ?? 1.08, textTransform: p.uppercase === false ? 'none' : 'uppercase', color,
-        textShadow: `0 0 24px ${THEME.bg}, 0 0 8px ${THEME.bg}`,
-      }}>
-        {lines.map((line, li) => (
-          <div key={li}>
-            {blocks.map((_, bi) => {
-              const us = line.filter((u) => u.block === bi);
-              if (!us.length) return null;
-              // A focal block takes its extra weight as a whole, growing away from its neighbours.
-              const t = timing(us[0]!), k = t.ease(clamp01((e - t.delay) / t.dur));
-              const sc = lerp(1, t.rest.scale, k);
-              const inline = p.layout === 'inline' && blocks.length > 1;
-              const origin = !inline ? '50% 60%' : bi === 0 ? '100% 60%' : bi === blocks.length - 1 ? '0% 60%' : '50% 60%';
-              const grow = `${inline && sc > 1 ? (sc - 1) * 0.5 : 0}em`; // room for the growth, so nothing overlaps
-              return (
-                <span key={bi} style={{ display: 'inline-block', transform: sc !== 1 ? `scale(${sc})` : undefined, transformOrigin: origin, marginRight: inline && bi < blocks.length - 1 ? `calc(0.26em + ${grow})` : 0, marginLeft: bi > 0 ? grow : 0 }}>
-                  {us.map(renderUnit)}
-                </span>
-              );
-            })}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
+export const Title: React.FC<TitleProps> = (p) => (
+  <Headline text={p.text} at={p.at} out={p.out} top={p.top} size={p.size} color={p.color} accent={p.accent ?? (p.focus?.length ? THEME.accent : undefined)}
+    focus={p.focus} layout={p.layout ?? 'inline'} align={p.align} upper={p.uppercase !== false} font={p.font === 'sans' ? 'mono' : 'serif'} tracking={p.font === 'sans' ? p.tracking ?? 0.2 : 0.02}
+    speed={p.speed} motion={p.family ? FAMILY_PRESET[p.family] : undefined} />
+);
 
 /**
  * TitleCount — a figure that becomes another: "129 €" -> "349 €". Each digit rolls on its own
