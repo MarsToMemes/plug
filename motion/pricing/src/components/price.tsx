@@ -40,7 +40,7 @@ export const PriceCounter: React.FC<{
         const target = to >= from ? to : to + 10;
         const pos = lerp(from, target, t);
         return (
-          <span key={k} style={{ display: 'inline-block', width: '0.62em', height: h, overflow: 'hidden', position: 'relative', opacity: blank && t >= 1 ? 0 : 1, WebkitMaskImage: ROLL_MASK, maskImage: ROLL_MASK }}>
+          <span key={k} style={{ display: 'inline-block', width: '0.62em', height: h, overflow: 'hidden', position: 'relative', opacity: blank ? 1 - t : a[k] === ' ' ? t : 1, WebkitMaskImage: ROLL_MASK, maskImage: ROLL_MASK }}>
             <span style={{ position: 'absolute', left: 0, top: 0, display: 'flex', flexDirection: 'column', transform: `translateY(${-pos * h}px)`, filter: t > 0 && t < 1 ? `blur(${(2.6 * Math.sin(Math.PI * t)).toFixed(2)}px)` : undefined }}>
               {Array.from({ length: 20 }, (_, d) => <span key={d} style={{ height: h, lineHeight: `${h}px`, textAlign: 'center', width: '0.62em' }}>{d % 10}</span>)}
             </span>
