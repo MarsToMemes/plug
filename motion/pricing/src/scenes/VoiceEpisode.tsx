@@ -66,7 +66,8 @@ export const VoiceEpisode: React.FC = () => {
           ...(i < P.length - 1 ? [<TransitionSeries.Overlay key={`b${i}`} durationInFrames={BRIDGE} premountFor={fps}><BridgeOverlay k={i} /></TransitionSeries.Overlay>] : []),
         ])}
       </TransitionSeries>
-      <Audio src={staticFile('voice/voix-off.mp3')} />
+      {/* voice + music + sound effects, built by audio/mix.py */}
+      <Audio src={staticFile('audio/mix.m4a')} />
     </AbsoluteFill>
   );
 };
