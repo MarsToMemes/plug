@@ -19,6 +19,16 @@ import { Scene08 } from './scenes/Scene08';
 import { S08 } from './data/scene08';
 import { Scene09 } from './scenes/Scene09';
 import { S09 } from './data/scene09';
+import { Scene10 } from './scenes/Scene10';
+import { S10 } from './data/scene10';
+import { Scene11 } from './scenes/Scene11';
+import { S11 } from './data/scene11';
+import { Scene12 } from './scenes/Scene12';
+import { S12 } from './data/scene12';
+import { Scene13 } from './scenes/Scene13';
+import { S13 } from './data/scene13';
+import { Scene14 } from './scenes/Scene14';
+import { S14 } from './data/scene14';
 
 // Local fonts: the render never depends on the network.
 const fonts: Array<[string, string, string, string]> = [
@@ -41,6 +51,11 @@ export const Root: React.FC = () => (
       <Composition id="Scene07" component={Scene07} width={1920} height={1080} fps={30} durationInFrames={S07.duration} />
       <Composition id="Scene08" component={Scene08} width={1920} height={1080} fps={30} durationInFrames={S08.duration} />
       <Composition id="Scene09" component={Scene09} width={1920} height={1080} fps={30} durationInFrames={S09.duration} />
+      <Composition id="Scene10" component={Scene10} width={1920} height={1080} fps={30} durationInFrames={S10.duration} />
+      <Composition id="Scene11" component={Scene11} width={1920} height={1080} fps={30} durationInFrames={S11.duration} />
+      <Composition id="Scene12" component={Scene12} width={1920} height={1080} fps={30} durationInFrames={S12.duration} />
+      <Composition id="Scene13" component={Scene13} width={1920} height={1080} fps={30} durationInFrames={S13.duration} />
+      <Composition id="Scene14" component={Scene14} width={1920} height={1080} fps={30} durationInFrames={S14.duration} />
     </Folder>
     <Composition id="Library" component={Library} width={1920} height={1080} fps={30} durationInFrames={90} />
   </>
