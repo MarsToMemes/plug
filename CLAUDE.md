@@ -7,4 +7,6 @@
 1. Charger d'abord le skill `remotion-best-practices` (dans `.claude/skills/`), puis les skills spécialisés qu'il indique (`remotion-markup`, `remotion-captions`, `remotion-render`, etc.).
 2. HyperFrames est aussi disponible : le catalogue est dans `engine/motion-library/` (`README.md`, `hyperframes/`, `catalog.json`) et les blocs dans `engine/packages/remotion/hyperframes-studio/`. S'en servir quand un élément du catalogue convient mieux qu'un développement sur mesure.
 
+3. Le skill `animate` (`.claude/skills/animate`, https://github.com/cth9191/animate, MIT) fait des animations procédurales sur `<canvas>`, rendues en MP4, avec des styles (isométrique, math, riso, croquis, encre hachurée, papier découpé, pixel) et une musique synthétisée. C'est un moteur à part, pas du Remotion : l'utiliser quand un de ses styles convient mieux, ou quand l'utilisateur le demande. Ses outils ont besoin de Playwright installé globalement, à la version du moteur : `npm i -g playwright@1.56.1` (le Chromium est déjà dans `/opt/pw-browsers`, ne pas lancer `playwright install`).
+
 Les skills Remotion viennent de https://github.com/remotion-dev/skills (version 4.0.534). Pour les mettre à jour, recopier le dossier `skills/` de ce dépôt dans `.claude/skills/`.
