@@ -63,11 +63,11 @@ export const Scene19: React.FC = () => {
         </div>
       ))}
       <div style={{ position: 'absolute', left: BAR.x, top: A.body.y - 48 - 22, height: 22, display: 'flex', alignItems: 'center', opacity: bars }}><Caps size={18} color={THEME.ink}>{S19.text.revenue}</Caps></div>
-      <div style={{ position: 'absolute', left: 112, top: 940, opacity: seg(f, B.cheap, B.cheap + 20), display: 'flex', gap: 40, alignItems: 'center' }}>
+      <div style={{ position: 'absolute', left: 112, top: 948, opacity: seg(f, B.cheap, B.cheap + 20), display: 'flex', gap: 40, alignItems: 'center' }}>
         <span style={{ display: 'inline-block', width: 18, height: 18, background: THEME.ink, opacity: 0.4 }} /><Caps size={16}>{S19.text.low}</Caps>
         <span style={{ display: 'inline-block', width: 18, height: 18, background: THEME.accent, opacity: seg(f, B.dear, B.dear + 20) }} /><span style={{ opacity: seg(f, B.dear, B.dear + 20) }}><Caps size={16}>{S19.text.high}</Caps></span>
       </div>
-      <div style={{ position: 'absolute', left: 112, top: Bc.body.y + Bc.body.h + 32, opacity: anyOn }}><Caps size={24} color={THEME.accent}>{S19.text.any}</Caps></div>
+      <div style={{ position: 'absolute', left: 112, top: Bc.body.y + Bc.body.h + 24, opacity: anyOn }}><Caps size={24} color={THEME.accent}>{S19.text.any}</Caps></div>
       <Statement family="TITLE_FOCUS" text={S19.text.question} at={B.question} out={B.verdict - 10} top={60} size={52} fade={12} />
       <Statement family="TITLE_MORPH" focus={[1]} text={S19.text.verdict} at={B.verdict} out={B.value - 10} top={60} size={56} fade={12} />
       <Statement family="TITLE_SLIDE" text={S19.text.value} at={B.value} out={B.rm - 10} top={60} size={56} fade={12} />

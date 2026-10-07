@@ -91,7 +91,8 @@ export const Scene17: React.FC = () => {
 
   return (
     <AbsoluteFill style={{ background: THEME.bg }}>
-      <svg width={1920} height={1080} style={{ position: 'absolute', inset: 0 }}>
+      {/* The orbit is framed inside the safe area: its nearest nodes never cross the bottom edge. */}
+      <svg width={1920} height={1080} style={{ position: 'absolute', inset: 0, transformOrigin: `${pc.x}px ${pc.y}px`, transform: 'scale(0.9)' }}>
         {items.sort((a, b) => b.z - a.z).map((it) => it.el)}
       </svg>
       <div style={{ position: 'absolute', left: 112, top: 96 }}>

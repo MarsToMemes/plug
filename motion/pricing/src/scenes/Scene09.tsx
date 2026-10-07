@@ -68,7 +68,7 @@ export const Scene09: React.FC = () => {
       </div>
       {/* Calm phase: little demand, a price that does not move. */}
       <div style={{ position: 'absolute', left: 112, top: 648, display: 'flex', flexDirection: 'column', gap: 16, opacity: seg(f, B.calm, B.calm + 20) * (1 - seg(f, B.calmOut, B.calmOut + 20)), fontFamily: THEME.sans, fontSize: 24, letterSpacing: '0.2em', textTransform: 'uppercase', color: THEME.muted, lineHeight: 1.2 }}>
-        <div>→ {S09.text.calm1}</div><div>→ {S09.text.calm2}</div>
+        <div>{`→ ${S09.text.calm1}`}</div><div>{`→ ${S09.text.calm2}`}</div>
       </div>
 
       {/* The three linked indicators. */}

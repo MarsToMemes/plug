@@ -65,7 +65,7 @@ const N1417: Bridge = ({ t }) => svg(<><UnitsMorph a={[...pointsOnLine(520, 815,
 const N1715: Bridge = ({ t }) => {
   const e = EASE.inOut(t);
   const L = (a: number[], b: number[]) => <line x1={lerp(a[0]!, b[0]!, e)} y1={lerp(a[1]!, b[1]!, e)} x2={lerp(a[2]!, b[2]!, e)} y2={lerp(a[3]!, b[3]!, e)} stroke={e < 0.6 ? THEME.accent : THEME.faint} strokeWidth={lerp(2.2, 1.4, e)} />;
-  return svg(<>{L([960, 450, 660, 750], [560, 470, 560, 820])}{L([960, 450, 1260, 750], [1360, 470, 1360, 820])}<line x1={960} y1={lerp(540, 140, e)} x2={960} y2={lerp(540, 940, e)} stroke={THEME.line} strokeWidth={1.4} opacity={e} /></>);
+  return svg(<>{L([960, 450, 690, 720], [560, 470, 560, 820])}{L([960, 450, 1230, 720], [1360, 470, 1360, 820])}<line x1={960} y1={lerp(540, 140, e)} x2={960} y2={lerp(540, 940, e)} stroke={THEME.line} strokeWidth={1.4} opacity={e} /></>);
 };
 // 15 → 18 : the statement dissolves; the price comes closer and closer.
 const N1518: Bridge = ({ t }) => {
