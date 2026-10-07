@@ -47,6 +47,7 @@ import { BenchmarkLayouts } from './scenes/benchmark/Layouts';
 import { AnimeCheck } from './scenes/AnimeCheck';
 import { IconCheck } from './scenes/IconCheck';
 import { FontCheck } from './scenes/FontCheck';
+import { MotionCheck } from './scenes/MotionCheck';
 import { S20 } from './data/scene20';
 import { EPISODE_DURATION, Episode } from './scenes/Episode';
 import { VOICE_DURATION, VoiceEpisode } from './scenes/VoiceEpisode';
@@ -82,6 +83,7 @@ export const Root: React.FC = () => (
       <Composition id="Scene17" component={Scene17} width={1920} height={1080} fps={30} durationInFrames={S17.duration} />
       <Composition id="Scene18" component={Scene18} width={1920} height={1080} fps={30} durationInFrames={S18.duration} />
       <Composition id="Scene19" component={Scene19} width={1920} height={1080} fps={30} durationInFrames={S19.duration} />
+      <Composition id="MotionCheck" component={MotionCheck} width={1920} height={1080} fps={30} durationInFrames={45} />
       <Composition id="FontCheck" component={FontCheck} width={1920} height={1080} fps={30} durationInFrames={1} />
       <Composition id="IconCheck" component={IconCheck} width={1920} height={1080} fps={30} durationInFrames={1} />
       <Composition id="AnimeCheck" component={AnimeCheck} width={1920} height={1080} fps={30} durationInFrames={40} />
