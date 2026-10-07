@@ -1,8 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useContext, useMemo } from 'react';
 import { AbsoluteFill, Easing, staticFile, useCurrentFrame } from 'remotion';
 import { getLength } from '@remotion/paths';
 import { CHAR, PAPER_WHITE } from './Charcoal';
 import { rng } from './Engraving';
+import { InFilm } from './film';
 import strokesData from './p2strokes.json';
 
 /**
@@ -183,7 +184,8 @@ export const Plate02: React.FC = () => {
   // Which link of the chain we are on.
   const stage = fq < T.dev ? 0 : fq < T.skull ? 1 : fq < T.skin ? 2 : 3;
   const chain = ['Variation génétique', 'Développement', 'Structure du visage', 'Apparence'];
-  const endFade = 1 - seg(frame, P2_DURATION - 24, P2_DURATION);
+  const inFilm = useContext(InFilm);
+  const endFade = inFilm ? 1 : 1 - seg(frame, P2_DURATION - 24, P2_DURATION);
 
   // Genetics.
   const chromDraw = seg(fq, T.genes, T.genes + 70);

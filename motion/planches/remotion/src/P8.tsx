@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { AbsoluteFill, Easing, staticFile, useCurrentFrame } from 'remotion';
 import { CHAR, PAPER_WHITE } from './Charcoal';
 import { rng } from './Engraving';
+import { InFilm } from './film';
 import data from './p4data.json';
 
 /**
@@ -145,7 +146,8 @@ export const Plate08: React.FC = () => {
   const frame = useCurrentFrame();
   const fq = Math.floor(frame / 2) * 2;
   const boil = Math.floor(frame / 2) % 3;
-  const endFade = 1 - seg(frame, P8_DURATION - 20, P8_DURATION);
+  const inFilm = useContext(InFilm);
+  const endFade = inFilm ? 1 : 1 - seg(frame, P8_DURATION - 20, P8_DURATION);
 
   // Placement: side by side → overlaid at the centre (B fitted onto A) → side by side again.
   const together = ease(seg(fq, T.converge, T.converge + 60)) * (1 - ease(seg(fq, T.apart, T.apart + 56)));

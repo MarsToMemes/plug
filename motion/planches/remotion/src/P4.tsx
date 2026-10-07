@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { AbsoluteFill, Easing, staticFile, useCurrentFrame } from 'remotion';
 import { CHAR, PAPER_WHITE } from './Charcoal';
 import { rng } from './Engraving';
+import { InFilm } from './film';
 import data from './p4data.json';
 
 /**
@@ -84,7 +85,8 @@ export const Plate04: React.FC<{ aDrawn?: boolean }> = ({ aDrawn = false }) => {
   const frame = useCurrentFrame();
   const fq = Math.floor(frame / 2) * 2;
   const boil = Math.floor(frame / 2) % 3;
-  const endFade = 1 - seg(frame, P4_DURATION - 24, P4_DURATION);
+  const inFilm = useContext(InFilm);
+  const endFade = inFilm ? 1 : 1 - seg(frame, P4_DURATION - 24, P4_DURATION);
 
   const gridT = seg(fq, T.grid, T.grid + 70);
   const ptsT = seg(fq, T.points, T.points + 40);

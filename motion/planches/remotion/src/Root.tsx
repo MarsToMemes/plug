@@ -11,6 +11,7 @@ import { CUT_DURATION, Cut060504 } from './Cut';
 import { P7_DURATION, Plate07 } from './P7';
 import { Series } from 'remotion';
 import { P8_DURATION, Plate08 } from './P8';
+import { FILM_DURATION, Film } from './Film';
 
 // Fonts are local files (public/fonts): the render never depends on the network.
 const fonts: Array<[string, string, string, string]> = [
@@ -31,6 +32,7 @@ Promise.all(
 export const Root: React.FC = () => (
   <>
     <Composition id="Plate01" component={Plate} width={1920} height={1080} fps={30} durationInFrames={DURATION} />
+    <Composition id="Film" component={Film} width={1920} height={1080} fps={30} durationInFrames={FILM_DURATION} />
     <Composition id="Charcoal08" component={Plate08} width={1920} height={1080} fps={30} durationInFrames={P8_DURATION} />
     <Composition id="Opening07" component={Plate07} width={1920} height={1080} fps={30} durationInFrames={P7_DURATION} />
     <Composition id="Cut060504" component={Cut060504} width={1920} height={1080} fps={30} durationInFrames={CUT_DURATION} />

@@ -1,7 +1,8 @@
-import React, { useMemo } from 'react';
+import React, { useContext, useMemo } from 'react';
 import { AbsoluteFill, Easing, useCurrentFrame } from 'remotion';
 import { CHAR, PAPER_WHITE } from './Charcoal';
 import { rng } from './Engraving';
+import { InFilm } from './film';
 
 /**
  * Planche 03 — Combinatorics of a face, charcoal. A few features, more and more variants,
@@ -145,7 +146,8 @@ export const Plate03: React.FC = () => {
   const frame = useCurrentFrame();
   const fq = Math.floor(frame / 2) * 2;
   const boil = Math.floor(frame / 2) % 3;
-  const endFade = 1 - seg(frame, P3_DURATION - 24, P3_DURATION);
+  const inFilm = useContext(InFilm);
+  const endFade = inFilm ? 1 : 1 - seg(frame, P3_DURATION - 24, P3_DURATION);
 
   // ---- intro: columns of variants
   const cols = [

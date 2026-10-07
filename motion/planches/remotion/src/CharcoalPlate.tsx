@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { AbsoluteFill, Easing, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
 import { CHAR, CharcoalArt, PAPER_WHITE } from './Charcoal';
 import { rng } from './Engraving';
+import { InFilm } from './film';
 import { LAYERS, ORDER, PLATE_H, PLATE_W, STACK, type LayerDef } from './face';
 
 // Timeline (frames at 30 fps). Everything that is drawn moves on twos.
@@ -90,7 +91,8 @@ export const CharcoalPlate: React.FC = () => {
   const activeIdx = Math.floor((frame - START) / STEP);
   const active = activeIdx >= 0 && activeIdx < ORDER.length ? byId[ORDER[activeIdx]!]! : null;
   const lf = fq - START - activeIdx * STEP;
-  const endFade = 1 - clamp((frame - (CHARCOAL_DURATION - 22)) / 22);
+  const inFilm = useContext(InFilm);
+  const endFade = inFilm ? 1 : 1 - clamp((frame - (CHARCOAL_DURATION - 22)) / 22);
   const buildOut = 1 - ease(clamp((fq - BUILD_END) / 16));
 
   return (
