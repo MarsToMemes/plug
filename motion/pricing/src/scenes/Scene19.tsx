@@ -21,13 +21,16 @@ export const Scene19: React.FC = () => {
   const fa = seg(f, B.fillA, B.fillAEnd), fb = seg(f, B.fillB, B.fillBEnd);
   const cheap = EASE.inOut(seg(f, B.cheap, B.cheap + 30)), dear = seg(f, B.dear, B.dearEnd);
   const bars = EASE.out(seg(f, B.bars, B.bars + 60));
+  // "Chaque siège occupé à n'importe quel prix": a wave runs through aircraft A's cheap seats.
+  const wave = seg(f, B.any, B.any + 90), anyOn = seg(f, B.any, B.any + 12) * (1 - seg(f, B.value - 8, B.value + 4));
   const cabin = (c: typeof A, fill: number, full: number, plane: 'a' | 'b') => (
     <g opacity={cab}>
       <rect x={c.body.x} y={c.body.y} width={c.body.w} height={c.body.h} rx={c.body.h / 2} fill="none" stroke={THEME.line} strokeWidth={2} />
       {c.units.map((u, i) => {
         const r = rankOf[i]!, sold = r < full * fill;
         const isDear = plane === 'b' && r < full * S19.dearShareB * dear;
-        return <rect key={i} x={u.x} y={u.y} width={u.w} height={u.h} rx={4} fill={isDear ? THEME.accent : THEME.ink} fillOpacity={sold ? (isDear ? 0.95 : lerp(0.85, 0.4, plane === 'a' ? cheap : cheap)) : 0} stroke={isDear ? THEME.accent : THEME.ink} strokeOpacity={sold ? 0.6 : 0.5} strokeWidth={1.2} />;
+        const lift = plane === 'a' && wave > 0 && wave < 1 ? Math.max(0, 1 - Math.abs((u.x - c.body.x) / c.body.w - wave) * 8) : 0;
+        return <rect key={i} x={u.x} y={u.y} width={u.w} height={u.h} rx={4} fill={isDear ? THEME.accent : THEME.ink} fillOpacity={sold ? (isDear ? 0.95 : lerp(0.85, 0.4, cheap) + 0.5 * lift) : 0} stroke={isDear ? THEME.accent : THEME.ink} strokeOpacity={sold ? 0.6 : 0.5} strokeWidth={1.2} />;
       })}
     </g>
   );
@@ -44,6 +47,13 @@ export const Scene19: React.FC = () => {
         {cabin(Bc, fb, S19.fullB, 'b')}
         {bar(330, revA, false)}
         {bar(700, revB, f > B.verdict)}
+        {/* "Optimiser la valeur de l'ensemble des sièges": value flows from the seats to the revenue. */}
+        {f >= B.flow && [[A, S19.fullA, 330, 14, false], [Bc, S19.fullB, 700, 22, true]].map(([c, full, y, n, hot], p) =>
+          Array.from({ length: n as number }, (_, j) => {
+            const seat = ORDER[(j * 7) % (full as number)]!, u = (c as typeof A).units[seat]!;
+            const k = ((f - B.flow) / 45 + j / (n as number)) % 1;
+            return <circle key={`${p}-${j}`} cx={lerp(u.x + u.w / 2, BAR.x, EASE.inOut(k))} cy={lerp(u.y + u.h / 2, y as number, EASE.inOut(k))} r={3.5} fill={hot && j % 2 ? THEME.accent : THEME.ink} opacity={Math.sin(Math.PI * k) * seg(f, B.flow, B.flow + 15)} />;
+          }))}
       </svg>
       {[[330, S19.text.a, S19.text.fullA, fa], [700, S19.text.b, S19.text.fullB, fb]].map(([y, name, full, t]) => (
         <div key={name as string} style={{ position: 'absolute', left: 120, top: (y as number) - 132, opacity: cab }}>
@@ -56,9 +66,11 @@ export const Scene19: React.FC = () => {
         <span style={{ display: 'inline-block', width: 18, height: 18, background: THEME.ink, opacity: 0.4 }} /><Caps size={16}>{S19.text.low}</Caps>
         <span style={{ display: 'inline-block', width: 18, height: 18, background: THEME.accent, opacity: seg(f, B.dear, B.dear + 20) }} /><span style={{ opacity: seg(f, B.dear, B.dear + 20) }}><Caps size={16}>{S19.text.high}</Caps></span>
       </div>
-      <Statement text={S19.text.question} at={B.question} out={B.verdict - 6} top={60} size={52} />
-      <Statement text={S19.text.verdict} at={B.verdict} out={B.value - 10} top={60} size={56} />
-      <Statement text={S19.text.value} at={B.value} top={60} size={56} />
+      <div style={{ position: 'absolute', left: 120, top: 425, opacity: anyOn }}><Caps size={24} color={THEME.accent}>{S19.text.any}</Caps></div>
+      <Statement text={S19.text.question} at={B.question} out={B.verdict - 10} top={60} size={52} fade={12} />
+      <Statement text={S19.text.verdict} at={B.verdict} out={B.value - 10} top={60} size={56} fade={12} />
+      <Statement text={S19.text.value} at={B.value} out={B.rm - 10} top={60} size={56} fade={12} />
+      <Statement text={S19.text.rm} at={B.rm} top={60} size={56} fade={12} />
     </AbsoluteFill>
   );
 };

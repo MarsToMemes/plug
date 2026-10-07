@@ -3,10 +3,11 @@ import { useCurrentFrame } from 'remotion';
 import { EASE, THEME, seg } from '../theme';
 
 /** Screen-space statement in the documentary's voice: serif capitals, rises 10 px and unblurs. */
-export const Statement: React.FC<{ text: string; at: number; out?: number; top?: number; size?: number; color?: string; style?: React.CSSProperties }> = ({ text, at, out, top = 900, size = 68, color = THEME.ink, style }) => {
+export const Statement: React.FC<{ text: string; at: number; out?: number; top?: number; size?: number; color?: string; fade?: number; style?: React.CSSProperties }> = ({ text, at, out, top = 900, size = 68, color = THEME.ink, fade = 26, style }) => {
   const f = useCurrentFrame();
-  const t = EASE.out(seg(f, at, at + 26));
-  const o = t * (out === undefined ? 1 : 1 - seg(f, out, out + 16));
+  // `fade` in frames: scenes whose time is stretched on the voice pass a shorter one.
+  const t = EASE.out(seg(f, at, at + fade));
+  const o = t * (out === undefined ? 1 : 1 - seg(f, out, out + fade * 0.6));
   if (o <= 0.005) return null;
   return (
     <div style={{ position: 'absolute', left: 0, width: 1920, top, textAlign: 'center', opacity: o, transform: `translateY(${(1 - t) * 10}px)`, filter: t < 1 ? `blur(${(1 - t) * 5}px)` : undefined, fontFamily: THEME.serif, fontWeight: 300, fontSize: size, color, letterSpacing: '0.03em', textTransform: 'uppercase', textShadow: `0 0 24px ${THEME.bg}, 0 0 8px ${THEME.bg}`, ...style }}>

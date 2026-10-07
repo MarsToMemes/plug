@@ -6,6 +6,7 @@ import { aircraftLayout, gridLayout } from './layout02';
 import { BRIDGES } from './bridges';
 import { CITY } from './Scene13';
 import { CAB19 } from './Scene19';
+import { PAIR } from './Scene07Layers';
 
 /** Bridges for the narration order (the pairs of neighbours that the voice-over creates). */
 type Bridge = React.FC<{ t: number }>;
@@ -25,15 +26,20 @@ const SYS = Array.from({ length: 6 }, (_, i) => { const a = -Math.PI / 2 + (i / 
 
 // 02 → 04 : the seat grid goes back into the cabin; the room grid leaves.
 const N0204: Bridge = ({ t }) => svg(<><g opacity={EASE.inOut(seg(t, 0.4, 1))}><rect {...scr(AC.body, 0.84, 960, 540)} width={AC.body.w * 0.84} height={AC.body.h * 0.84} fill="none" stroke={THEME.ink} strokeWidth={2} /></g><UnitsMorph a={G2A} b={AC.units.map((u) => scr(u, 0.84, 960, 540))} t={t} fillA={0.9} /><g opacity={1 - EASE.inOut(seg(t, 0, 0.5))}>{G2H.map((u, i) => <rect key={i} x={u.x} y={u.y} width={u.w} height={u.h} fill={THEME.ink} fillOpacity={0.9} />)}</g></>);
+// 07 → 08 : the two neighbours' seats join into the bed of the hotel room.
+const N0708: Bridge = ({ t }) => {
+  const e = EASE.inOut(t), bed = { x: 656, y: 430, w: 400, h: 80, rx: 10, ry: 10, color: THEME.ink };
+  return svg(<>{PAIR.map((u, k) => <ShapeEl key={k} s={mixShape({ ...u, rx: 30, ry: 30, color: k ? THEME.accent : THEME.ink, stroke: 2.4 }, bed, e)} />)}</>);
+};
 // 08 → 10 : the room's window becomes the engine's core.
 const N0810: Bridge = ({ t }) => {
   const win = { x: 960 + (1056 - 960) * 1.1, y: 540 + (210 - 470) * 1.1, w: 208 * 1.1, h: 180 * 1.1 };
-  return (<>{svg(<ShapeEl s={mixShape({ ...win, color: THEME.ink }, ellipse(960, 540, 170, 170, { color: THEME.ink }), EASE.inOut(t))} />)}{fade('249 €', 935, 772, 104, 1 - seg(t, 0, 0.5))}</>);
+  return svg(<ShapeEl s={mixShape({ ...win, color: THEME.ink }, ellipse(960, 540, 170, 170, { color: THEME.ink }), EASE.inOut(t))} />);
 };
-// 10 → 19 : the price's ring opens into two identical aircraft.
+// 10 → 19 : the engine's core opens into two identical aircraft.
 const N1019: Bridge = ({ t }) => {
-  const e = EASE.inOut(t), r = ellipse(960, 396, 82, 82, { color: THEME.accent });
-  return (<>{svg(<><ShapeEl s={mixShape(r, capsule(A19.body.x, A19.body.y, A19.body.w, A19.body.h, { color: THEME.line }), e)} /><ShapeEl s={mixShape(r, capsule(B19.body.x, B19.body.y, B19.body.w, B19.body.h, { color: THEME.line }), e)} /></>)}{fade('219 €', 960, 560, 154, 1 - seg(t, 0, 0.4))}</>);
+  const e = EASE.inOut(t), r = ellipse(960, 540, 170, 170, { color: THEME.ink, stroke: 2 });
+  return svg(<><ShapeEl s={mixShape(r, capsule(A19.body.x, A19.body.y, A19.body.w, A19.body.h, { color: THEME.line }), e)} /><ShapeEl s={mixShape(r, capsule(B19.body.x, B19.body.y, B19.body.w, B19.body.h, { color: THEME.line }), e)} /></>);
 };
 // 19 → 09 : the seats of both aircraft gather into the grid of available rooms.
 const N1909: Bridge = ({ t }) => svg(<UnitsMorph a={[...A19.units, ...B19.units]} b={S09GRID} t={t} fillA={0.6} fillB={0.88} />);
@@ -48,6 +54,11 @@ const N1113: Bridge = ({ t }) => svg(<UnitsMorph a={MATRIX} b={BLOCKS} t={t} fil
 const N1312: Bridge = ({ t }) => { const e = EASE.inOut(t); return svg(<><UnitsMorph a={BLOCKS.map((b) => scr(b, 1.12, 960, 560))} b={DAYS} t={t} colorA={THEME.line} fillA={0.07} fillB={1} /><line x1={lerp(960, 260, e)} y1={800} x2={lerp(960, 1660, e)} y2={800} stroke={THEME.line} strokeWidth={1.6} opacity={e} /></>); };
 // 12 → 14 : the room becomes the booking card.
 const N1214: Bridge = ({ t }) => svg(<ShapeEl s={mixShape({ x: 720, y: 110, w: 480, h: 300, color: THEME.ink }, { x: 660, y: 70, w: 600, h: 330, rx: 18, ry: 18, color: THEME.line, stroke: 1.5 }, EASE.inOut(t))} />);
+// 14 → 20 : the two possible futures fold into the ticket.
+const N1420: Bridge = ({ t }) => {
+  const e = EASE.inOut(t), card = { x: 610, y: 300, w: 700, h: 400, rx: 24, ry: 24, color: THEME.line, stroke: 1.6 };
+  return svg(<><ShapeEl s={mixShape({ x: 520, y: 700, w: 880, h: 3, color: THEME.accent, fill: 1 }, card, e)} /><UnitsMorph a={[...pointsOnLine(520, 815, 1400, 567, 24, 5), ...pointsOnLine(520, 815, 1400, 844, 24, 5)]} b={pointsOnLine(640, 500, 1280, 500, 48, 2)} t={t} colorA={THEME.accent} fillA={1} fillB={0} /></>);
+};
 // 14 → 17 : both possible futures fold back into one point: the price at the centre of the machine.
 const N1417: Bridge = ({ t }) => svg(<><UnitsMorph a={[...pointsOnLine(520, 815, 1400, 567, 24, 5), ...pointsOnLine(520, 815, 1400, 844, 24, 5)]} b={pointsOnEllipse(960, 450, 63, 63, 48, 3)} t={t} colorA={THEME.accent} fillA={1} fillB={1} /><circle cx={960} cy={450} r={63} fill="none" stroke={THEME.ink} strokeWidth={2} opacity={seg(t, 0.8, 1)} /></>);
 // 17 → 15 : the loop's two legs straighten into the two columns (aircraft | hotel).
@@ -76,8 +87,8 @@ const N1618: Bridge = ({ t }) => {
 };
 
 /** Bridge for a pair of neighbours in the narration order. */
-export const BRIDGE_FOR: Record<string, Bridge> = {
-  '01>02': BRIDGES[0]!, '02>04': N0204, '04>05': BRIDGES[3]!, '05>06': BRIDGES[4]!, '06>07': BRIDGES[5]!, '07>08': BRIDGES[6]!,
+export const BRIDGE_FOR: Record<string, Bridge | null> = {
+  '01>02': BRIDGES[0]!, '02>04': N0204, '04>05': BRIDGES[3]!, '05>06': BRIDGES[4]!, '06>07': BRIDGES[5]!, '07>08': N0708,
   '08>10': N0810, '10>19': N1019, '19>09': N1909, '09>03': N0903, '03>11': N0311, '11>13': N1113, '13>12': N1312, '12>14': N1214,
-  '14>17': N1417, '17>15': N1715, '15>18': N1518, '18>16': N1816, '16>18': N1618,
+  '14>20': N1420, '20>17': null, '14>17': N1417, '17>15': N1715, '15>18': N1518, '18>16': N1816, '16>18': N1618,
 };

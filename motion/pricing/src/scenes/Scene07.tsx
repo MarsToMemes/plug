@@ -6,6 +6,7 @@ import { flight } from '../data/entities';
 import { S07 } from '../data/scene07';
 import { EASE, THEME, clamp01, lerp, rng, seg } from '../theme';
 import { aircraftLayout, place } from './layout02';
+import { FareLayers } from './Scene07Layers';
 
 const B = S07.beats;
 const AC = aircraftLayout(S07.seats, flight.layout, 760, 420);
@@ -32,6 +33,9 @@ const PLAN = (() => {
 const closesAt = S07.fares.map((fare) => (fare.sell && (fare.sold ?? fare.seats) === fare.seats ? fare.sell[1] + 8 : Infinity));
 const steps: PriceStep[] = S07.fares.filter((_, k) => k === 0 || closesAt[k - 1]! < Infinity).map((fare, k) => ({ at: k === 0 ? 0 : closesAt[k - 1]! + 6, value: fare.price }));
 
+// The seat the voice points at: an unsold seat of the dearest class, near the middle of the cabin.
+const FOCUS = SEATS.map((u, i) => ({ i, d: Math.abs(u.x + u.w / 2 - 760) + Math.abs(u.y - 420) })).filter((o) => PLAN.cls[o.i] === S07.fares.length - 1).sort((a, b) => a.d - b.d)[0]!.i;
+
 // The capacity column: one level per fare class, height ∝ seats still on sale in it.
 const COL = { x: 1500, bottom: 900, w: 120, perSeat: 3.4 };
 
@@ -40,6 +44,10 @@ export const Scene07: React.FC = () => {
   const soldIn = (k: number) => PLAN.cls.filter((c, s) => c === k && PLAN.soldAt[s] !== undefined && PLAN.soldAt[s]! <= f).length;
   const open = closesAt.findIndex((t) => f < t); // the cheapest class not yet sold out
   const appear = EASE.out(seg(f, B.fares, B.fares + 30));
+  const main = 1 - EASE.inOut(seg(f, S07.layers.at - 6, S07.layers.at + 14)); // gives way to the layers
+  const focus = EASE.inOut(seg(f, S07.seat.at, S07.seat.at + 12)); // one seat, the others recede
+  const rest = EASE.inOut(seg(f, S07.rest.at, S07.rest.at + 12)); // then every seat still for sale
+  const more = Math.sin(Math.PI * seg(f, S07.more, S07.more + 45)); // the 349 level, "beaucoup plus"
 
   // Levels from the bottom (cheapest) up; a sold-out level closes smoothly to zero height.
   let y = COL.bottom;
@@ -56,6 +64,7 @@ export const Scene07: React.FC = () => {
 
   return (
     <AbsoluteFill style={{ background: THEME.bg }}>
+      {main > 0 && <AbsoluteFill style={{ opacity: main }}>
       <svg width={1920} height={1080} style={{ position: 'absolute', inset: 0 }}>
         {/* The cabin: a quiet tube, seats coloured by their fare class. */}
         <rect x={CAB.x} y={CAB.y} width={CAB.w} height={CAB.h} rx={CAB.h / 2} fill="none" stroke={THEME.line} strokeWidth={2} opacity={EASE.out(seg(f, 0, 24))} />
@@ -65,9 +74,12 @@ export const Scene07: React.FC = () => {
           const isOpen = k === open;
           const tone = 0.25 + 0.15 * k; // dearer classes read a little brighter
           const pop = sold ? clamp01(1 - (f - PLAN.soldAt[i]!) / 12) : 0;
+          const lit = i === FOCUS ? Math.max(focus, rest) : sold ? 0 : rest; // the seat(s) the voice is about
+          const dim = 1 - 0.7 * Math.max(focus * (1 - rest) * (i === FOCUS ? 0 : 1), rest * (sold ? 1 : 0));
           return (
-            <g key={i} opacity={o}>
-              <rect x={u.x} y={u.y} width={u.w} height={u.h} rx={5} fill={THEME.ink} fillOpacity={sold ? 0.85 : 0} stroke={isOpen && !sold ? THEME.accent : THEME.ink} strokeOpacity={sold ? 0.85 : isOpen ? 1 : tone * appear + (1 - appear) * 0.5} strokeWidth={isOpen && !sold ? 2 : 1.4} />
+            <g key={i} opacity={o * dim}>
+              <rect x={u.x} y={u.y} width={u.w} height={u.h} rx={5} fill={THEME.ink} fillOpacity={sold ? 0.85 : 0} stroke={lit > 0 ? THEME.accent : isOpen && !sold ? THEME.accent : THEME.ink} strokeOpacity={lit > 0 ? 0.4 + 0.6 * lit : sold ? 0.85 : isOpen ? 1 : tone * appear + (1 - appear) * 0.5} strokeWidth={lit > 0 ? 1.4 + 1.6 * lit : isOpen && !sold ? 2 : 1.4} />
+              {i === FOCUS && focus > 0 && <rect x={u.x - 10} y={u.y - 10} width={u.w + 20} height={u.h + 20} rx={9} fill="none" stroke={THEME.accent} strokeWidth={2} opacity={focus * (1 - rest)} />}
               {pop > 0 && <rect x={u.x - 5 * pop} y={u.y - 5 * pop} width={u.w + 10 * pop} height={u.h + 10 * pop} rx={7} fill="none" stroke={THEME.accent} opacity={pop} />}
             </g>
           );
@@ -83,7 +95,7 @@ export const Scene07: React.FC = () => {
                 <rect x={COL.x} y={lv.top} width={COL.w} height={lv.shell} fill="none" stroke={THEME.line} strokeWidth={1.4} />
                 <rect x={COL.x} y={lv.y0 - Math.min(lv.h, lv.shell)} width={COL.w} height={Math.min(lv.h, lv.shell)} fill={isOpen ? THEME.accent : THEME.ink} fillOpacity={isOpen ? 0.8 : 0.16 + 0.1 * lv.k} />
                 <g opacity={1 - lv.closing}>
-                  <text x={COL.x + COL.w + 26} y={lv.top + lv.shell / 2 + 10} fontFamily={THEME.sans} fontSize={30} fontWeight={isOpen ? 500 : 300} fill={isOpen ? THEME.accent : THEME.ink} style={{ fontVariantNumeric: 'tabular-nums' }}>{lv.fare.price} €</text>
+                  <text x={COL.x + COL.w + 26} y={lv.top + lv.shell / 2 + 10} fontFamily={THEME.sans} fontSize={30 + (lv.k === S07.fares.length - 1 ? 14 * more : 0)} fontWeight={isOpen ? 500 : 300} fill={isOpen || (lv.k === S07.fares.length - 1 && more > 0.05) ? THEME.accent : THEME.ink} style={{ fontVariantNumeric: 'tabular-nums' }}>{lv.fare.price} €</text>
                   <text x={COL.x - 22} y={lv.top + lv.shell / 2 + 7} textAnchor="end" fontFamily={THEME.sans} fontSize={16} fill={THEME.muted} letterSpacing="0.12em">{lv.left}</text>
                 </g>
               </g>
@@ -96,7 +108,10 @@ export const Scene07: React.FC = () => {
         <Caps>{S07.text.open}</Caps>
         <PriceCounter steps={steps} size={120} color={THEME.ink} style={{ marginTop: 10 }} />
       </div>
-      <Statement text={S07.text.message} at={B.message} top={960} size={50} />
+      <Statement text={S07.seat.text} at={S07.seat.at} out={S07.rest.at - 10} top={960} size={50} fade={12} />
+      <Statement text={S07.rest.text} at={S07.rest.at} top={960} size={50} fade={12} />
+      </AbsoluteFill>}
+      <FareLayers />
     </AbsoluteFill>
   );
 };

@@ -39,6 +39,8 @@ import { Scene18 } from './scenes/Scene18';
 import { S18 } from './data/scene18';
 import { Scene19 } from './scenes/Scene19';
 import { S19 } from './data/scene19';
+import { Scene20 } from './scenes/Scene20';
+import { S20 } from './data/scene20';
 import { EPISODE_DURATION, Episode } from './scenes/Episode';
 import { VOICE_DURATION, VoiceEpisode } from './scenes/VoiceEpisode';
 
@@ -73,6 +75,7 @@ export const Root: React.FC = () => (
       <Composition id="Scene17" component={Scene17} width={1920} height={1080} fps={30} durationInFrames={S17.duration} />
       <Composition id="Scene18" component={Scene18} width={1920} height={1080} fps={30} durationInFrames={S18.duration} />
       <Composition id="Scene19" component={Scene19} width={1920} height={1080} fps={30} durationInFrames={S19.duration} />
+      <Composition id="Scene20" component={Scene20} width={1920} height={1080} fps={30} durationInFrames={S20.duration} />
     </Folder>
     <Composition id="VoiceEpisode" component={VoiceEpisode} width={1920} height={1080} fps={30} durationInFrames={VOICE_DURATION} />
     <Composition id="Episode" component={Episode} width={1920} height={1080} fps={30} durationInFrames={EPISODE_DURATION} />

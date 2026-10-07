@@ -63,6 +63,8 @@ export const Scene14: React.FC = () => {
       </CameraRig>
       <Statement text={S14.text.works} at={B.works} out={B.fork} top={432} size={56} />
       <Statement text={S14.text.bet} at={B.bet} top={424} size={72} color={THEME.ink} />
+    <Statement text={S14.text.ask} at={S14.intro.ask} out={S14.intro.no - 6} top={520} size={58} fade={4} />
+      <Statement text={S14.text.no} at={S14.intro.no} out={S14.intro.out} top={520} size={58} color={THEME.accent} fade={4} />
     </AbsoluteFill>
   );
 };

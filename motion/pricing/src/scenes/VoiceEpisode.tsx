@@ -7,6 +7,8 @@ import { BRIDGE, SCENES } from './Episode';
 import { BRIDGE_FOR } from './bridges2';
 import { Scene19 } from './Scene19';
 import { S19 } from '../data/scene19';
+import { Scene20 } from './Scene20';
+import { S20 } from '../data/scene20';
 import { VOICE } from '../data/voice';
 
 /**
@@ -16,7 +18,7 @@ import { VOICE } from '../data/voice';
  */
 const FPS = 30;
 const P = VOICE.passages;
-const comp = (key: string) => (key === '19' ? { C: Scene19, d: S19.duration } : SCENES[Number(key) - 1]!);
+const comp = (key: string) => (key === '19' ? { C: Scene19, d: S19.duration } : key === '20' ? { C: Scene20, d: S20.duration } : SCENES[Number(key) - 1]!);
 const starts = P.map((p) => Math.round(p.start * FPS));
 const ends = starts.map((s, i) => (i + 1 < starts.length ? starts[i + 1]! : Math.round(VOICE.end * FPS)));
 export const VOICE_DURATION = ends[ends.length - 1]!;
@@ -45,7 +47,9 @@ const Remapped: React.FC<{ i: number }> = ({ i }) => {
 const BridgeOverlay: React.FC<{ k: number }> = ({ k }) => {
   const f = useCurrentFrame();
   const key = `${P[k]!.scene}>${P[k + 1]!.scene}`;
-  const Bridge = BRIDGE_FOR[key]!;
+  const Bridge = BRIDGE_FOR[key];
+  if (Bridge === null) return null; // the next scene starts exactly where this one ends: no bridge
+  if (!Bridge) throw new Error(`No bridge for ${key}`);
   const ground = seg(f, 0, BRIDGE * 0.28) * (1 - seg(f, BRIDGE * 0.74, BRIDGE));
   const el = seg(f, 0, BRIDGE * 0.22) * (1 - seg(f, BRIDGE * 0.8, BRIDGE));
   return (
