@@ -17,4 +17,6 @@
 
 7. Motion (https://github.com/motiondivision/motion, ex Framer Motion, MIT, v14.0.0 ; paquets `motion`, `framer-motion`, `motion-dom`, `motion-utils`) est installé pour `motion/pricing`. Ses animations suivent l'horloge du navigateur : dans une composition, ne pas utiliser `<motion.div animate>` ni `useAnimate()` tels quels. Passer par `useMotion()` (`motion/pricing/src/motion/motion.ts`, animation mise en pause et positionnée sur l'image) ou par ses fonctions pures (`springValue()` pour un ressort physique, easings `cubicBezier`/`backOut`/`anticipate`, `interpolate`, `mix`). Installation à la main comme anime.js.
 
+8. Le skill `motion-reel-techniques` (`.claude/skills/motion-reel-techniques/`) catalogue les techniques d'un showreel de référence analysé image par image (montage calé sur le tempo, habillage « moniteur », révélation en iris, lettres qui deviennent des points, comparaison d'easings, morphing à ressort, champ de tuiles Truchet, grille 3D, typo cinétique sur les demi-temps). S'en servir pour les accroches, ouvertures de chapitre et révélations. La vidéo de référence n'est pas dans le dépôt et ne doit pas y être : on reprend les techniques, jamais ses éléments.
+
 Les skills Remotion viennent de https://github.com/remotion-dev/skills (version 4.0.534). Pour les mettre à jour, recopier le dossier `skills/` de ce dépôt dans `.claude/skills/`.
