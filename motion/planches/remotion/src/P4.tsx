@@ -81,7 +81,7 @@ const Portrait: React.FC<{ who: 'A' | 'B'; fq: number; t0: number; dim: number }
   );
 };
 
-export const Plate04: React.FC<{ aDrawn?: boolean }> = ({ aDrawn = false }) => {
+export const Plate04: React.FC<{ aDrawn?: boolean; captioned?: boolean }> = ({ aDrawn = false, captioned = false }) => {
   const frame = useCurrentFrame();
   const fq = Math.floor(frame / 2) * 2;
   const boil = Math.floor(frame / 2) % 3;
@@ -224,7 +224,7 @@ export const Plate04: React.FC<{ aDrawn?: boolean }> = ({ aDrawn = false }) => {
         <div style={{ position: 'absolute', left: 0, width: 1920, top: 70, textAlign: 'center' }}>
           <Rub t={(fq - T.y2022) / 24} style={{ display: 'inline-block', fontFamily: hand, fontSize: 120, color: CHAR, lineHeight: 1 }}>2022</Rub>
         </div>
-        <div style={{ position: 'absolute', left: 0, width: 1920, top: 850, textAlign: 'center' }}>
+        <div style={{ position: 'absolute', left: 0, width: 1920, top: captioned ? 196 : 850, textAlign: 'center' }}>
           <div style={{ position: 'absolute', width: 1920, opacity: 1 - seg(fq, T.genetic - 20, T.genetic) }}>
             <Rub t={(fq - T.facial) / 28} style={{ display: 'inline-block', fontFamily: hand, fontSize: 64, letterSpacing: '0.06em', color: CHAR }}>FACIAL RECOGNITION</Rub>
           </div>

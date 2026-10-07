@@ -52,7 +52,7 @@ const Line: React.FC<{ x1: number; y1: number; x2: number; y2: number; t: number
   return <path d={`M${x1.toFixed(1)},${y1.toFixed(1)} Q${mx.toFixed(1)},${my.toFixed(1)} ${x2.toFixed(1)},${y2.toFixed(1)}`} fill="none" stroke={CHAR} strokeWidth={w} opacity={o} strokeLinecap="round" pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - clamp(t)} />;
 };
 
-export const Plate06: React.FC = () => {
+export const Plate06: React.FC<{ captioned?: boolean }> = ({ captioned = false }) => {
   const frame = useCurrentFrame();
   const fq = Math.floor(frame / 2) * 2;
   const boil = Math.floor(frame / 2) % 3;
@@ -219,7 +219,7 @@ export const Plate06: React.FC = () => {
       </svg>
 
       <AbsoluteFill>
-        <div style={{ position: 'absolute', left: 0, width: 1920, top: 830, textAlign: 'center', opacity: 1 - seg(fq, T.fade + 10, T.fade + 50) }}>
+        <div style={{ position: 'absolute', left: 0, width: 1920, top: captioned ? 56 : 830, textAlign: 'center', opacity: 1 - seg(fq, T.fade + 10, T.fade + 50) }}>
           <Rub t={(fq - T.message) / 30} style={{ display: 'inline-block', fontFamily: hand, fontSize: 72, letterSpacing: '0.06em', color: CHAR, background: 'rgba(245,243,238,0.85)', padding: '0 26px', boxShadow: '0 0 30px 20px rgba(245,243,238,0.85)' }}>
             UN TRAIT COMPLEXE
           </Rub>

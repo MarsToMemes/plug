@@ -23,7 +23,7 @@ const EraseComponent: React.FC<TransitionPresentationComponentProps<EraseProps>>
   if (presentationDirection === 'exiting') return <>{children}</>;
   // The incoming plate shows where (rub gradient + smoke noise + grain) exceeds a moving threshold.
   const S = 16;
-  const T = 1.16 - presentationProgress * 1.05;
+  const T = 1.16 - presentationProgress * 1.75; // ends well below every value: nothing left unrevealed
   const ltr = passedProps.dir === 1;
   return (
     <>

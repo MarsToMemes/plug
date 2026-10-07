@@ -48,7 +48,7 @@ type Shot = { at: number; s: number; x: number; y: number };
 const FACE = { x: 1425, y: 558 };
 const SHOTS: Shot[] = [
   { at: 0, s: 1, ...FACE }, { at: 50, s: 1.12, ...FACE }, { at: 196, s: 1, x: 960, y: 540 }, { at: 250, s: 1.14, x: 960, y: 520 },
-  { at: 322, s: 1.22, x: 760, y: 500 }, { at: 392, s: 1, x: 960, y: 540 }, { at: 450, s: 1.12, x: 1180, y: 540 }, { at: 566, s: 1.08, x: 960, y: 760 },
+  { at: 322, s: 1.22, x: 760, y: 500 }, { at: 392, s: 1, x: 960, y: 540 }, { at: 450, s: 1.12, x: 1180, y: 540 }, { at: 566, s: 1.08, x: 960, y: 300 },
   { at: 650, s: 1, x: 960, y: 540 },
   { at: O5 + 10, s: 1.12, x: 700, y: 470 }, { at: O5 + 118, s: 1.2, x: 640, y: 470 }, { at: O5 + 186, s: 1, x: 960, y: 540 },
   { at: O5 + 246, s: 1.12, x: 1200, y: 520 }, { at: O5 + 300, s: 1, x: 960, y: 540 }, { at: O5 + 412, s: 1.15, ...FACE }, { at: O5 + 492, s: 1, x: 960, y: 540 },
@@ -112,9 +112,9 @@ export const Cut060504: React.FC = () => {
     <AbsoluteFill style={{ background: '#f5f3ee', overflow: 'hidden' }}>
       <AbsoluteFill style={{ transformOrigin: `${c.x}px ${c.y}px`, transform: `scale(${c.s})`, filter: c.blur > 0.05 ? `blur(${c.blur}px)` : undefined }}>
         <Series>
-          <Series.Sequence durationInFrames={P6_DURATION}><Plate06 /></Series.Sequence>
-          <Series.Sequence durationInFrames={P5_DURATION}><Plate05 startSketched /></Series.Sequence>
-          <Series.Sequence durationInFrames={P4_DURATION}><Plate04 aDrawn /></Series.Sequence>
+          <Series.Sequence durationInFrames={P6_DURATION}><Plate06 captioned /></Series.Sequence>
+          <Series.Sequence durationInFrames={P5_DURATION}><Plate05 startSketched captioned /></Series.Sequence>
+          <Series.Sequence durationInFrames={P4_DURATION}><Plate04 aDrawn captioned /></Series.Sequence>
         </Series>
       </AbsoluteFill>
       <Captions f={f} />

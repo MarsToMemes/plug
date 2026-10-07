@@ -55,7 +55,7 @@ const Line: React.FC<{ x1: number; y1: number; x2: number; y2: number; t: number
   return <path d={`M${x1.toFixed(1)},${y1.toFixed(1)} Q${mx.toFixed(1)},${my.toFixed(1)} ${x2.toFixed(1)},${y2.toFixed(1)}`} fill="none" stroke={CHAR} strokeWidth={w} opacity={o} strokeLinecap="round" pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - clamp(t)} />;
 };
 
-export const Plate05: React.FC<{ startSketched?: boolean }> = ({ startSketched = false }) => {
+export const Plate05: React.FC<{ startSketched?: boolean; captioned?: boolean }> = ({ startSketched = false, captioned = false }) => {
   const frame = useCurrentFrame();
   const fq = Math.floor(frame / 2) * 2;
   const boil = Math.floor(frame / 2) % 3;
@@ -199,7 +199,7 @@ export const Plate05: React.FC<{ startSketched?: boolean }> = ({ startSketched =
             <Rub t={(fq - T.naive - i * 26) / 18} style={{ fontFamily: hand, fontSize: 56, color: CHAR, letterSpacing: '0.04em' }}>{n.label}</Rub>
           </div>
         ))}
-        <div style={{ position: 'absolute', left: 0, width: 1920, top: 830, textAlign: 'center', opacity: 1 - msgOut }}>
+        <div style={{ position: 'absolute', left: 0, width: 1920, top: captioned ? 56 : 830, textAlign: 'center', opacity: 1 - msgOut }}>
           <Rub t={(fq - T.message) / 34} style={{ display: 'inline-block', fontFamily: hand, fontSize: 64, letterSpacing: '0.05em', color: CHAR, background: 'rgba(245,243,238,0.85)', padding: '0 26px', boxShadow: '0 0 30px 20px rgba(245,243,238,0.85)' }}>
             LA RÉALITÉ EST BEAUCOUP PLUS COMPLEXE
           </Rub>
