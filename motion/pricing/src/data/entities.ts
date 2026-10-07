@@ -6,6 +6,7 @@ export const flight = {
   route: { from: 'Paris', to: 'New York' },
   seats: 180,
   availableSeats: 42,
+  unsoldAtDeparture: 9, // seats still empty when the doors close
   price: 219,
   layout: [3, 3],
   fareBuckets: [
