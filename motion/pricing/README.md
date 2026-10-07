@@ -14,7 +14,7 @@ Projet Remotion. Style : documentaire premium, motion design éditorial, infogra
   - `hotel.tsx` : Hotel, HotelFloor, HotelRoom, RoomGrid, Guest
   - `system.tsx` : AlgorithmNode, RevenueManager, Timeline, EventMarker, Booking
   - `editorial.tsx` : EditorialTitle, DataLabel, ScientificCallout, SplitScreen
-- `src/scenes/` : `Scene01`, `Scene02` (+ `layout02.ts`, géométrie calculée depuis les capacités), `Scene03` (courbes de disponibilité dans `data/scene03.ts`), `Scene04` (réservations par groupes, générées depuis `data/scene04.ts`) et `Library` (planche de tous les composants, pour relecture).
+- `src/scenes/` : `Scene01` à `Scene18` (une donnée `src/data/sceneNN.ts` par scène), `Episode` (les 18 scènes à la suite, ~8 min) et `Library` (planche des composants).
 
 Les chiffres sont illustratifs : ils montrent le mécanisme, ce ne sont pas des tarifs relevés.
 
@@ -24,5 +24,7 @@ Les chiffres sont illustratifs : ils montrent le mécanisme, ce ne sont pas des 
 cd motion/pricing
 ln -s ../../engine/node_modules node_modules
 COMP=Scene01 node render.mjs out/scene01.mp4
+COMP=Episode node render.mjs out/episode.mp4   # ou concaténer les scènes rendues avec ffmpeg
+./sheet.sh Scene07 /tmp/s7 60,200,400            # planche d'images fixes pour relire une scène
 COMP=Library node render.mjs out stills 89
 ```
