@@ -6,6 +6,7 @@ import { HotelFacade } from '../components/hotel';
 import { flight, hotel } from '../data/entities';
 import { S02 } from '../data/scene02';
 import { EASE, THEME, clamp01, lerp, seg } from '../theme';
+import { Title } from '../type/Title';
 import { aircraftLayout, gridLayout, hotelLayout, matchByShape, mixBox, place, type Unit } from './layout02';
 
 const B = S02.beats;
@@ -119,9 +120,7 @@ export const Scene02: React.FC = () => {
         <Count value={roomsShown} unit={S02.text.rooms} x={960} y={880} o={seg(f, B.roomsLabel, B.roomsLabel + 16) * (1 - seg(f, B.pair, B.pair + 16))} />
         <Count value={flight.seats} unit={S02.text.seats} kicker={`${S02.text.aircraft} =`} x={520} y={770} size={60} o={seg(f, B.pair + 40, B.pair + 60)} />
         <Count value={hotel.rooms} unit={S02.text.rooms} kicker={`${S02.text.hotel} =`} x={1400} y={770} size={60} o={seg(f, B.pair + 46, B.pair + 66)} />
-        <div style={{ position: 'absolute', left: 0, width: 1920, top: 930, textAlign: 'center', opacity: EASE.out(seg(f, B.limit + 14, B.limit + 40)), transform: `translateY(${(1 - EASE.out(seg(f, B.limit + 14, B.limit + 40))) * 10}px)`, fontFamily: THEME.serif, fontWeight: 300, fontSize: 76, color: THEME.ink, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-          {S02.text.message}
-        </div>
+        <Title text={S02.text.message} at={B.limit + 14} top={930} size={76} family="TITLE_SCALE" layout="inline" focus={[1]} tracking={0.04} camera={false} />
       </CameraRig>
     </AbsoluteFill>
   );

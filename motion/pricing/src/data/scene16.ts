@@ -3,7 +3,7 @@ import type { CameraShot } from '../camera/CameraRig';
 /** Scene 16 — Le vrai produit. */
 export const S16 = {
   duration: 760,
-  question: 'Que vendent-ils vraiment ?',
+  question: 'Que vendent-ils|vraiment ?',
   words: [
     { from: 'Billet', to: 'Capacité' },
     { from: 'Chambre', to: 'Temps' },

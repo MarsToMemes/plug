@@ -1,4 +1,5 @@
 import React from 'react';
+import { Title } from '../type/Title';
 import { AbsoluteFill, useCurrentFrame } from 'remotion';
 import { AircraftPlan } from '../components/aircraft';
 import { Caps, Statement } from '../components/ui';
@@ -83,11 +84,10 @@ export const Scene18: React.FC = () => {
       })}
       {/* Where we are in the system. */}
       {lvl && f < B.never && <div style={{ position: 'absolute', left: 120, top: 980, opacity: EASE.out(seg(f, lvl.at, lvl.at + 20)) }}><Caps size={18} color={THEME.ink}>{lvl.label}</Caps></div>}
-      <Statement text={S18.text.never} at={B.never} out={B.chainAt - 30} top={430} size={72} />
-      <Statement text={S18.text.time} at={B.time} out={B.chainAt - 30} top={540} size={72} color={THEME.accent} />
-      <div style={{ position: 'absolute', left: 0, width: 1920, top: 500, textAlign: 'center', opacity: endText, fontFamily: THEME.serif, fontWeight: 300, fontSize: 64, letterSpacing: '0.04em', textTransform: 'uppercase', color: THEME.ink }}>
-        {S18.text.chain.map((w, k) => <span key={w}>{k ? <span style={{ color: THEME.accent, margin: '0 26px' }}>→</span> : null}{w}</span>)}
-      </div>
+      <Statement family="TITLE_REVEAL_SLOW" focus={[1]} accent={THEME.accent} text={S18.text.never} at={B.never} out={B.chainAt - 30} top={430} size={72} />
+      <Statement family="TITLE_SLIDE" text={S18.text.time} at={B.time} out={B.chainAt - 30} top={540} size={72} color={THEME.accent} />
+      {/* The conclusion as a chain read left to right: each link slides in after the previous one. */}
+      <Title text={S18.text.chain.join('|→|')} at={B.chainAt - 30} top={500} size={64} family="TITLE_SLIDE" layout="inline" focus={[1, 3, 5]} accent={THEME.accent} tracking={0.04} speed={1.5} camera={false} />
       <AbsoluteFill style={{ background: '#000', opacity: black }} />
     </AbsoluteFill>
   );

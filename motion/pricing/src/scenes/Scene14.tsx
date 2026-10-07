@@ -61,10 +61,10 @@ export const Scene14: React.FC = () => {
         {frozen && <div style={{ position: 'absolute', left: 0, width: 1920, top: 470, textAlign: 'center' }}><Caps size={22} color={THEME.ink}>■ ■</Caps></div>}
         {rewinding && <div style={{ position: 'absolute', left: 0, width: 1920, top: 470, textAlign: 'center' }}><Caps size={26} color={THEME.ink}>◀◀</Caps></div>}
       </CameraRig>
-      <Statement text={S14.text.works} at={B.works} out={B.fork} top={432} size={56} />
-      <Statement text={S14.text.bet} at={B.bet} top={424} size={72} color={THEME.ink} />
-    <Statement text={S14.text.ask} at={S14.intro.ask} out={S14.intro.no - 6} top={520} size={58} fade={4} />
-      <Statement text={S14.text.no} at={S14.intro.no} out={S14.intro.out} top={520} size={58} color={THEME.accent} fade={4} />
+      <Statement family="TITLE_SLIDE" text={S14.text.works} at={B.works} out={B.fork} top={432} size={56} />
+      <Statement family="TITLE_MASK" focus={[1]} text={S14.text.bet} at={B.bet} top={424} size={72} color={THEME.ink} />
+    <Statement family="TITLE_FOCUS" text={S14.text.ask} at={S14.intro.ask} out={S14.intro.no - 6} top={520} size={58} fade={4} />
+      <Statement family="TITLE_IMPACT" text={S14.text.no} at={S14.intro.no} out={S14.intro.out} top={520} size={58} color={THEME.accent} fade={4} />
     </AbsoluteFill>
   );
 };

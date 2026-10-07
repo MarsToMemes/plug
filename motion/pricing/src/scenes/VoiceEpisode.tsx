@@ -10,6 +10,7 @@ import { S19 } from '../data/scene19';
 import { Scene20 } from './Scene20';
 import { S20 } from '../data/scene20';
 import { VOICE } from '../data/voice';
+import { TimeMapContext } from '../type/clock';
 
 /**
  * The episode cut on the voice-over: scenes in the order of the narration, each playing during
@@ -36,12 +37,27 @@ function remap(i: number, local: number) {
   return to;
 }
 
+/** Inverse of remap: the passage frame where a scene frame is shown (titles animate in real time). */
+function unmap(i: number, sf: number) {
+  const p = P[i]!, d = comp(p.scene).d, from = p.from ?? 0, to = p.to ?? d - 1, len = ends[i]! - starts[i]!;
+  if (!p.anchors) return sf - from;
+  const pts: Array<[number, number]> = [[from, 0], ...p.anchors.map(([a, sec]) => [a, sec * FPS - starts[i]!] as [number, number]), [to, len - 1]];
+  pts.sort((a, b) => a[0] - b[0]);
+  if (sf <= pts[0]![0]) return pts[0]![1] + (sf - pts[0]![0]);
+  for (let k = 1; k < pts.length; k++) {
+    const [a0, b0] = pts[k - 1]!, [a1, b1] = pts[k]!;
+    if (sf <= a1) return b0 + (b1 - b0) * ((sf - a0) / Math.max(1, a1 - a0));
+  }
+  return pts[pts.length - 1]![1] + (sf - pts[pts.length - 1]![0]);
+}
+
 const Remapped: React.FC<{ i: number }> = ({ i }) => {
   const f = useCurrentFrame();
   const { C } = comp(P[i]!.scene);
+  const map = React.useMemo(() => ({ now: f, toReal: (sf: number) => unmap(i, sf) }), [f, i]);
   // Freeze adds the enclosing sequence's offset and clamps to the composition length: a sequence
   // starting at 0 keeps the frozen frame equal to the scene's own frame, even near the end.
-  return <Sequence from={0} layout="none"><Freeze frame={remap(i, f)}><C /></Freeze></Sequence>;
+  return <TimeMapContext.Provider value={map}><Sequence from={0} layout="none"><Freeze frame={remap(i, f)}><C /></Freeze></Sequence></TimeMapContext.Provider>;
 };
 
 const BridgeOverlay: React.FC<{ k: number }> = ({ k }) => {

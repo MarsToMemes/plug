@@ -3,6 +3,7 @@ import { AbsoluteFill, useCurrentFrame } from 'remotion';
 import { CameraRig, MOVE_TIMING } from '../camera/CameraRig';
 import { InventoryRibbon, MilestoneTick } from '../components/time';
 import { S03, availableAt, type Lane } from '../data/scene03';
+import { Title } from '../type/Title';
 import { EASE, THEME, clamp01, rng, seg } from '../theme';
 
 const B = S03.beats, W = S03.world;
@@ -81,9 +82,7 @@ export const Scene03: React.FC = () => {
           {S03.lanes.map((lane, k) => <LaneView key={lane.key} lane={lane} f={f} tau={tau} seed={31 + k * 17} />)}
         </svg>
       </CameraRig>
-      <div style={{ position: 'absolute', left: 0, width: 1920, top: 912, textAlign: 'center', opacity: msg, transform: `translateY(${(1 - msg) * 10}px)`, fontFamily: THEME.serif, fontWeight: 300, fontSize: 70, color: THEME.ink, letterSpacing: '0.03em', textTransform: 'uppercase' }}>
-        {S03.message}
-      </div>
+      <Title text={S03.message} at={B.message} top={912} size={70} family="TITLE_REVEAL_SLOW" layout="inline" focus={[1]} tracking={0.03} />
     </AbsoluteFill>
   );
 };

@@ -9,6 +9,6 @@ export const S18 = {
   ],
   levels: [{ at: 112, label: 'Avion · Hôtel' }, { at: 252, label: 'L’hôtel' }, { at: 382, label: 'La ville' }, { at: 512, label: 'La demande' }, { at: 652, label: 'Le système économique' }],
   system: ['Demande', 'Capacité', 'Temps', 'Concurrence', 'Événements', 'Données historiques'],
-  text: { never: 'Le prix n’était jamais fixe.', time: 'Il réagissait au temps.', chain: ['Demande', 'Capacité', 'Temps', 'Prix'], plane: 'Avion', hotel: 'Hôtel', price: 'Prix' },
+  text: { never: 'Le prix n’était jamais|fixe.', time: 'Il réagissait|au temps.', chain: ['Demande', 'Capacité', 'Temps', 'Prix'], plane: 'Avion', hotel: 'Hôtel', price: 'Prix' },
   beats: { never: 680, time: 780, chainAt: 870, hold: 900, black: 930 },
 };

@@ -3,6 +3,7 @@ import { AbsoluteFill, useCurrentFrame } from 'remotion';
 import { CameraRig } from '../camera/CameraRig';
 import { S16 } from '../data/scene16';
 import { EASE, THEME, lerp, seg } from '../theme';
+import { Title } from '../type/Title';
 
 const B = S16.beats;
 const WX = (i: number) => 960 + (i - (S16.words.length - 1) / 2) * 400;
@@ -15,7 +16,8 @@ export const Scene16: React.FC = () => {
   return (
     <AbsoluteFill style={{ background: '#060607' }}>
       <CameraRig shots={S16.camera} start={S16.cameraStart}>
-        <div style={{ ...word, left: 160, width: 1600, top: 500, fontSize: 64, opacity: q, filter: `blur(${(1 - q) * 6}px)` }}>{S16.question}</div>
+        {/* The question comes into focus; "vraiment" is what it asks. */}
+        <Title text={S16.question} at={B.question} out={B.qOut} top={500} size={64} family="TITLE_FOCUS" layout="inline" focus={[1]} tracking={0.03} camera={false} />
         {S16.words.map((w, i) => {
           const app = EASE.out(seg(f, B.words + i * 22, B.words + i * 22 + 24));
           const mt = EASE.inOut(seg(f, B.morph + i * 40, B.morph + i * 40 + 36)); // one concept becomes another
@@ -28,10 +30,9 @@ export const Scene16: React.FC = () => {
             </React.Fragment>
           );
         })}
-        {S16.final.map((t, k) => {
-          const a = EASE.out(seg(f, k ? B.final2 : B.final1, (k ? B.final2 : B.final1) + 30));
-          return <div key={t} style={{ ...word, left: 260, width: 1400, top: k ? 590 : 470, fontSize: k ? 48 : 92, color: k ? THEME.muted : THEME.ink, letterSpacing: k ? '0.2em' : '0.03em', fontFamily: k ? THEME.sans : THEME.serif, opacity: a, filter: `blur(${(1 - a) * 8}px)` }}>{t}</div>;
-        })}
+        {/* The answer, a revelation: slowly out of the blur; its precision follows, sliding in like time. */}
+        <Title text={S16.final[0]!} at={B.final1} top={470} size={92} family="TITLE_REVEAL_SLOW" tracking={0.03} camera={false} />
+        <Title text={S16.final[1]!} at={B.final2} top={590} size={40} font="sans" family="TITLE_SLIDE" tracking={0.2} color={THEME.muted} camera={false} />
       </CameraRig>
     </AbsoluteFill>
   );

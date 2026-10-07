@@ -81,8 +81,8 @@ export const Scene05: React.FC = () => {
         </div>
       )}
 
-      <Statement text={S05.text.room} at={B.title} out={B.parallel - 20} top={150} size={84} />
-      <Statement text={S05.text.tonight} at={B.tonight} out={B.parallel - 20} top={236} size={34} color={THEME.muted} style={{ fontFamily: THEME.sans, letterSpacing: '0.34em' }} />
+      <Statement family="TITLE_REVEAL" text={S05.text.room} at={B.title} out={B.parallel - 20} top={150} size={84} />
+      <Statement family="TITLE_SLIDE" text={S05.text.tonight} at={B.tonight} out={B.parallel - 20} top={236} size={34} color={THEME.muted} style={{ fontFamily: THEME.sans, letterSpacing: '0.34em' }} />
 
       {/* The parallel. */}
       {par > 0 && (
@@ -94,7 +94,7 @@ export const Scene05: React.FC = () => {
               <Caps size={24} color={THEME.accent}>{b}</Caps>
             </div>
           ))}
-          <Statement text={S05.text.same} at={B.same} top={860} size={60} />
+          <Statement family="TITLE_COLLISION" text={S05.text.same} at={B.same} top={860} size={60} />
         </>
       )}
     </AbsoluteFill>

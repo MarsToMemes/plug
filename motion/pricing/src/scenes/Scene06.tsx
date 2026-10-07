@@ -96,8 +96,8 @@ export const Scene06: React.FC = () => {
         <Caps>{S06.rooms} {S06.text.rooms}</Caps>
       </div>
 
-      <Statement text={S06.text.verdict} at={B.verdict} out={B.prices[0]! - 10} top={500} size={80} />
-      <Statement text={S06.text.message} at={B.message} top={948} size={52} />
+      <Statement family="TITLE_COLLISION" text={S06.text.verdict} at={B.verdict} out={B.prices[0]! - 10} top={500} size={80} />
+      <Statement family="TITLE_REVEAL_SLOW" layout="stack" focus={[1]} text={S06.text.message} at={B.message} top={948} size={52} />
     </AbsoluteFill>
   );
 };

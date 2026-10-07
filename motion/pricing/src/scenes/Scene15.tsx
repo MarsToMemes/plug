@@ -5,6 +5,7 @@ import { HotelFacade } from '../components/hotel';
 import { flight, hotel } from '../data/entities';
 import { S15 } from '../data/scene15';
 import { EASE, THEME, lerp, seg } from '../theme';
+import { Title } from '../type/Title';
 import { aircraftLayout, hotelLayout, place } from './layout02';
 
 const B = S15.beats, N = S15.left.rows.length;
@@ -43,7 +44,7 @@ export const Scene15: React.FC = () => {
       ))}
       {S15.left.rows.map((_, i) => row('l', i))}
       {S15.right.rows.map((_, i) => row('r', i))}
-      <div style={{ position: 'absolute', left: 0, width: 1920, top: 480, textAlign: 'center', opacity: title, transform: `scale(${lerp(0.94, 1, title)})`, filter: `blur(${(1 - title) * 8}px)`, fontFamily: THEME.serif, fontWeight: 300, fontSize: 96, letterSpacing: '0.03em', textTransform: 'uppercase', color: THEME.ink }}>{S15.merged}</div>
+      <Title text={S15.merged} at={B.title} top={480} size={96} family="TITLE_MORPH" tracking={0.03} speed={1.4} />
     </AbsoluteFill>
   );
 };

@@ -14,7 +14,7 @@ export const S06 = {
   // Clients counted on screen: 10 first, then 30, 31, 32, 33 one by one, then the crowd.
   arrivals: [{ at: 64, n: 10 }, { at: 150, n: 30 }, { at: 196, n: 31 }, { at: 214, n: 32 }, { at: 230, n: 33 }, { at: 420, n: 340 }],
   beats: { grid: 0, header: 20, counter: 60, saturate: 246, verdict: 440, prices: [536, 604, 672], seat: 740, message: 800 },
-  text: { price: 'Prix', clients: 'clients', verdict: 'Demande > capacité disponible', message: 'Un prix fixe ne sait pas répartir une capacité limitée', rooms: 'chambres' },
+  text: { price: 'Prix', clients: 'clients', verdict: 'Demande >|capacité disponible', message: 'Un prix fixe ne sait pas répartir|une capacité limitée', rooms: 'chambres' },
   camera: [
     { at: 246, move: 'SLOW_PUSH', to: { scale: 1.05 }, duration: 190 }, // the pressure builds, nothing moves on the price
     { at: 740, move: 'PULL_OUT', to: { scale: 1 } }, // demand now fits: the whole picture again

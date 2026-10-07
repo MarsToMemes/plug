@@ -11,7 +11,7 @@ export const S14 = {
   beats: { card: 0, wait: 70, waitEnd: 360, stop: 366, rewind: 392, rewindEnd: 436, b: 452, bEnd: 560, works: 586, fork: 650, bet: 690 },
   // The opening question (frames 0–70 cover 7.6 s of voice: short fades). "Faut-il toujours réserver le plus tôt possible ? Pas forcément."
   intro: { ask: 13, no: 32, out: 64 },
-  text: { ask: 'Réserver le plus tôt possible ?', no: 'Pas forcément.', works: 'Attendre peut fonctionner.', bet: 'Mais c’est un pari.' },
+  text: { ask: 'Réserver|le plus tôt possible ?', no: 'Pas forcément.', works: 'Attendre peut fonctionner.', bet: 'Mais c’est|un pari.' },
   camera: [] as CameraShot[],
   impacts: [{ at: 366, strength: 1.2 }] as CameraImpact[],
 };

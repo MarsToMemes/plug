@@ -18,7 +18,7 @@ export const S01 = {
   },
   route: { from: 'Paris', to: 'New York' },
   flight: [{ at: 0, value: 287 }, { at: s(10.22), value: 341 }, { at: s(13.34), value: 476 }] as PriceStep[],
-  text: { later: 'Quelques heures plus tard', nextDay: 'Le lendemain', plane: 'Même avion', seat: 'Même siège', trip: 'Même trajet', why: 'Pourquoi le prix change-t-il ?', who: 'Qui décide de ce prix ?' },
+  text: { later: 'Quelques heures plus tard', nextDay: 'Le lendemain', plane: 'Même avion', seat: 'Même siège', trip: 'Même trajet', why: 'Pourquoi le prix|change-t-il ?', who: 'Qui décide|de ce prix ?' },
   camera: [
     { at: s(10.22), move: 'SLOW_PUSH', to: { scale: 1.06 }, duration: s(4) }, // analytical: the price is moving
     { at: s(14.8), move: 'PULL_OUT', to: { scale: 1 } }, // step back: everything else around the price

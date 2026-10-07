@@ -93,9 +93,9 @@ export const Scene10: React.FC = () => {
           </g>
         </svg>
       </CameraRig>
-      <Statement text={S10.question.text} at={S10.question.at} out={S10.question.out} top={40} size={52} fade={10} />
-      <Statement text={S10.goal.text} at={S10.goal.at} out={S10.subtle.at - 8} top={40} size={52} fade={10} />
-      <Statement text={S10.subtle.text} at={S10.subtle.at} top={40} size={52} fade={10} />
+      <Statement family="TITLE_FOCUS" text={S10.question.text} at={S10.question.at} out={S10.question.out} top={40} size={52} fade={10} />
+      <Statement family="TITLE_SLIDE" text={S10.goal.text} at={S10.goal.at} out={S10.subtle.at - 8} top={40} size={52} fade={10} />
+      <Statement family="TITLE_MORPH" text={S10.subtle.text} at={S10.subtle.at} top={40} size={52} fade={10} />
     </AbsoluteFill>
   );
 };

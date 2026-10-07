@@ -65,9 +65,11 @@ def roll(t, n=3, db=-18, rate=1.0, snap=False):
         cue(t + k * 2 / 30, 'price_tick', db - 2 * k, rate=rate + 0.05 * k, snap=snap)
 
 
-# Chapter transitions only (not every cut): the whoosh peaks where the bridge morphs.
-for c in (27.3, 238.3, 275.3, 416.9, 489.6, 553.9):
-    cue(c - 1.15, 'whoosh_long', -22)
+# Whooshes only where a grid of units (seats, rooms, cells) flies to its new place during a
+# transition; the whoosh peaks in the middle of the morph (cut - 0.08 s).
+GRID_CUTS = (44.2, 65.6, 90.4, 131.4, 310.8, 352.4, 386.7, 416.9, 440.8)
+for k, c in enumerate(GRID_CUTS):
+    cue(c - 1.16, 'whoosh_long', -21, rate=(0.94, 1.0, 1.05)[k % 3])
 
 # 01  (built on the voice)
 cue(4.4, 'impact_soft', -21)                       # 287 € appears
@@ -77,7 +79,6 @@ cue(10.22, 'price_rise', -16)                      # 287 -> 341
 cue(13.34, 'price_rise', -15)                      # 341 -> 476
 for t in (16.0, 17.7, 19.7):                       # même avion / siège / trajet
     cue(t - 0.1, 'digital_tick', -19)
-cue(24.4, 'tension_riser', -24)                    # the question builds up to "qui décide"
 cue(24.4, 'impact_soft', -16)                      # "qui décide de ce prix ?"
 
 # 02
@@ -100,7 +101,6 @@ cue(110.5, 'data_stream', -22, snap=True)          # demand flows in
 cue(115.4, 'impact_soft', -17, snap=True)          # demande > capacité
 for t in (121.1, 123.4, 125.4):
     cue(t, 'price_rise', -17, snap=True)           # 100 -> 130 -> 170 -> 220
-cue(129.0, 'tension_riser', -21)
 cue(129.0, 'impact_heavy', -14)                    # Revenue Management
 
 # 07  fare classes (stretched), then layers (on the voice)
@@ -117,7 +117,6 @@ cue(180.3, 'ui_click', -18)                        # 1 siège
 cue(190.8, 'room_lock', -17)                       # épuisé
 cue(191.7, 'room_lock', -18, rate=0.9)             # fermé
 cue(193.2, 'ui_confirm', -18)                      # ouvert
-cue(195.6, 'whoosh_short', -22)                    # two neighbours
 roll(198.8, 2)                                     # 79 €
 cue(199.5, 'impact_soft', -16)                     # 349 €
 
@@ -138,8 +137,6 @@ cue(236.1, 'algorithm_pulse', -19)                 # anticipated demand
 for t in (243.6, 248.0, 250.0, 252.7, 255.6, 257.0, 258.4, 259.4, 263.6):
     cue(t, 'digital_tick', -18)
 cue(246.0, 'data_stream', -22)                     # énormément de signaux
-cue(261.2, 'whoosh_short', -21)                    # pull out: many markets
-cue(265.6, 'whoosh_short', -22, rate=0.9)          # back to one engine
 cue(267.0, 'algorithm_pulse', -17)                 # prévision
 
 # 19  two aircraft
@@ -148,7 +145,6 @@ for k in range(6):
 for k in range(5):
     cue(283.4 + 0.3 * k, 'digital_tick', -21)      # B fills
 cue(291.0, 'impact_soft', -16)                     # revenue bars
-cue(299.1, 'search_swipe', -20)                    # the wave through A
 cue(304.0, 'data_stream', -22)                     # value flows to revenue
 cue(308.9, 'impact_soft', -17)                     # Revenue Management
 
@@ -184,18 +180,15 @@ cue(455.5, 'impact_soft', -18, snap=True)          # rareté
 cue(464.4, 'ui_click', -17, snap=True)             # réserver
 cue(468.9, 'price_rise', -15, snap=True)           # 214 €
 cue(471.1, 'impact_soft', -17, snap=True)          # freeze
-cue(472.0, 'whoosh_short', -21, rate=0.8, snap=True)  # rewind
 roll(475.0, 3, rate=0.85, snap=True)               # 119 €
 cue(485.6, 'impact_soft', -18, snap=True)          # un pari
 
 # 20  the ticket at 219 €
 cue(494.4, 'impact_soft', -17)                     # 219 € on the ticket
-cue(503.6, 'whoosh_short', -21, rate=1.2)          # struck through
 cue(504.4, 'digital_tick', -18)                    # becomes the price node
 
 # 17  the machine
 cue(512.5, 'algorithm_pulse', -17, snap=True)      # the loop starts
-cue(521.5, 'tension_riser', -22)
 cue(521.5, 'impact_heavy', -15)              # c'est une décision
 
 # 15  capacity and the clock
@@ -207,14 +200,9 @@ cue(556.94, 'price_rise', -16, snap=True)          # 129 -> 219
 cue(567.02, 'algorithm_pulse', -17, snap=True)     # le système
 cue(569.66, 'data_stream', -22, snap=True)         # la demande…
 cue(588.78, 'impact_soft', -15, snap=True)         # capacité limitée
-cue(597.4, 'tension_riser', -18)
 cue(597.4, 'impact_heavy', -13)                    # jamais vraiment fixe
 cue(599.0, 'impact_soft', -19, snap=True)          # demande -> capacité -> temps -> prix
 
-# A tension riser is cued on the beat it leads to: it starts 2.8 s before.
-for c in C:
-    if c[1] == 'tension_riser':
-        c[0] -= 2.8
 
 # Snap to the picture.
 MOTION = os.path.join(HERE, 'out', 'motion.npy')

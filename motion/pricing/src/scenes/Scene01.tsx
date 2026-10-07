@@ -4,6 +4,7 @@ import { CameraRig } from '../camera/CameraRig';
 import { Aircraft } from '../components/aircraft';
 import { PriceCounter } from '../components/price';
 import { Caps } from '../components/ui';
+import { Title } from '../type/Title';
 import { S01 } from '../data/scene01';
 import { EASE, THEME, clamp01, lerp, seg } from '../theme';
 
@@ -36,13 +37,6 @@ const Same: React.FC<{ x: number; at: number; label: string; children: React.Rea
       <Caps size={24} color={THEME.ink} style={{ marginTop: 26 }}>{label}</Caps>
     </div>
   );
-};
-
-/** The question in the documentary's serif, readable for as long as the voice asks it. */
-const Question: React.FC<{ text: string; at: number; y: number; dim?: number; size?: number }> = ({ text, at, y, dim = 0, size = 92 }) => {
-  const f = useCurrentFrame();
-  const t = EASE.out(seg(f, at - 3, at + 14));
-  return <div style={{ position: 'absolute', left: 0, width: 1920, top: y, textAlign: 'center', fontFamily: THEME.serif, fontWeight: 300, fontSize: size, color: THEME.ink, opacity: t * (1 - 0.6 * dim), transform: `translateY(${(1 - t) * 12}px)`, filter: t < 1 ? `blur(${(1 - t) * 6}px)` : undefined }}>{text}</div>;
 };
 
 export const Scene01: React.FC = () => {
@@ -97,8 +91,9 @@ export const Scene01: React.FC = () => {
       {/* The two questions, each held while the voice asks it; then they close into a ring. */}
       {why && (
         <AbsoluteFill style={{ opacity: 1 - ring, transform: `scale(${lerp(1, 0.4, ring)})`, filter: ring > 0 ? `blur(${ring * 6}px)` : undefined }}>
-          <Question text={S01.text.why} at={B.why} y={360} dim={seg(f, B.who, B.who + 12)} />
-          <Question text={S01.text.who} at={B.who} y={520} size={104} />
+          {/* The question comes into focus; then "qui décide" is built block by block and becomes the focus. */}
+          <div style={{ opacity: 1 - 0.6 * seg(f, B.who, B.who + 12) }}><Title text={S01.text.why} at={B.why} top={360} size={92} family="TITLE_FOCUS" layout="inline" focus={[1]} uppercase={false} camera={false} /></div>
+          <Title text={S01.text.who} at={B.who} top={520} size={104} family="TITLE_SPLIT" layout="inline" focus={[0]} accent={THEME.accent} uppercase={false} />
         </AbsoluteFill>
       )}
       {ring > 0 && (

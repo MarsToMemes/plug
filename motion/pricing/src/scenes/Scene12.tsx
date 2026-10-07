@@ -64,7 +64,7 @@ export const Scene12: React.FC = () => {
           <Caps size={20} color={THEME.ink} style={{ display: 'block', marginTop: 8 }}>{S12.days[clamp01(t2 / (N - 1)) >= 0 ? day : 0]}</Caps>
         </div>
       )}
-      <Statement text={S12.text.message} at={B.message} top={44} size={56} />
+      <Statement family="TITLE_SPLIT" focus={[1]} text={S12.text.message} at={B.message} top={44} size={56} />
     </AbsoluteFill>
   );
 };

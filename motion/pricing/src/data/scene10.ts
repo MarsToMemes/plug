@@ -8,7 +8,7 @@ const v = (sec: number) => Math.round((sec - 238.3) * 30);
 export const S10 = {
   duration: v(275.3),
   centre: 'Gestion des revenus',
-  question: { at: v(238.5), out: v(242.4), text: 'La demande va-t-elle être forte ?' }, // "comment un système peut-il savoir…"
+  question: { at: v(238.5), out: v(242.4), text: 'La demande|va-t-elle être forte ?' }, // "comment un système peut-il savoir…"
   inputs: [
     { label: 'Réservations actuelles', at: v(243.6) }, // "il ne regarde pas seulement les réservations actuelles"
     { label: 'Demande observée', at: v(248.0) },
@@ -22,7 +22,7 @@ export const S10 = {
   ],
   signals: v(246.0), // "énormément de signaux": a field of small signals drifting in
   output: { label: 'Prévision', at: v(267.0) }, // "alimenter des systèmes de prévision"
-  goal: { at: v(269.6), text: 'Objectif : pas seulement remplir' }, // "leur objectif n'est pas simplement de remplir…"
+  goal: { at: v(269.6), text: 'Objectif :|pas seulement remplir' }, // "leur objectif n'est pas simplement de remplir…"
   subtle: { at: v(273.2), text: 'C’est plus subtil' },
   beats: { core: v(238.6), pull: v(261.2) }, // "selon les entreprises et les marchés": one engine among many
   camera: [

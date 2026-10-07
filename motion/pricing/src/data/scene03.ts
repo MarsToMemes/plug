@@ -31,7 +31,7 @@ export const S03 = {
       availability: [{ tau: 0, value: hotel.rooms }, { tau: 0.3, value: 188 }, { tau: 0.55, value: 154 }, { tau: 0.76, value: 92 }, { tau: 0.9, value: hotel.availableRooms }, { tau: 1, value: 12 }],
     },
   ] as Lane[],
-  message: 'Le temps fait disparaître l’inventaire',
+  message: 'Le temps fait disparaître|l’inventaire',
   camera: [
     { at: 96, move: 'PAN', to: { x: 3400 }, duration: 480 }, // follow time, one fluid move
     { at: 640, move: 'PULL_OUT', to: { x: 2040, y: 600, scale: 0.52 } }, // the whole relation: time against inventory

@@ -67,10 +67,10 @@ export const Scene19: React.FC = () => {
         <span style={{ display: 'inline-block', width: 18, height: 18, background: THEME.accent, opacity: seg(f, B.dear, B.dear + 20) }} /><span style={{ opacity: seg(f, B.dear, B.dear + 20) }}><Caps size={16}>{S19.text.high}</Caps></span>
       </div>
       <div style={{ position: 'absolute', left: 120, top: 425, opacity: anyOn }}><Caps size={24} color={THEME.accent}>{S19.text.any}</Caps></div>
-      <Statement text={S19.text.question} at={B.question} out={B.verdict - 10} top={60} size={52} fade={12} />
-      <Statement text={S19.text.verdict} at={B.verdict} out={B.value - 10} top={60} size={56} fade={12} />
-      <Statement text={S19.text.value} at={B.value} out={B.rm - 10} top={60} size={56} fade={12} />
-      <Statement text={S19.text.rm} at={B.rm} top={60} size={56} fade={12} />
+      <Statement family="TITLE_FOCUS" text={S19.text.question} at={B.question} out={B.verdict - 10} top={60} size={52} fade={12} />
+      <Statement family="TITLE_MORPH" focus={[1]} text={S19.text.verdict} at={B.verdict} out={B.value - 10} top={60} size={56} fade={12} />
+      <Statement family="TITLE_SLIDE" text={S19.text.value} at={B.value} out={B.rm - 10} top={60} size={56} fade={12} />
+      <Statement family="TITLE_SCALE" focus={[1]} text={S19.text.rm} at={B.rm} top={60} size={56} fade={12} />
     </AbsoluteFill>
   );
 };

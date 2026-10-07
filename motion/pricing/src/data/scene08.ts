@@ -13,10 +13,10 @@ export const S08 = {
     { label: 'Le jour même', x: 1620, price: 249, at: 520 },
   ],
   beats: { room: 0, timeline: 30, message: 600 },
-  text: { message: 'Même chambre. Prix différent.', price: 'Prix de la nuit' },
+  text: { message: 'Même chambre.|Prix différent.', price: 'Prix de la nuit' },
   // On the voice: the bed, the view are the same; what changed is the context, in three gauges.
   same: [{ at: v(224.5), label: 'Même lit' }, { at: v(226.4), label: 'Même vue' }],
-  context: { at: v(228.9), text: 'Ce qui a changé : le contexte' },
+  context: { at: v(228.9), text: 'Ce qui a changé :|le contexte' },
   gauges: [
     { at: v(231.0), label: 'Chambres restantes', from: 40, to: 6, unit: '' }, // "la quantité de chambres restantes"
     { at: v(233.2), label: 'Avant l’arrivée', from: 30, to: 1, unit: ' j' }, // "le temps avant l'arrivée"

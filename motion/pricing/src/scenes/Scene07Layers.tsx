@@ -81,8 +81,8 @@ export const FareLayers: React.FC = () => {
         return <div key={k} style={{ position: 'absolute', left: PAIR[k]!.x + PAIR[k]!.w / 2 - 200, width: 400, top: 590, textAlign: 'center', opacity: t, transform: `translateY(${(1 - t) * 16}px)`, fontFamily: THEME.sans, fontWeight: 300, fontSize: 88, color: k ? THEME.accent : THEME.ink, fontVariantNumeric: 'tabular-nums' }}>{v} €</div>;
       })}
       {pair > 0 && <div style={{ position: 'absolute', left: 0, width: 1920, top: 250, textAlign: 'center', opacity: seg(f, P.trip, P.trip + 12) }}><Caps size={24} color={THEME.ink}>{P.text.trip}</Caps></div>}
-      <Statement text={S07.text.message} at={L.soldOut} out={P.at - 12} top={960} size={50} fade={12} />
-      <Statement text={P.text.same} at={P.same} top={860} size={64} fade={10} />
+      <Statement family="TITLE_MASK" text={S07.text.message} at={L.soldOut} out={P.at - 12} top={960} size={50} fade={12} />
+      <Statement family="TITLE_IMPACT" text={P.text.same} at={P.same} top={860} size={64} fade={10} />
     </>
   );
 };

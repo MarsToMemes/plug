@@ -57,8 +57,8 @@ export const Scene08: React.FC = () => {
         <Caps>{S08.text.price}</Caps>
         <PriceCounter steps={steps} size={104} style={{ marginTop: 6 }} />
       </div>
-      <Statement text={S08.text.message} at={B.message} out={S08.context.at - 8} top={56} size={64} fade={14} />
-      <Statement text={S08.context.text} at={S08.context.at} top={56} size={64} fade={12} />
+      <Statement family="TITLE_SPLIT" focus={[1]} accent={THEME.accent} text={S08.text.message} at={B.message} out={S08.context.at - 8} top={56} size={64} fade={14} />
+      <Statement family="TITLE_MORPH" focus={[1]} accent={THEME.accent} text={S08.context.text} at={S08.context.at} top={56} size={64} fade={12} />
       {S08.gauges.map((g, k) => <Gauge key={k} g={g} x={480 + k * 480} />)}
     </AbsoluteFill>
   );

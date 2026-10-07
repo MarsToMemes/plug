@@ -176,7 +176,6 @@ save('search_swipe', band_sweep(noise(d), lambda u: 900 * 4 ** u, 0.45) * bell(d
 d = 3.0
 blips = [(rng.uniform(0, d - 0.05), tone(rng.choice([1760, 2093, 2349, 2637, 3136]), 0.04, 0.001, 0.012, (1.0,)) * rng.uniform(0.3, 1.0)) for _ in range(90)]
 ds = place(d, *blips) * bell(d, 0.3, 1.0)
-ds += 0.15 * band_sweep(noise(d), lambda u: 2500 + 1500 * u, 0.6) * bell(d, 0.3, 1.0)
 save('data_stream', stereo(lowpass(ds, 6000), np.linspace(-0.4, 0.4, len(ds))), -6)
 
 # algorithm_pulse: three low pulses, like a machine thinking

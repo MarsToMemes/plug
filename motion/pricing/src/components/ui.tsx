@@ -1,20 +1,16 @@
 import React from 'react';
-import { useCurrentFrame } from 'remotion';
-import { EASE, THEME, seg } from '../theme';
+import { THEME } from '../theme';
+import { Title } from '../type/Title';
+import type { Family } from '../type/presets';
 
-/** Screen-space statement in the documentary's voice: serif capitals, rises 10 px and unblurs. */
-export const Statement: React.FC<{ text: string; at: number; out?: number; top?: number; size?: number; color?: string; fade?: number; style?: React.CSSProperties }> = ({ text, at, out, top = 900, size = 68, color = THEME.ink, fade = 26, style }) => {
-  const f = useCurrentFrame();
-  // `fade` in frames: scenes whose time is stretched on the voice pass a shorter one.
-  const t = EASE.out(seg(f, at, at + fade));
-  const o = t * (out === undefined ? 1 : 1 - seg(f, out, out + fade * 0.6));
-  if (o <= 0.005) return null;
-  return (
-    <div style={{ position: 'absolute', left: 0, width: 1920, top, textAlign: 'center', opacity: o, transform: `translateY(${(1 - t) * 10}px)`, filter: t < 1 ? `blur(${(1 - t) * 5}px)` : undefined, fontFamily: THEME.serif, fontWeight: 300, fontSize: size, color, letterSpacing: '0.03em', textTransform: 'uppercase', textShadow: `0 0 24px ${THEME.bg}, 0 0 8px ${THEME.bg}`, ...style }}>
-      {text}
-    </div>
-  );
-};
+/**
+ * Screen-space statement in the documentary's voice: a big editorial title, animated by the
+ * kinetic typography system (src/type). `family` says how it moves, for what it means; the text
+ * can carry its hierarchy with "|" and name its focal block(s) with `focus`.
+ */
+export const Statement: React.FC<{ text: string; at: number; out?: number; top?: number; size?: number; color?: string; fade?: number; family?: Family; focus?: number[]; layout?: 'stack' | 'inline'; accent?: string; speed?: number; style?: React.CSSProperties }> = ({ text, at, out, top = 900, size = 68, color = THEME.ink, family = 'TITLE_MASK', focus, layout = 'inline', accent, speed, style }) => (
+  <Title text={text} at={at} out={out} top={top} size={size} color={color} family={family} focus={focus} layout={layout} accent={accent} speed={speed} tracking={0.03} style={style} />
+);
 
 /** Small spaced capitals (labels, kickers). */
 export const Caps: React.FC<{ children: React.ReactNode; size?: number; color?: string; style?: React.CSSProperties }> = ({ children, size = 18, color = THEME.muted, style }) => (

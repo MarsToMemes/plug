@@ -15,12 +15,12 @@ export const S07 = {
   ] as Array<{ price: number; seats: number; sell?: [number, number]; sold?: number }>,
   beats: { cabin: 0, fares: 48, message: 640 },
   close: 34, // frames for a sold-out level to close
-  text: { open: 'Tarif ouvert', message: 'Les tarifs les moins chers disparaissent en premier', seats: 'sièges' },
+  text: { open: 'Tarif ouvert', message: 'Les tarifs les moins chers|disparaissent en premier', seats: 'sièges' },
   // The second half, on the voice: the seat does not change, only the price of access to it.
   more: v(155.3), // "puis éventuellement beaucoup plus" -> the 349 level
   seat: { at: v(158.3), index: 64, text: 'Le siège ne change pas' }, // "la compagnie ne change pas le siège"
-  rest: { at: v(162.5), text: 'Le prix des sièges restants change', prices: [[v(163.4), 349], [v(164.8), 149], [v(166.1), 219]] as Array<[number, number]> }, // "elle change le prix… des sièges restants"
-  demand: { at: 153, out: 182, text: 'La demande augmente' }, // frames of the stretched part: 2:22.9 -> 2:26
+  rest: { at: v(162.5), text: 'Le prix des sièges restants|change', prices: [[v(163.4), 349], [v(164.8), 149], [v(166.1), 219]] as Array<[number, number]> }, // "elle change le prix… des sièges restants"
+  demand: { at: 153, out: 182, text: 'La demande|augmente' }, // frames of the stretched part: 2:22.9 -> 2:26
   layers: {
     at: v(169.3), // "imaginer l'avion comme plusieurs couches de prix"
     show: [v(172.5), v(173.9), v(175.3), v(176.6), v(178.1)], // 79, 109, 149, 219, 349 on their words

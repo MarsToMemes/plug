@@ -25,5 +25,5 @@ export const S02 = {
     { at: 700, move: 'SLOW_PUSH', to: { scale: 1.0 }, duration: 100 }, // the conclusion is held, analytically
   ] as CameraShot[],
   cameraStart: { x: 1480, y: 540, scale: 2.6, rotY: 0 },
-  text: { seats: 'sièges', rooms: 'chambres', aircraft: 'Avion', hotel: 'Hôtel', message: 'Capacité limitée' },
+  text: { seats: 'sièges', rooms: 'chambres', aircraft: 'Avion', hotel: 'Hôtel', message: 'Capacité|limitée' },
 };

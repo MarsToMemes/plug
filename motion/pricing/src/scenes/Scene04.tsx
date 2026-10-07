@@ -5,6 +5,7 @@ import { AircraftPlan } from '../components/aircraft';
 import { flight } from '../data/entities';
 import { S04 } from '../data/scene04';
 import { EASE, THEME, clamp01, lerp, rng, seg } from '../theme';
+import { Title } from '../type/Title';
 import { aircraftLayout } from './layout02';
 
 const B = S04.beats;
@@ -131,9 +132,7 @@ export const Scene04: React.FC = () => {
         <span style={{ fontSize: 96, fontWeight: 300, color: THEME.ink, fontVariantNumeric: 'tabular-nums' }}>{S04.unsold}</span>
         <span style={{ fontSize: 26, letterSpacing: '0.34em', textTransform: 'uppercase', marginLeft: 22, color: THEME.muted }}>{S04.text.seats}</span>
       </div>
-      <div style={{ position: 'absolute', left: 0, width: 1920, top: 40, textAlign: 'center', textShadow: `0 0 24px ${THEME.bg}, 0 0 10px ${THEME.bg}, 0 0 4px ${THEME.bg}`, opacity: title * (1 - seg(f, B.pullOut, B.pullOut + 20)), transform: `scale(${1 + (1 - title) * 0.06})`, fontFamily: THEME.serif, fontWeight: 300, fontSize: 110, color: THEME.ink, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-        {S04.text.takeoff}
-      </div>
+      <Title text={S04.text.takeoff} at={B.takeoffTitle} out={B.pullOut} top={40} size={110} family="TITLE_PUSH" tracking={0.04} />
     </AbsoluteFill>
   );
 };

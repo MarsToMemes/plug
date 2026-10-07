@@ -118,9 +118,9 @@ export const Scene07: React.FC = () => {
           </div>
         )}
       </div>
-      <Statement text={S07.demand.text} at={S07.demand.at} out={S07.demand.out} top={960} size={50} fade={3} />
-      <Statement text={S07.seat.text} at={S07.seat.at} out={S07.rest.at - 10} top={960} size={50} fade={12} />
-      <Statement text={S07.rest.text} at={S07.rest.at} top={960} size={50} fade={12} />
+      <Statement family="TITLE_SCALE" focus={[1]} text={S07.demand.text} at={S07.demand.at} out={S07.demand.out} top={960} size={50} fade={3} />
+      <Statement family="TITLE_FOCUS" text={S07.seat.text} at={S07.seat.at} out={S07.rest.at - 10} top={960} size={50} fade={12} />
+      <Statement family="TITLE_MORPH" focus={[1]} accent={THEME.accent} text={S07.rest.text} at={S07.rest.at} top={960} size={50} fade={12} />
       </AbsoluteFill>}
       <FareLayers />
     </AbsoluteFill>
