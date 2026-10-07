@@ -7,7 +7,8 @@ import type { CameraShot } from '../camera/CameraRig';
 export const S09 = {
   duration: 760,
   rooms: 120, cols: 12,
-  pressure: [{ at: 0, p: 0.08 }, { at: 280, p: 0.1 }, { at: 560, p: 0.92 }, { at: 760, p: 0.95 }],
+  // Strong demand first (low fares close), then the opposite: weak demand, more attractive prices.
+  pressure: [{ at: 0, p: 0.08 }, { at: 280, p: 0.1 }, { at: 560, p: 0.92 }, { at: 640, p: 0.92 }, { at: 760, p: 0.3 }],
   demand: { min: 6, max: 280 }, // client points on screen
   availability: { keepAtMax: 0.12 }, // share of rooms left at full pressure
   price: { low: 129, high: 279 },

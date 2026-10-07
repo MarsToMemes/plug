@@ -8,7 +8,7 @@ export const S01 = {
   route: { from: 'Paris', to: 'New York' },
   // The flight alone (immobile first, then rising), then both series moving independently.
   flight: [
-    { at: 0, value: 287 }, { at: 116, value: 341 }, { at: 166, value: 412 }, { at: 216, value: 476 },
+    { at: 0, value: 287 }, { at: 116, value: 341 }, { at: 216, value: 476 }, // the three prices the narration says
     { at: 334, value: 498 }, { at: 404, value: 523 },
   ] as PriceStep[],
   hotel: { title: 'Hotel — New York', steps: [{ at: 0, value: 119 }, { at: 306, value: 167 }, { at: 366, value: 213 }] as PriceStep[] },

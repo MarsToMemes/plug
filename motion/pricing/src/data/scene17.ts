@@ -4,7 +4,7 @@ export const S17 = {
   inputs: ['Demande', 'Capacité', 'Temps', 'Concurrence', 'Événements', 'Données historiques'],
   loop: { bookings: 'Réservations', availability: 'Disponibilité ↓', price: 'Prix' },
   legend: ['Prix → réservations', 'Réservations → disponibilité ↓', 'Disponibilité ↓ → prix ↑'],
-  start: { price: 189, available: 42 }, perLoop: { price: 6, available: -4 }, loopFrames: 120,
+  start: { price: 219, available: 42 }, perLoop: { price: 5, available: -4 }, loopFrames: 120,
   orbit: { from: 0.35, speed: 0.0024, tilt: 0.62, distance: 1900 },
   beats: { core: 0, inputs: 40, stagger: 24, loop: [250, 310, 370], run: 410 },
 };
