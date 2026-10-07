@@ -147,7 +147,6 @@ for k in range(6):
     cue(277.7 + 0.22 * k, 'digital_tick', -21)     # A fills
 for k in range(5):
     cue(283.4 + 0.3 * k, 'digital_tick', -21)      # B fills
-cue(286.3, 'price_rise', -18)                      # dear seats
 cue(291.0, 'impact_soft', -16)                     # revenue bars
 cue(299.1, 'search_swipe', -20)                    # the wave through A
 cue(304.0, 'data_stream', -22)                     # value flows to revenue
@@ -171,26 +170,27 @@ cue(413.0, 'price_rise', -16, snap=True)           # prix recommandé 219 €
 
 # 13  a big event
 cue(419.0, 'low_rumble', -19)
-cue(420.38, 'impact_soft', -16, snap=True)         # grand événement
+cue(420.38, 'impact_soft', -19, snap=True)         # grand événement
 cue(422.96, 'data_stream', -21, snap=True)         # thousands of people
 cue(438.1, 'price_rise', -16, snap=True)           # pression sur le prix
 
 # 12  days of the week
-cue(448.5, 'price_rise', -18, snap=True)
-roll(451.0, 3, snap=True)
+cue(449.6, 'price_rise', -18, snap=True)          # the curve climbs to the weekend
+roll(452.1, 3, snap=True)                          # mercredi
+roll(454.2, 3, snap=True)                          # dimanche
 cue(455.5, 'impact_soft', -18, snap=True)          # rareté
 
 # 14  book now or wait
-cue(465.2, 'ui_click', -17)                        # réserver
-cue(470.08, 'price_rise', -15, snap=True)          # 214 €
+cue(464.4, 'ui_click', -17, snap=True)             # réserver
+cue(468.9, 'price_rise', -15, snap=True)           # 214 €
 cue(471.1, 'impact_soft', -17, snap=True)          # freeze
 cue(472.0, 'whoosh_short', -21, rate=0.8, snap=True)  # rewind
-roll(475.8, 3, rate=0.85, snap=True)               # 119 €
+roll(475.0, 3, rate=0.85, snap=True)               # 119 €
 cue(485.6, 'impact_soft', -18, snap=True)          # un pari
 
 # 20  the ticket at 219 €
 cue(494.4, 'impact_soft', -17)                     # 219 € on the ticket
-cue(503.3, 'whoosh_short', -21, rate=1.2)          # struck through
+cue(503.6, 'whoosh_short', -21, rate=1.2)          # struck through
 cue(504.4, 'digital_tick', -18)                    # becomes the price node
 
 # 17  the machine
@@ -200,8 +200,7 @@ cue(521.5, 'impact_heavy', -15)              # c'est une décision
 
 # 15  capacity and the clock
 cue(546.0, 'clock_pulse', -20, snap=True)          # chaque départ, chaque nuit
-for k in range(4):
-    cue(550.2 + 0.5 * k, 'digital_tick', -19)      # l'horloge
+cue(550.2, 'digital_tick', -19)                    # l'horloge
 
 # 18a / 16 / 18b
 cue(556.94, 'price_rise', -16, snap=True)          # 129 -> 219
@@ -225,11 +224,11 @@ if os.path.exists(MOTION):
         if not c[3].get('snap'):
             continue
         t = c[0]
-        a, b = int((t - 0.6) * 10), int((t + 0.6) * 10)
-        base = np.median(ch[max(0, a - 10):a]) if a > 10 else 0.0
-        idx = np.where(ch[max(0, a):b] > max(3 * base, base + 0.004))[0]
-        if len(idx):
-            c[0] = (max(0, a) + idx[0]) / 10
+        # The event starts where the visible change jumps the most within ±0.8 s.
+        a, b = int((t - 0.8) * 10), int((t + 0.8) * 10)
+        jump = np.diff(ch[max(0, a - 1):b])
+        if len(jump) and jump.max() > 0.0008:
+            c[0] = (max(0, a - 1) + int(np.argmax(jump)) + 1) / 10
 C = [tuple(c) for c in C]
 
 # ------------------------------------------------------------------ render

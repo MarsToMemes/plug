@@ -1,6 +1,6 @@
 import React from 'react';
 import { AbsoluteFill, useCurrentFrame } from 'remotion';
-import { PriceCounter, type PriceStep } from '../components/price';
+import { PriceCounter, stepIndex, type PriceStep } from '../components/price';
 import { Caps, Statement } from '../components/ui';
 import { flight } from '../data/entities';
 import { S07 } from '../data/scene07';
@@ -31,7 +31,10 @@ const PLAN = (() => {
   return { cls, soldAt };
 })();
 const closesAt = S07.fares.map((fare) => (fare.sell && (fare.sold ?? fare.seats) === fare.seats ? fare.sell[1] + 8 : Infinity));
-const steps: PriceStep[] = S07.fares.filter((_, k) => k === 0 || closesAt[k - 1]! < Infinity).map((fare, k) => ({ at: k === 0 ? 0 : closesAt[k - 1]! + 6, value: fare.price }));
+const steps: PriceStep[] = [
+  ...S07.fares.filter((_, k) => k === 0 || closesAt[k - 1]! < Infinity).map((fare, k) => ({ at: k === 0 ? 0 : closesAt[k - 1]! + 6, value: fare.price })),
+  ...S07.rest.prices.map(([at, value]) => ({ at, value })), // the price of the same remaining seats moves
+];
 
 // The seat the voice points at: an unsold seat of the dearest class, near the middle of the cabin.
 const FOCUS = SEATS.map((u, i) => ({ i, d: Math.abs(u.x + u.w / 2 - 760) + Math.abs(u.y - 420) })).filter((o) => PLAN.cls[o.i] === S07.fares.length - 1).sort((a, b) => a.d - b.d)[0]!.i;
@@ -107,7 +110,15 @@ export const Scene07: React.FC = () => {
       <div style={{ position: 'absolute', left: 240, top: 690, opacity: appear }}>
         <Caps>{S07.text.open}</Caps>
         <PriceCounter steps={steps} size={120} color={THEME.ink} style={{ marginTop: 10 }} />
+        {/* Seats left at the open fare: it drops with every booking. */}
+        {open >= 0 && open < S07.fares.length && f < S07.seat.at && steps[stepIndex(steps, f)]!.value === S07.fares[open]!.price && (
+          <div style={{ marginTop: 18, fontFamily: THEME.sans, color: THEME.ink, display: 'flex', alignItems: 'baseline', gap: 14 }}>
+            <span style={{ fontSize: 56, fontWeight: 300, fontVariantNumeric: 'tabular-nums' }}>{levels[open]!.left}</span>
+            <Caps size={18}>{`places à ${S07.fares[open]!.price} €`}</Caps>
+          </div>
+        )}
       </div>
+      <Statement text={S07.demand.text} at={S07.demand.at} out={S07.demand.out} top={960} size={50} fade={3} />
       <Statement text={S07.seat.text} at={S07.seat.at} out={S07.rest.at - 10} top={960} size={50} fade={12} />
       <Statement text={S07.rest.text} at={S07.rest.at} top={960} size={50} fade={12} />
       </AbsoluteFill>}
