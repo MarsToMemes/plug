@@ -49,6 +49,7 @@ import { IconCheck } from './scenes/IconCheck';
 import { FontCheck } from './scenes/FontCheck';
 import { MotionCheck } from './scenes/MotionCheck';
 import { Hook01 } from './scenes/Hook01';
+import { SPARK_FROM, SPARK_TO, SparkCurve } from './scenes/SparkCurve';
 import { S20 } from './data/scene20';
 import { EPISODE_DURATION, Episode } from './scenes/Episode';
 import { VOICE_DURATION, VoiceEpisode } from './scenes/VoiceEpisode';
@@ -74,6 +75,7 @@ export const Root: React.FC = () => (
   <>
     <Folder name="Scenes">
       <Composition id="Scene01" component={Scene01} width={1920} height={1080} fps={30} durationInFrames={S01.duration} />
+      <Composition id="SparkCurve" component={SparkCurve} width={1920} height={1080} fps={30} durationInFrames={Math.round((SPARK_TO - SPARK_FROM) * 30)} />
       <Composition id="Hook01" component={Hook01} width={1920} height={1080} fps={30} durationInFrames={S01.duration} />
       <Composition id="Scene02" component={Scene02} width={1920} height={1080} fps={30} durationInFrames={S02.duration} />
       <Composition id="Scene03" component={Scene03} width={1920} height={1080} fps={30} durationInFrames={S03.duration} />
