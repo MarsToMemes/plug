@@ -176,6 +176,10 @@ roll(452.1, 3, snap=True)                          # mercredi
 roll(454.2, 3, snap=True)                          # dimanche
 cue(455.5, 'impact_soft', -18, snap=True)          # rareté
 
+# photos: a soft shutter tick on each cut of the montage "vacances, week-end, fêtes, sport, congrès"
+for t in (442.8, 443.68, 444.7, 445.72, 446.46, 447.86):
+    cue(t, 'digital_tick', -23, rate=0.8)
+
 # 14  book now or wait: the question (scene 14), then the price curve written by the spark (SparkCurve, on the voice)
 cue(465.2, 'digital_tick', -19)                    # the spark lands on 129 €
 cue(470.08, 'price_rise', -15)                     # 214 €

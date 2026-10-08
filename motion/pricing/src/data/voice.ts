@@ -22,7 +22,7 @@ export const VOICE = {
     { scene: '03', start: 352.4, anchors: [[96, 357.3], [576, 376.1], [584, 378.7], [640, 381.0], [690, 383.9]] },
     { scene: '11', start: 386.7, anchors: [[130, 395.0], [360, 408.0], [430, 411.48], [456, 413.0]] },
     { scene: '13', start: 416.9, anchors: [[90, 420.38], [170, 422.96], [500, 430.0], [560, 431.1], [600, 432.8], [640, 438.1]] },
-    { scene: '12', start: 440.8, anchors: [[54, 442.8], [354, 448.5], [386, 449.7], [450, 451.0], [640, 455.48], [664, 455.6]] },
+    { scene: '12', start: 440.8, anchors: [[54, 448.3], [354, 451.2], [386, 452.0], [450, 452.6], [640, 455.48], [664, 455.6]] }, // the week is drawn after the photo montage (442.8-448.45)
     { scene: '14', to: 67, start: 457.1, anchors: [] }, // the question and "pas forcément" (the card)
     { scene: 'sc', start: 464.4 }, // the price curve written by the spark, on the narration's own timing (SparkCurve)
     { scene: '20', start: 489.6 }, // the ticket at 219 €, built on the narration's own timing

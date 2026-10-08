@@ -13,6 +13,8 @@ import { S20 } from '../data/scene20';
 import { VOICE } from '../data/voice';
 import { TimeMapContext } from '../type/clock';
 import { TextQA } from '../layout/TextQA';
+import { PhotoLayer } from '../photo/Photos';
+import { PHOTO_SHOTS } from '../data/photos';
 
 /**
  * The episode cut on the voice-over: scenes in the order of the narration, each playing during
@@ -91,6 +93,8 @@ export const VoiceEpisode: React.FC<{ qa?: boolean }> = ({ qa }) => {
           ...(i < P.length - 1 ? [<TransitionSeries.Overlay key={`b${i}`} durationInFrames={BRIDGE} premountFor={fps}><BridgeOverlay k={i} /></TransitionSeries.Overlay>] : []),
         ])}
       </TransitionSeries>
+      {/* Real photographs cut in on the words (licensed, public/photos/CREDITS.md). */}
+      <PhotoLayer shots={PHOTO_SHOTS} />
       {/* voice + music + sound effects, built by audio/mix.py */}
       <Audio src={staticFile('audio/mix.m4a')} />
       {qa && <TextQA />}
