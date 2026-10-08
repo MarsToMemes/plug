@@ -70,7 +70,7 @@ def main():
             # A standard thumbnail size on upload.wikimedia.org (what Commons asks bots to use),
             # resized here to exactly 1920 px wide.
             raw = os.path.join(out, name + '.orig')
-            base = ii['url'].rsplit('/', 1)
+            base = ii['url'].split('?')[0].rsplit('/', 1)
             thumb = base[0].replace('/commons/', '/commons/thumb/') + '/' + base[1] + '/1920px-' + base[1]
             with open(raw, 'wb') as f:
                 f.write(get(thumb))
