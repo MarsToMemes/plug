@@ -209,7 +209,10 @@ cue(549.64, 'clock_pulse', -21)                       # fait avancer l'horloge
 cue(552.48, 'price_rise', -16)                        # the pressure: 129 -> 219 €
 
 # 18a / 16 / 18b
-cue(556.94, 'price_rise', -16, snap=True)          # 129 -> 219
+roll(556.94, 2, db=-20, rate=0.85)                  # « de 129 »
+cue(558.08, 'price_rise', -16)                     # « à 219 euros »
+roll(560.78, 2, db=-21, rate=0.85)                  # « de 89 »
+cue(561.88, 'price_rise', -17)                     # « à 179 »
 cue(567.02, 'algorithm_pulse', -17, snap=True)     # le système
 cue(569.66, 'data_stream', -22, snap=True)         # la demande…
 # « une capacité limitée » told by the letters (src/kinetic/CapacityLimit.tsx, voice time)

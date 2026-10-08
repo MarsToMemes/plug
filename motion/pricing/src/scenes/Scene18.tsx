@@ -4,6 +4,7 @@ import { AbsoluteFill, useCurrentFrame } from 'remotion';
 import { AircraftPlan } from '../components/aircraft';
 import { Caps, Statement } from '../components/ui';
 import { S18 } from '../data/scene18';
+import { VOICE } from '../data/voice';
 import { EASE, THEME, clamp01, lerp, rng, seg } from '../theme';
 
 const B = S18.beats;
@@ -14,6 +15,30 @@ function zoomAt(f: number) {
   return z[z.length - 1]!.s;
 }
 const NS = { vectorEffect: 'non-scaling-stroke' as const };
+/** Scene frame where a voice second is shown (the passage's own anchors: same map as the episode). */
+const P18 = VOICE.passages.find((p) => p.scene === '18' && (p.from ?? 0) === 0)!;
+function sceneFrame(sec: number) {
+  const pts: Array<[number, number]> = [[0, P18.start], ...P18.anchors!];
+  for (let k = 1; k < pts.length; k++) { const [f0, v0] = pts[k - 1]!, [f1, v1] = pts[k]!; if (sec <= v1) return f0 + ((sec - v0) / (v1 - v0)) * (f1 - f0); }
+  return pts[pts.length - 1]![0];
+}
+// « un billet passé de 129 à 219 euros, ou une chambre passée de 89 à 179 » (voice/transcript.json)
+const STEPS = [
+  { at: sceneFrame(556.94), from: 219, to: 129, side: 'plane' as const, dur: 6 },
+  { at: sceneFrame(558.08), from: 129, to: 219, side: 'plane' as const, dur: 12, rise: true },
+  { at: sceneFrame(560.78), from: 219, to: 89, side: 'hotel' as const, dur: 6 },
+  { at: sceneFrame(561.88), from: 89, to: 179, side: 'hotel' as const, dur: 12, rise: true },
+];
+/** The price shown at scene frame f, the side it belongs to, and whether it is rising right now. */
+function priceAt(f: number) {
+  let v = S18.price, side: 'plane' | 'hotel' | null = null, rising = false;
+  for (const st of STEPS) {
+    if (f < st.at) break;
+    const u = clamp01((f - st.at) / st.dur), e = st.rise ? 1 - Math.pow(1 - u, 3) : u;
+    v = Math.round(lerp(st.from, st.to, e)); side = st.side; rising = !!st.rise && u < 1;
+  }
+  return { v, side, rising };
+}
 // Hotel: the split screen sits in one window of the facade.
 const WIN = { w: 1120, h: 520 }, PX = 1500, PY = 800, COLS = 12, FLOORS = 8, HC = 6, HF = 3;
 const HOTEL = { x: -HC * PX - WIN.w / 2 - 600, y: -(FLOORS - 1 - HF) * PY - WIN.h / 2 - 900, w: COLS * PX + 1200 - (PX - WIN.w), h: FLOORS * PY + 1500 - (PY - WIN.h) };
@@ -28,6 +53,7 @@ export const Scene18: React.FC = () => {
   const endText = seg(f, B.chainAt - 30, B.chainAt);
   const black = seg(f, B.black, B.black + 40);
   const lvl = [...S18.levels].reverse().find((l) => f >= l.at);
+  const pr = priceAt(f);
   return (
     <AbsoluteFill style={{ background: THEME.bg }}>
       <svg width={1920} height={1080} style={{ position: 'absolute', inset: 0, opacity: (1 - endText * 0.85) * (1 - 0.45 * seg(f, B.never - 10, B.never + 20)) }}>
@@ -67,13 +93,17 @@ export const Scene18: React.FC = () => {
           <g opacity={vis(0.05, 20)}>
             <line x1={-170} y1={-130} x2={-170} y2={130} stroke={THEME.line} strokeWidth={1.2} {...NS} />
             <line x1={170} y1={-130} x2={170} y2={130} stroke={THEME.line} strokeWidth={1.2} {...NS} />
+            <g opacity={pr.side === 'hotel' ? 0.3 : 1}>
             <AircraftPlan body={{ x: -334, y: -42, w: 56, h: 11 }} />
             <text x={-300} y={36} textAnchor="middle" fontFamily={THEME.sans} fontSize={20} letterSpacing="0.24em" fill={THEME.ink}>{S18.text.plane.toUpperCase()}</text>
+            </g>
+            <g opacity={pr.side === 'plane' ? 0.3 : 1}>
             <rect x={276} y={-70} width={48} height={60} fill="none" stroke={THEME.ink} strokeWidth={1.6} {...NS} />
             {Array.from({ length: 9 }, (_, k) => <rect key={k} x={282 + (k % 3) * 14} y={-62 + Math.floor(k / 3) * 16} width={8} height={10} fill={THEME.ink} />)}
             <text x={300} y={36} textAnchor="middle" fontFamily={THEME.sans} fontSize={20} letterSpacing="0.24em" fill={THEME.ink}>{S18.text.hotel.toUpperCase()}</text>
+            </g>
             <text x={0} y={-62} textAnchor="middle" fontFamily={THEME.sans} fontSize={13} letterSpacing="0.3em" fill={THEME.muted}>{S18.text.price.toUpperCase()}</text>
-            <text x={0} y={22} textAnchor="middle" fontFamily={THEME.sans} fontWeight={300} fontSize={64} fill={THEME.ink}>{S18.price} €</text>
+            <text x={0} y={22} textAnchor="middle" fontFamily={THEME.sans} fontWeight={300} fontSize={64} fill={pr.rising ? THEME.accent : THEME.ink}>{pr.v} €</text>
           </g>
         </g>
       </svg>
