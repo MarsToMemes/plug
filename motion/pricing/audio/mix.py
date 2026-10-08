@@ -212,7 +212,13 @@ cue(552.48, 'price_rise', -16)                        # the pressure: 129 -> 219
 cue(556.94, 'price_rise', -16, snap=True)          # 129 -> 219
 cue(567.02, 'algorithm_pulse', -17, snap=True)     # le système
 cue(569.66, 'data_stream', -22, snap=True)         # la demande…
-cue(588.78, 'impact_soft', -15, snap=True)         # capacité limitée
+# « une capacité limitée » told by the letters (src/kinetic/CapacityLimit.tsx, voice time)
+cue(588.3, 'tension_riser', -20, offset=1.95, dur=1.05, fin=0.3, fout=0.03)  # CAPACITÉ grows: tension, cut on the snap
+cue(589.5, 'impact_heavy', -16)                    # the contraction: the letters slam together
+for t in (590.22, 590.5, 590.66, 590.96):
+    cue(t, 'digital_tick', -26)                    # « à un moment précis », typed
+cue(592.5, 'ui_click', -22, rate=1.3)              # « disparaisse »: the letters collapse into points
+cue(593.22, 'digital_tick', -22)                   # the points land on the system
 cue(597.4, 'impact_heavy', -13)                    # jamais vraiment fixe
 cue(599.0, 'impact_soft', -19, snap=True)          # demande -> capacité -> temps -> prix
 

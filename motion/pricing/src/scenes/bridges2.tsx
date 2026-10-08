@@ -105,14 +105,9 @@ const N1518: Bridge = ({ t, u = t }) => {
 };
 // 18 → 16 : the whole system folds into a single line, where the question is written.
 const N1816: Bridge = ({ t }) => svg(<UnitsMorph a={SYS} b={pointsOnLine(560, 540, 1360, 540, 40, 2)} t={t} fillA={0} fillB={1} />);
-// 16 → 18 : the statement opens back into the whole system.
-const N1618: Bridge = ({ t }) => {
-  const c = EASE.in(seg(t, 0, 0.45));
-  return (<>
-    <div style={{ position: 'absolute', left: 0, width: 1920, top: 470, textAlign: 'center', fontFamily: THEME.serif, fontWeight: 300, fontSize: 92 * (1 - c * 0.9), textTransform: 'uppercase', color: THEME.ink, opacity: 1 - c, filter: `blur(${c * 6}px)` }}>Capacité limitée</div>
-    {svg(<><UnitsMorph a={pointsOnEllipse(960, 520, 4, 4, 6, 4)} b={SYS} t={seg(t, 0.35, 1)} fillB={0} /><ellipse cx={960} cy={540} rx={161} ry={161} fill="none" stroke={THEME.accent} strokeDasharray="6 8" opacity={seg(t, 0.6, 1)} /></>)}
-  </>);
-};
+// 16 → 18 : the letters of « capacité limitée » collapse into points that fly to the system's nodes
+// (drawn by the kinetic layer CapacityLimit); the bridge only brings in the system's dashed ring.
+const N1618: Bridge = ({ t }) => svg(<ellipse cx={960} cy={540} rx={161} ry={161} fill="none" stroke={THEME.accent} strokeDasharray="6 8" opacity={seg(t, 0.6, 1)} />);
 
 /** Bridge for a pair of neighbours in the narration order. */
 // sc>20 is a straight cut: the last words ("une prévision qui évolue") stay readable up to the cut.

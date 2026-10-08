@@ -15,6 +15,7 @@ import { TimeMapContext } from '../type/clock';
 import { TextQA } from '../layout/TextQA';
 import { PhotoLayer } from '../photo/Photos';
 import { PHOTO_SHOTS } from '../data/photos';
+import { CapacityLimit } from '../kinetic/CapacityLimit';
 
 /**
  * The episode cut on the voice-over: scenes in the order of the narration, each playing during
@@ -95,6 +96,8 @@ export const VoiceEpisode: React.FC<{ qa?: boolean }> = ({ qa }) => {
       </TransitionSeries>
       {/* Real photographs cut in on the words (licensed, public/photos/CREDITS.md). */}
       <PhotoLayer shots={PHOTO_SHOTS} />
+      {/* « Une capacité limitée, à un moment précis… » told letter by letter (src/kinetic). */}
+      <CapacityLimit />
       {/* voice + music + sound effects, built by audio/mix.py */}
       <Audio src={staticFile('audio/mix.m4a')} />
       {qa && <TextQA />}

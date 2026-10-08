@@ -12,7 +12,7 @@ const word: React.CSSProperties = { position: 'absolute', width: 600, textAlign:
 export const Scene16: React.FC = () => {
   const f = useCurrentFrame();
   const q = EASE.out(seg(f, B.question, B.question + 30)) * (1 - seg(f, B.qOut, B.qOut + 20));
-  const conv = EASE.inOut(seg(f, B.converge, B.converge + 40));
+  const conv = EASE.inOut(seg(f, B.converge, B.converge + 20)); // converge fast: CAPACITÉ emerges from this point
   return (
     <AbsoluteFill style={{ background: '#060607' }}>
       <CameraRig shots={S16.camera} start={S16.cameraStart}>
@@ -30,9 +30,8 @@ export const Scene16: React.FC = () => {
             </React.Fragment>
           );
         })}
-        {/* The answer, a revelation: slowly out of the blur; its precision follows, sliding in like time. */}
-        <Title text={S16.final[0]!} at={B.final1} top={470} size={92} family="TITLE_REVEAL_SLOW" tracking={0.03} camera={false} />
-        <Title text={S16.final[1]!} at={B.final2} top={590} size={40} font="sans" family="TITLE_SLIDE" tracking={0.2} color={THEME.muted} camera={false} />
+        {/* The answer (« une capacité limitée, à un moment précis ») is told letter by letter by the
+            kinetic layer CapacityLimit (src/kinetic), drawn over the episode on the voice's time. */}
       </CameraRig>
     </AbsoluteFill>
   );

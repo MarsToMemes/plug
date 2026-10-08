@@ -17,5 +17,4 @@ export const PHOTO_SHOTS: Shot[] = [
   { src: 'christmas-market-02.jpg', from: 445.72, to: 446.46, focus: [55, 55] },
   { src: 'stadium-crowd-01.jpg', from: 446.46, to: 447.86, focus: [40, 60] },
   { src: 'conference-hall-audience-02.jpg', from: 447.86, to: 448.45, focus: [50, 50] },
-  { src: 'airport-check-in-queue-04.jpg', from: 590.2, to: 591.45, focus: [50, 20] }, // "à un moment précis"
 ];
