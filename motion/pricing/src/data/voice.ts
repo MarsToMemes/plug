@@ -27,7 +27,7 @@ export const VOICE = {
     { scene: 'sc', start: 464.4 }, // the price curve written by the spark, on the narration's own timing (SparkCurve)
     { scene: '20', start: 489.6 }, // the ticket at 219 €, built on the narration's own timing
     { scene: '17', from: 24, start: 505.0, anchors: [[40, 505.9], [160, 512.5], [250, 513.9], [310, 518.8], [370, 521.5], [410, 522.8]] },
-    { scene: '15', start: 525.5, anchors: [[50, 527.2], [190, 535.9], [400, 545.7], [412, 546.5], [486, 550.18]] },
+    { scene: '15', start: 525.5 }, // built on the narration's own timing (L'horloge)
     { scene: '18', from: 0, to: 660, start: 553.9, anchors: [[110, 556.94], [250, 563.2], [380, 567.02], [510, 569.66], [650, 573.9]] },
     { scene: '16', start: 579.8, anchors: [[20, 580.2], [170, 582.5], [300, 585.0], [460, 587.8], [500, 588.78], [590, 590.66]] },
     { scene: '18', from: 660, to: 980, start: 592.5, anchors: [[680, 595.2], [780, 597.4], [870, 599.0], [930, 600.6]] },

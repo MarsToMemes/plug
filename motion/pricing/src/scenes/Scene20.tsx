@@ -15,7 +15,6 @@ export const Scene20: React.FC = () => {
   const card = 1 - seg(f, B.become, B.become + 12);
   const price = EASE.out(seg(f, B.price, B.price + 12));
   const quote = EASE.out(seg(f, B.quote, B.quote + 12)) * (1 - seg(f, B.strike + 18, B.strike + 30));
-  const strike = EASE.inOut(seg(f, B.strike, B.strike + 12));
   const per = 2 * (K.w + K.h);
   // The price leaves the ticket and takes the place of the machine's centre.
   const px = lerp(960, PRICE_NODE.x, become), py = lerp(K.y + 230, PRICE_NODE.y, become);
@@ -36,11 +35,11 @@ export const Scene20: React.FC = () => {
       <div style={{ position: 'absolute', left: K.x + 50, top: K.y + K.h - 70, opacity: card * seg(f, B.details + 10, B.details + 22) }}><Caps size={16}>{S20.text.seat}</Caps></div>
       {/* The price: on the ticket first, then flying to the centre of the machine and fading into it. */}
       <div style={{ position: 'absolute', left: px - 400, width: 800, top: py - lerp(70, 20, become), textAlign: 'center', fontFamily: THEME.sans, fontWeight: 300, fontSize: lerp(140, 36, become), color: THEME.ink, opacity: price * (1 - seg(become, 0.45, 0.85)), fontVariantNumeric: 'tabular-nums' }}>{S20.price} €</div>
-      {/* What it seems to say: a label. Struck through when the voice says it is not that. */}
-      <div style={{ position: 'absolute', left: 0, width: 1920, top: 150, textAlign: 'center', opacity: quote }}>
-        <span style={{ position: 'relative', fontFamily: THEME.serif, fontWeight: 300, fontSize: 64, color: THEME.ink }}>
+      {/* What it seems to say: a label. Struck through, at once, when the voice says it is not that. */}
+      <div style={{ position: 'absolute', left: 0, width: 1920, top: 128, textAlign: 'center', opacity: quote }}>
+        <span style={{ position: 'relative', display: 'inline-block', fontFamily: THEME.sans, fontWeight: 500, fontSize: 104, letterSpacing: '-0.025em', lineHeight: 1, color: THEME.ink }}>
           {S20.text.quote}
-          <span style={{ position: 'absolute', left: -12, top: '54%', height: 3, width: `calc(${strike * 100}% + 24px)`, background: THEME.accent }} />
+          {f >= B.strike && <span style={{ position: 'absolute', left: -16, right: -16, top: '52%', height: lerp(9, 6, EASE.out(seg(f, B.strike, B.strike + 6))), transform: 'translateY(-50%)', background: THEME.accent }} />}
         </span>
       </div>
     </AbsoluteFill>

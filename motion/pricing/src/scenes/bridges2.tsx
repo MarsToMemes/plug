@@ -8,6 +8,7 @@ import { CITY } from './Scene13';
 import { CAB19, Y19 } from './Scene19';
 import { PAIR } from './Scene07Layers';
 import { X0 as SX0, X1 as SX1, Y as SY } from './SparkCurve';
+import { CLOCK } from './Scene15';
 
 /** Bridges for the narration order (the pairs of neighbours that the voice-over creates). */
 type Bridge = React.FC<{ t: number; u?: number }>;
@@ -34,8 +35,20 @@ const N0708: Bridge = ({ t }) => {
 };
 // 08 → 10 : the room's window becomes the engine's core.
 const N0810: Bridge = ({ t }) => {
-  const win = { x: 960 + (1056 - 960) * 1.1, y: 540 + (210 - 470) * 1.1, w: 208 * 1.1, h: 180 * 1.1 };
-  return svg(<ShapeEl s={mixShape({ ...win, color: THEME.ink }, ellipse(960, 540, 170, 170, { color: THEME.ink }), EASE.inOut(t))} />);
+  // The window of scene 08 becomes the core of scene 10, landing exactly on it: scene 10 opens
+  // with the machine stepped back for its question (scale 0.87 around 960,660), so the core is
+  // there, not at its nominal place. A superellipse morph (square -> circle) instead of a
+  // rectangle whose corners round off: the sides bulge evenly, the outline stays one smooth line.
+  const k = 0.87, core = { cx: 960, cy: 660 + (540 - 660) * k, r: 170 * k };
+  const win = { cx: 960 + (1056 - 960) * 1.1 + 104 * 1.1, cy: 540 + (210 - 470) * 1.1 + 90 * 1.1, rx: 104 * 1.1, ry: 90 * 1.1 };
+  const e = EASE.inOut(t), shape = EASE.inOut(seg(t, 0.1, 0.9));
+  const cx = lerp(win.cx, core.cx, e), cy = lerp(win.cy, core.cy, e), rx = lerp(win.rx, core.r, e), ry = lerp(win.ry, core.r, e);
+  const n = Math.exp(lerp(Math.log(14), Math.log(2), shape)); // superellipse exponent: ~square -> circle
+  const pts = Array.from({ length: 160 }, (_, i) => {
+    const a = (i / 160) * Math.PI * 2, c = Math.cos(a), s2 = Math.sin(a);
+    return `${(cx + rx * Math.sign(c) * Math.abs(c) ** (2 / n)).toFixed(1)},${(cy + ry * Math.sign(s2) * Math.abs(s2) ** (2 / n)).toFixed(1)}`;
+  });
+  return svg(<polygon points={pts.join(' ')} fill="none" stroke={THEME.ink} strokeWidth={2} strokeLinejoin="round" />);
 };
 // 10 → 19 : the engine's core opens into two identical aircraft.
 const N1019: Bridge = ({ t }) => {
@@ -69,16 +82,19 @@ const N14SC: Bridge = ({ t }) => {
 const N1417: Bridge = ({ t }) => svg(<><UnitsMorph a={[...pointsOnLine(520, 815, 1400, 567, 24, 5), ...pointsOnLine(520, 815, 1400, 844, 24, 5)]} b={pointsOnEllipse(960, 450, 63, 63, 48, 3)} t={t} colorA={THEME.accent} fillA={1} fillB={1} /><circle cx={960} cy={450} r={63} fill="none" stroke={THEME.ink} strokeWidth={2} opacity={seg(t, 0.8, 1)} /></>);
 // 17 → 15 : the loop's two legs straighten into the two columns (aircraft | hotel).
 const N1715: Bridge = ({ t }) => {
+  // The loop's two legs fold into two points: where the aircraft and the hotel of scene 15 appear.
   const e = EASE.inOut(t);
-  const L = (a: number[], b: number[]) => <line x1={lerp(a[0]!, b[0]!, e)} y1={lerp(a[1]!, b[1]!, e)} x2={lerp(a[2]!, b[2]!, e)} y2={lerp(a[3]!, b[3]!, e)} stroke={e < 0.6 ? THEME.accent : THEME.faint} strokeWidth={lerp(2.2, 1.4, e)} />;
-  return svg(<>{L([960, 450, 690, 720], [560, 470, 560, 820])}{L([960, 450, 1230, 720], [1360, 470, 1360, 820])}<line x1={960} y1={lerp(540, 140, e)} x2={960} y2={lerp(540, 940, e)} stroke={THEME.line} strokeWidth={1.4} opacity={e} /></>);
+  const L = (a: number[], b: number[]) => <line x1={lerp(a[0]!, b[0]!, e)} y1={lerp(a[1]!, b[1]!, e)} x2={lerp(a[2]!, b[2]!, e)} y2={lerp(a[3]!, b[3]!, e)} stroke={THEME.accent} strokeWidth={2.2} opacity={1 - seg(t, 0.7, 1)} />;
+  return svg(<>{L([960, 450, 690, 720], [440, 400, 440, 400])}{L([960, 450, 1230, 720], [1480, 400, 1480, 400])}</>);
 };
-// 15 → 18 : the statement dissolves; the price comes closer and closer.
+// 15 → 18 : the clock opens and lets go of the price, which comes closer and closer.
 const N1518: Bridge = ({ t }) => {
   const e = EASE.in(t);
-  return (<>
-    <div style={{ position: 'absolute', left: 0, width: 1920, top: 480, textAlign: 'center', fontFamily: THEME.serif, fontWeight: 300, fontSize: 96, letterSpacing: `${0.03 + e * 0.4}em`, textTransform: 'uppercase', color: THEME.ink, opacity: 1 - seg(t, 0, 0.3), filter: `blur(${seg(t, 0, 0.3) * 10}px)` }}>Gestion des revenus</div>
-    {svg(<><text x={960} y={lerp(560, 738, e)} textAnchor="middle" fontFamily={THEME.sans} fontWeight={300} fontSize={lerp(30, 576, e)} fill={THEME.ink} opacity={seg(t, 0.34, 0.54)}>219 €</text><text x={960} y={144} textAnchor="middle" fontFamily={THEME.sans} fontSize={117} letterSpacing="0.3em" fill={THEME.muted} opacity={seg(t, 0.8, 1)}>PRIX</text></>)}
+  return svg(<>
+    <circle cx={CLOCK.cx} cy={CLOCK.cy} r={lerp(CLOCK.rTight, 1400, EASE.in(seg(t, 0, 0.6)))} fill="none" stroke={THEME.accent} strokeWidth={3.5} opacity={1 - seg(t, 0.2, 0.6)} />
+    <text x={960} y={lerp(CLOCK.cy + CLOCK.priceSize * 0.35, 738, e)} textAnchor="middle" fontFamily={THEME.sans} fontWeight={300} fontSize={lerp(CLOCK.priceSize, 576, e)} fill={THEME.accent} fillOpacity={(1 - seg(t, 0.5, 1)) * (1 - seg(t, 0.8, 0.98))} style={{ fontVariantNumeric: 'tabular-nums' }}>219 €</text>
+    <text x={960} y={lerp(CLOCK.cy + CLOCK.priceSize * 0.35, 738, e)} textAnchor="middle" fontFamily={THEME.sans} fontWeight={300} fontSize={lerp(CLOCK.priceSize, 576, e)} fill={THEME.ink} fillOpacity={seg(t, 0.5, 1) * (1 - seg(t, 0.8, 0.98))} style={{ fontVariantNumeric: 'tabular-nums' }}>219 €</text>
+    <text x={960} y={144} textAnchor="middle" fontFamily={THEME.sans} fontSize={117} letterSpacing="0.3em" fill={THEME.muted} opacity={seg(t, 0.8, 1)}>PRIX</text>
   </>);
 };
 // 18 → 16 : the whole system folds into a single line, where the question is written.

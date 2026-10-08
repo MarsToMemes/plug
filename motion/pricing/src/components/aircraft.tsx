@@ -80,26 +80,52 @@ export const Passenger: React.FC<{ x?: number; y?: number; size?: number; color?
  * box (so the cabin can be filled with seats). `fill` 1 = solid silhouette, 0 = transparent.
  */
 export const AircraftPlan: React.FC<{ body: { x: number; y: number; w: number; h: number }; fill?: number; parts?: number; line?: number }> = ({ body: b, fill = 0, parts = 1, line = 1 }) => {
-  const cy = b.y + b.h / 2;
-  const nose = `M${b.x + b.w},${b.y} C${b.x + b.w + b.h * 0.7},${b.y} ${b.x + b.w + b.h * 1.05},${cy - b.h * 0.18} ${b.x + b.w + b.h * 1.08},${cy} C${b.x + b.w + b.h * 1.05},${cy + b.h * 0.18} ${b.x + b.w + b.h * 0.7},${b.y + b.h} ${b.x + b.w},${b.y + b.h}`;
-  const tail = `M${b.x},${b.y} L${b.x - b.h * 0.75},${cy - b.h * 0.12} L${b.x - b.h * 0.8},${cy + b.h * 0.06} L${b.x},${b.y + b.h}`;
-  const wing = (s: 1 | -1) => {
-    const e = s < 0 ? b.y : b.y + b.h;
-    return `M${b.x + b.w * 0.6},${e} L${b.x + b.w * 0.4},${e + s * b.h * 1.55} L${b.x + b.w * 0.31},${e + s * b.h * 1.55} L${b.x + b.w * 0.4},${e} Z`;
-  };
-  const stab = (s: 1 | -1) => {
-    const e = s < 0 ? b.y : b.y + b.h;
-    return `M${b.x + b.w * 0.09},${e} L${b.x + b.w * 0.02},${e + s * b.h * 0.6} L${b.x - b.w * 0.02},${e + s * b.h * 0.6} L${b.x + b.w * 0.02},${e} Z`;
-  };
   const style = { fill: THEME.ink, fillOpacity: fill * 0.92, stroke: THEME.ink, strokeOpacity: line * (0.35 + 0.65 * (1 - fill)), strokeWidth: 2, strokeLinejoin: 'round' as const };
+  // `parts` < 1 (the aircraft turning into the hotel): the outline gives way to the bare fuselage box.
   return (
     <g>
-      <g opacity={parts}>
-        {[wing(-1), wing(1), stab(-1), stab(1)].map((d, i) => <path key={i} d={d} {...style} />)}
-        <path d={nose} {...style} />
-        <path d={tail} {...style} />
-      </g>
-      <rect x={b.x} y={b.y} width={b.w} height={b.h} {...style} />
+      {parts > 0 && <path d={aircraftOutline(b)} {...style} opacity={parts} />}
+      {parts < 1 && <rect x={b.x} y={b.y} width={b.w} height={b.h} {...style} opacity={1 - parts} />}
     </g>
   );
 };
+
+/**
+ * One continuous outline (no seams): ogive nose, straight cabin, swept wings, a fuselage that
+ * tapers into the tail cone, small swept stabilisers. Drawn around the cabin box (nose to the right).
+ */
+export function aircraftOutline(b: { x: number; y: number; w: number; h: number }) {
+  const { x: x0, w, h } = b, x1 = x0 + w, cy = b.y + h / 2, r = h / 2;
+  // Top half, from the nose tip backwards; y as an offset from the axis (negative = up).
+  const top: Array<string> = [];
+  const P = (x: number, dy: number) => `${x.toFixed(1)},${(cy + dy).toFixed(1)}`;
+  top.push(`M${P(x1 + h * 1.2, 0)}`);
+  top.push(`C${P(x1 + h * 1.2, -r * 0.62)} ${P(x1 + h * 0.62, -r)} ${P(x1, -r)}`); // nose
+  top.push(`L${P(x0 + w * 0.63, -r)}`); // cabin to the wing root
+  top.push(`L${P(x0 + w * 0.41, -r - h * 1.6)}`); // swept leading edge
+  top.push(`Q${P(x0 + w * 0.37, -r - h * 1.66)} ${P(x0 + w * 0.335, -r - h * 1.6)}`); // rounded tip
+  top.push(`L${P(x0 + w * 0.46, -r)}`); // trailing edge back to the fuselage
+  top.push(`L${P(x0, -r)}`); // rear cabin
+  top.push(`C${P(x0 - h * 0.3, -r)} ${P(x0 - h * 0.55, -r * 0.82)} ${P(x0 - h * 0.7, -r * 0.62)}`); // the fuselage starts to taper
+  top.push(`L${P(x0 - h * 1.02, -r - h * 0.62)}`); // stabiliser leading edge
+  top.push(`L${P(x0 - h * 1.2, -r - h * 0.62)}`); // stabiliser tip
+  top.push(`L${P(x0 - h * 1.06, -r * 0.4)}`); // stabiliser trailing edge
+  top.push(`L${P(x0 - h * 1.46, -r * 0.14)}`); // the cone keeps tapering
+  top.push(`Q${P(x0 - h * 1.52, -r * 0.1)} ${P(x0 - h * 1.52, 0)}`); // narrow rounded tail end
+  // Bottom half: the same points mirrored, in reverse order.
+  const pts = top.join(' ');
+  const mirror = pts.replace(/(-?[0-9.]+),(-?[0-9.]+)/g, (_, X, Y) => `${X},${(2 * cy - Number(Y)).toFixed(1)}`);
+  const segs = mirror.split(/(?=[MLCQ])/).slice(1); // drop the first M (the nose tip)
+  // Re-walk the mirrored segments backwards so the outline closes as one loop.
+  const coords = (seg: string) => seg.slice(1).trim().split(/\s+/);
+  const ends = [mirror.split(/(?=[MLCQ])/)[0]!.slice(1).trim(), ...segs.map((sg) => coords(sg).slice(-1)[0]!)];
+  let back = '';
+  for (let k = segs.length - 1; k >= 0; k--) {
+    const sg = segs[k]!, c = coords(sg), type = sg[0]!;
+    const start = ends[k]!; // reversed segment ends where the original started
+    if (type === 'L') back += ` L${start}`;
+    if (type === 'Q') back += ` Q${c[0]} ${start}`;
+    if (type === 'C') back += ` C${c[1]} ${c[0]} ${start}`;
+  }
+  return `${pts}${back} Z`;
+}
