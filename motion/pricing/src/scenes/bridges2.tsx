@@ -7,6 +7,7 @@ import { BRIDGES } from './bridges';
 import { CITY } from './Scene13';
 import { CAB19, Y19 } from './Scene19';
 import { PAIR } from './Scene07Layers';
+import { X0 as SX0, X1 as SX1, Y as SY } from './SparkCurve';
 
 /** Bridges for the narration order (the pairs of neighbours that the voice-over creates). */
 type Bridge = React.FC<{ t: number; u?: number }>;
@@ -59,6 +60,11 @@ const N1420: Bridge = ({ t }) => {
   const e = EASE.inOut(t), card = { x: 610, y: 300, w: 700, h: 400, rx: 24, ry: 24, color: THEME.line, stroke: 1.6 };
   return svg(<><ShapeEl s={mixShape({ x: 520, y: 700, w: 880, h: 3, color: THEME.accent, fill: 1 }, card, e)} /><UnitsMorph a={[...pointsOnLine(520, 815, 1400, 567, 24, 5), ...pointsOnLine(520, 815, 1400, 844, 24, 5)]} b={pointsOnLine(640, 500, 1280, 500, 48, 2)} t={t} colorA={THEME.accent} fillA={1} fillB={0} /></>);
 };
+// 14 → spark curve : the booking card folds into the 129 € line, where the spark will land.
+const N14SC: Bridge = ({ t }) => {
+  const e = EASE.inOut(t);
+  return svg(<><ShapeEl s={mixShape({ x: 660, y: 70, w: 600, h: 330, rx: 18, ry: 18, color: THEME.line, stroke: 1.5 }, { x: SX0, y: SY(129), w: SX1 - SX0, h: 1, color: THEME.faint, stroke: 1.2 }, e)} /><circle cx={SX0} cy={SY(129)} r={6 * seg(t, 0.75, 1)} fill={THEME.accent} /></>);
+};
 // 14 → 17 : both possible futures fold back into one point: the price at the centre of the machine.
 const N1417: Bridge = ({ t }) => svg(<><UnitsMorph a={[...pointsOnLine(520, 815, 1400, 567, 24, 5), ...pointsOnLine(520, 815, 1400, 844, 24, 5)]} b={pointsOnEllipse(960, 450, 63, 63, 48, 3)} t={t} colorA={THEME.accent} fillA={1} fillB={1} /><circle cx={960} cy={450} r={63} fill="none" stroke={THEME.ink} strokeWidth={2} opacity={seg(t, 0.8, 1)} /></>);
 // 17 → 15 : the loop's two legs straighten into the two columns (aircraft | hotel).
@@ -87,8 +93,9 @@ const N1618: Bridge = ({ t }) => {
 };
 
 /** Bridge for a pair of neighbours in the narration order. */
+// sc>20 is a straight cut: the last words ("une prévision qui évolue") stay readable up to the cut.
 export const BRIDGE_FOR: Record<string, Bridge | null> = {
   '01>02': BRIDGES[0]!, '02>04': N0204, '04>05': BRIDGES[3]!, '05>06': BRIDGES[4]!, '06>07': BRIDGES[5]!, '07>08': N0708,
   '08>10': N0810, '10>19': N1019, '19>09': N1909, '09>03': N0903, '03>11': N0311, '11>13': N1113, '13>12': N1312, '12>14': N1214,
-  '14>20': N1420, '20>17': null, '14>17': N1417, '17>15': N1715, '15>18': N1518, '18>16': N1816, '16>18': N1618,
+  '14>20': N1420, '14>sc': N14SC, 'sc>20': null, '20>17': null, '14>17': N1417, '17>15': N1715, '15>18': N1518, '18>16': N1816, '16>18': N1618,
 };

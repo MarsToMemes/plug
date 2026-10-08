@@ -20,16 +20,16 @@ export const SPARK_FROM = 464.4, SPARK_TO = 489.8;
 const V = (f: number) => SPARK_FROM + f / 30;
 
 // Chart frame (inside the safe area) and price scale.
-const X0 = 300, X1 = 1620;
-const Y = (v: number) => 880 - ((v - 100) / 130) * 500;
+export const X0 = 400, X1 = 1620;
+export const Y = (v: number) => 880 - ((v - 100) / 130) * 500;
 const X = (u: number) => lerp(X0, X1, u);
 const pts = (list: Array<[number, number]>): P[] => list.map(([u, v]) => ({ x: X(u), y: Y(v) }));
 
 // The two futures of the same 129 € ticket, and the forecasts redrawn from "today".
-const A = smooth(pts([[0, 129], [0.15, 131], [0.3, 139], [0.45, 147], [0.62, 169], [0.8, 190], [0.95, 214]]));
-const B = smooth(pts([[0, 129], [0.2, 128], [0.38, 125], [0.52, 121], [0.62, 119]]));
+export const A = smooth(pts([[0, 129], [0.15, 131], [0.3, 139], [0.45, 147], [0.62, 169], [0.8, 190], [0.95, 214]]));
+export const B = smooth(pts([[0, 129], [0.2, 128], [0.38, 125], [0.52, 121], [0.62, 119]]));
 const NOW = { u: 0.62, v: 119 };
-const FORECASTS = [180, 140, 108, 128].map((v, k) => smooth(pts([[NOW.u, NOW.v], [NOW.u + 0.12, NOW.v + (v - NOW.v) * 0.35 + (k % 2 ? 4 : -4)], [0.84, NOW.v + (v - NOW.v) * 0.75], [1, v]])));
+export const FORECASTS = [180, 140, 108, 128].map((v, k) => smooth(pts([[NOW.u, NOW.v], [NOW.u + 0.12, NOW.v + (v - NOW.v) * 0.35 + (k % 2 ? 4 : -4)], [0.84, NOW.v + (v - NOW.v) * 0.75], [1, v]])));
 
 // Timeline (voice seconds, from voice/transcript.json).
 const T = {
@@ -79,8 +79,8 @@ export const SparkCurve: React.FC = () => {
     const n = Math.ceil([...text].length * clamp01((v - appear) / 0.25));
     return (
       <g opacity={k}>
-        <text x={p.x + dx} y={p.y + (below ? 74 : -34)} textAnchor={anchor} fontFamily={THEME.sans} fontWeight={300} fontSize={64} fill={color}>{[...text].slice(0, n).join('')}</text>
-        {sub && <text x={p.x + dx} y={p.y + (below ? 108 : -110)} textAnchor={anchor} style={label} fontSize={18} fill={color} opacity={0.8}>{sub}</text>}
+        <text x={p.x + dx} y={p.y + (below ? 92 : -40)} textAnchor={anchor} fontFamily={THEME.sans} fontWeight={300} fontSize={84} fill={color}>{[...text].slice(0, n).join('')}</text>
+        {sub && <text x={p.x + dx} y={p.y + (below ? 152 : -138)} textAnchor={anchor} style={label} fontSize={24} fill={color} opacity={0.8}>{sub}</text>}
       </g>
     );
   };
@@ -94,39 +94,39 @@ export const SparkCurve: React.FC = () => {
             {[0, 0.25, 0.5, 0.75, 1].map((u, i) => (
               <g key={u}>
                 <line x1={X(u)} y1={Y(100)} x2={X(u)} y2={Y(230)} stroke={THEME.faint} strokeWidth={1} opacity={0.5} />
-                <text x={X(u)} y={Y(100) + 40} textAnchor="middle" style={label} fontSize={16} fill={THEME.muted}>{['J-30', 'J-21', 'J-14', 'J-7', 'Départ'][i]}</text>
+                <text x={X(u)} y={Y(100) + 40} textAnchor="middle" style={label} fontSize={20} fill={THEME.muted}>{['J-30', 'J-21', 'J-14', 'J-7', 'Départ'][i]}</text>
               </g>
             ))}
             <line x1={X0} y1={Y(100)} x2={X1} y2={Y(100)} stroke={THEME.line} strokeWidth={1.4} />
             <line x1={X0 - 30} y1={Y(129)} x2={X1} y2={Y(129)} stroke={THEME.faint} strokeDasharray="4 8" />
-                        <text x={X0 - 40} y={Y(230) + 6} textAnchor="end" style={label} fontSize={16} fill={THEME.muted}>Prix</text>
+                        <text x={X0 - 40} y={Y(230) + 6} textAnchor="end" style={label} fontSize={20} fill={THEME.muted}>Prix</text>
           </g>
 
           {/* Future A: the price rises while you wait. */}
           <g opacity={aDim}>
             <path d={pathOf(A, 0, headA)} fill="none" stroke={THEME.accent} strokeWidth={3} style={{ filter: `drop-shadow(0 0 6px ${THEME.accent})` }} />
-            <PathText curve={A} text="attendre," s0={150} head={headA} style={{ size: 40, font: 'sans', weight: 600, upper: false }} color={THEME.ink} />
+            <PathText curve={A} text="attendre," s0={170} head={headA} style={{ size: 52, font: 'sans', weight: 600, upper: false }} color={THEME.ink} />
             {priceTag(at(A, A.total), '214 €', THEME.accent, T.p214, '+85 €')}
           </g>
           {priceTag(at(A, 0), '129 €', THEME.ink, T.p129, undefined, false, 'end', -10)}
 
           {/* Future B: you wait, and the price drops. */}
           <path d={pathOf(B, 0, headB)} fill="none" stroke={THEME.cool} strokeWidth={3} style={{ filter: `drop-shadow(0 0 6px ${THEME.cool})` }} />
-          <PathText curve={B} text="attendre…" s0={70} head={headB} style={{ size: 40, font: 'sans', weight: 600, upper: false }} color={THEME.ink} offset={-50} />
-          <PathText curve={B} text="baisser" s0={B.total - 200} head={headB} style={{ size: 40, font: 'sans', weight: 600, upper: false }} color={THEME.cool} offset={26} />
+          <PathText curve={B} text="attendre…" s0={70} head={headB} style={{ size: 52, font: 'sans', weight: 600, upper: false }} color={THEME.ink} offset={-62} />
+          <PathText curve={B} text="baisser" s0={B.total - 250} head={headB} style={{ size: 52, font: 'sans', weight: 600, upper: false }} color={THEME.cool} offset={26} />
           {priceTag(at(B, B.total), '119 €', THEME.cool, T.down + 0.05, '−10 €', true)}
 
           {/* Today, and the forecasts redrawn from it. */}
           {today > 0 && (
             <g opacity={today}>
               <line x1={X(NOW.u)} y1={Y(100)} x2={X(NOW.u)} y2={Y(230)} stroke={THEME.ink} strokeOpacity={0.5} strokeDasharray="3 6" />
-              <text x={X(NOW.u)} y={Y(230) - 14} textAnchor="middle" style={label} fontSize={16} fill={THEME.ink}>Aujourd’hui</text>
+              <text x={X(NOW.u)} y={Y(230) - 14} textAnchor="middle" style={label} fontSize={20} fill={THEME.ink}>Aujourd’hui</text>
             </g>
           )}
           {FORECASTS.map((c, k) => fAlpha(k) > 0 && (
             <g key={k} opacity={fAlpha(k)}>
               <path d={pathOf(c, 0, fHead(k))} fill="none" stroke={THEME.ink} strokeWidth={2} strokeDasharray="8 8" />
-              {k === 3 && <PathText curve={c} text="une prévision qui évolue" s0={30} head={fHead(3)} style={{ size: 42, font: 'serif', italic: true, weight: 400, upper: false }} color={THEME.ink} offset={30} />}
+              {k === 3 && <PathText curve={c} text="une prévision qui évolue" s0={30} head={fHead(3)} style={{ size: 54, font: 'serif', italic: true, weight: 400, upper: false }} color={THEME.ink} offset={30} />}
             </g>
           ))}
 
@@ -134,9 +134,10 @@ export const SparkCurve: React.FC = () => {
         </g>
 
         {/* "Pourquoi ? Parce que… la demande qu'il anticipait": the line lights word by word. */}
-        <KaraokeLine t={v} from={T.why - 0.05} to={T.why + 0.6} cx={960} baseline={170} style={{ size: 64, font: 'serif', italic: true }} fade={[T.why - 0.1, T.reval - 0.2]} />
-        <KaraokeLine t={v} from={T.because - 0.05} to={T.becauseEnd} cx={960} baseline={236} style={{ size: 34, font: 'sans', weight: 400 }} accent={['demande', 'anticipait']} fade={[T.why, T.reval - 0.2]} />
-        <KaraokeLine t={v} from={T.reval - 0.05} to={484.9} cx={960} baseline={170} style={{ size: 34, font: 'sans', weight: 400 }} accent={['réévaluer']} fade={[T.reval - 0.1, 486.6]} />
+        <KaraokeLine t={v} from={T.why - 0.05} to={T.why + 0.6} cx={960} baseline={180} style={{ size: 80, font: 'serif', italic: true }} fade={[T.why - 0.1, T.reval - 0.2]} />
+        <KaraokeLine t={v} from={T.because - 0.05} to={479.3} cx={960} baseline={256} style={{ size: 42, font: 'sans', weight: 400 }} fade={[T.why, T.reval - 0.2]} />
+        <KaraokeLine t={v} from={479.3} to={T.becauseEnd} cx={960} baseline={314} style={{ size: 42, font: 'sans', weight: 400 }} accent={['demande', 'anticipait']} fade={[T.why, T.reval - 0.2]} />
+        <KaraokeLine t={v} from={T.reval - 0.05} to={484.9} cx={960} baseline={180} style={{ size: 42, font: 'sans', weight: 400 }} accent={['réévaluer']} fade={[T.reval - 0.1, 486.6]} />
       </svg>
     </AbsoluteFill>
   );

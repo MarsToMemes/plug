@@ -6,6 +6,7 @@ import { THEME, clamp01, seg } from '../theme';
 import { BRIDGE, SCENES } from './Episode';
 import { BRIDGE_FOR } from './bridges2';
 import { Scene19 } from './Scene19';
+import { SPARK_FROM, SPARK_TO, SparkCurve } from './SparkCurve';
 import { S19 } from '../data/scene19';
 import { Scene20 } from './Scene20';
 import { S20 } from '../data/scene20';
@@ -20,7 +21,7 @@ import { TextQA } from '../layout/TextQA';
  */
 const FPS = 30;
 const P = VOICE.passages;
-const comp = (key: string) => (key === '19' ? { C: Scene19, d: S19.duration } : key === '20' ? { C: Scene20, d: S20.duration } : SCENES[Number(key) - 1]!);
+const comp = (key: string) => (key === 'sc' ? { C: SparkCurve, d: Math.round((SPARK_TO - SPARK_FROM) * FPS) } : key === '19' ? { C: Scene19, d: S19.duration } : key === '20' ? { C: Scene20, d: S20.duration } : SCENES[Number(key) - 1]!);
 const starts = P.map((p) => Math.round(p.start * FPS));
 const ends = starts.map((s, i) => (i + 1 < starts.length ? starts[i + 1]! : Math.round(VOICE.end * FPS)));
 export const VOICE_DURATION = ends[ends.length - 1]!;

@@ -23,7 +23,8 @@ export const VOICE = {
     { scene: '11', start: 386.7, anchors: [[130, 395.0], [360, 408.0], [430, 411.48], [456, 413.0]] },
     { scene: '13', start: 416.9, anchors: [[90, 420.38], [170, 422.96], [500, 430.0], [560, 431.1], [600, 432.8], [640, 438.1]] },
     { scene: '12', start: 440.8, anchors: [[54, 442.8], [354, 448.5], [386, 449.7], [450, 451.0], [640, 455.48], [664, 455.6]] },
-    { scene: '14', start: 457.1, anchors: [[70, 464.7], [360, 470.08], [366, 471.1], [392, 472.0], [436, 473.2], [452, 474.0], [560, 475.8], [586, 476.7], [650, 482.0], [690, 485.6]] },
+    { scene: '14', to: 67, start: 457.1, anchors: [] }, // the question and "pas forcément" (the card)
+    { scene: 'sc', start: 464.4 }, // the price curve written by the spark, on the narration's own timing (SparkCurve)
     { scene: '20', start: 489.6 }, // the ticket at 219 €, built on the narration's own timing
     { scene: '17', from: 24, start: 505.0, anchors: [[40, 505.9], [160, 512.5], [250, 513.9], [310, 518.8], [370, 521.5], [410, 522.8]] },
     { scene: '15', start: 525.5, anchors: [[50, 527.2], [190, 535.9], [400, 545.7], [412, 546.5], [486, 550.18]] },
