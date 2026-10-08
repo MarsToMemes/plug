@@ -9,6 +9,8 @@ import { CAB19, Y19 } from './Scene19';
 import { PAIR } from './Scene07Layers';
 import { X0 as SX0, X1 as SX1, Y as SY } from './SparkCurve';
 import { CLOCK } from './Scene15';
+import { S15, S15_TO } from '../data/scene15';
+import { KaraokeLine } from '../synced/Karaoke';
 
 /** Bridges for the narration order (the pairs of neighbours that the voice-over creates). */
 type Bridge = React.FC<{ t: number; u?: number }>;
@@ -88,12 +90,16 @@ const N1715: Bridge = ({ t }) => {
   return svg(<>{L([960, 450, 690, 720], [440, 400, 440, 400])}{L([960, 450, 1230, 720], [1480, 400, 1480, 400])}</>);
 };
 // 15 → 18 : the clock opens and lets go of the price, which comes closer and closer.
-const N1518: Bridge = ({ t }) => {
+const N1518: Bridge = ({ t, u = t }) => {
   const e = EASE.in(t);
+  // The overlay starts 1 s before the cut (553.9): voice time = 552.9 + 2u. The last subtitle line
+  // ("…sur le prix.") is carried by the bridge until its last word has lit, then it fades.
+  const voice = S15_TO - 1 + 2 * u;
   return svg(<>
+    <g opacity={1 - seg(t, 0.4, 0.6)}><KaraokeLine t={voice} from={550.8} to={S15_TO} cx={960} baseline={902} style={{ size: 52, font: 'serif', italic: true, weight: 400, upper: false }} accent={S15.accent} /></g>
     <circle cx={CLOCK.cx} cy={CLOCK.cy} r={lerp(CLOCK.rTight, 1400, EASE.in(seg(t, 0, 0.6)))} fill="none" stroke={THEME.accent} strokeWidth={3.5} opacity={1 - seg(t, 0.2, 0.6)} />
-    <text x={960} y={lerp(CLOCK.cy + CLOCK.priceSize * 0.35, 738, e)} textAnchor="middle" fontFamily={THEME.sans} fontWeight={300} fontSize={lerp(CLOCK.priceSize, 576, e)} fill={THEME.accent} fillOpacity={(1 - seg(t, 0.5, 1)) * (1 - seg(t, 0.8, 0.98))} style={{ fontVariantNumeric: 'tabular-nums' }}>219 €</text>
-    <text x={960} y={lerp(CLOCK.cy + CLOCK.priceSize * 0.35, 738, e)} textAnchor="middle" fontFamily={THEME.sans} fontWeight={300} fontSize={lerp(CLOCK.priceSize, 576, e)} fill={THEME.ink} fillOpacity={seg(t, 0.5, 1) * (1 - seg(t, 0.8, 0.98))} style={{ fontVariantNumeric: 'tabular-nums' }}>219 €</text>
+    <text x={960} y={lerp(CLOCK.cy + CLOCK.priceSize * 0.35, 738, e)} textAnchor="middle" fontFamily={THEME.sans} fontWeight={300} fontSize={lerp(CLOCK.priceSize, 576, e)} fill={THEME.accent} fillOpacity={(1 - seg(t, 0.5, 1))}>219 €</text>
+    <text x={960} y={lerp(CLOCK.cy + CLOCK.priceSize * 0.35, 738, e)} textAnchor="middle" fontFamily={THEME.sans} fontWeight={300} fontSize={lerp(CLOCK.priceSize, 576, e)} fill={THEME.ink} fillOpacity={seg(t, 0.5, 1)}>219 €</text>
     <text x={960} y={144} textAnchor="middle" fontFamily={THEME.sans} fontSize={117} letterSpacing="0.3em" fill={THEME.muted} opacity={seg(t, 0.8, 1)}>PRIX</text>
   </>);
 };

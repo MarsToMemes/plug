@@ -190,15 +190,23 @@ for t in (482.25, 483.0, 483.8):                   # the forecasts redrawn
 
 # 20  the ticket at 219 €
 cue(494.4, 'impact_soft', -17)                     # 219 € on the ticket
+cue(503.3, 'ui_click', -15, rate=0.7)              # « ce billet coûte 219 € » struck through, at once
 cue(504.4, 'digital_tick', -18)                    # becomes the price node
 
 # 17  the machine
 cue(512.5, 'algorithm_pulse', -17, snap=True)      # the loop starts
 cue(521.5, 'impact_heavy', -15)              # c'est une décision
 
-# 15  capacity and the clock
-cue(546.0, 'clock_pulse', -20, snap=True)          # chaque départ, chaque nuit
-cue(550.2, 'digital_tick', -19)                    # l'horloge
+# 15  L'horloge (built on the voice: every cue is the word that shows it)
+for k in range(3):
+    cue(530.94 + k * 0.2, 'digital_tick', -24 - k)    # capacité limitée: the seats and rooms fill
+cue(537.3, 'airplane_pass', -21, offset=3.9, dur=2.4, fin=0.25, fout=1.2)  # décollage: only the pass itself
+roll(538.72, 2, db=-20, rate=0.8)                     # 79 € -> 0 €, worth nothing
+cue(541.78, 'room_lock', -17)                         # 00:00: the room's light goes out
+for t in (545.96, 547.16, 548.0):
+    cue(t, 'ui_click', -18, rate=0.75)                # chaque départ / nuit / réservation: the hand jumps
+cue(549.64, 'clock_pulse', -21)                       # fait avancer l'horloge
+cue(552.48, 'price_rise', -16)                        # the pressure: 129 -> 219 €
 
 # 18a / 16 / 18b
 cue(556.94, 'price_rise', -16, snap=True)          # 129 -> 219
@@ -259,9 +267,11 @@ voice *= 10 ** (6.0 / 20)  # the take is quiet (-22.6 LUFS)
 fx = np.zeros((N, 2))
 for t, name, db, o in C:
     x = resample(sfx(name), o.get('rate', 1.0)) * 10 ** (db / 20)
+    if 'offset' in o:  # start inside the sample (e.g. only the loudest part of a long pass)
+        x = x[int(o['offset'] * SR):]
     if 'dur' in o:
         x = x[:int(o['dur'] * SR)]
-        x = x * fades(len(x), 1.5, 1.5)
+        x = x * fades(len(x), o.get('fin', 1.5), o.get('fout', 1.5))
     add(fx, t, x)
 
 # Music: 0 -> 240 s, then 77.5 s -> end, joined in the track's own silence at 4:00.

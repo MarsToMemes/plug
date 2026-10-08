@@ -78,7 +78,8 @@ export const Scene15: React.FC = () => {
   const r = lerp(CLOCK_L.r, CLOCK_L.rTight, press);
   const handO = dial * (1 - seg(v, T.price - 0.25, T.price + 0.1)); // the hand gives way to the price
   const priceO = k(T.price, 0.5);
-  const price = Math.round(lerp(S15.prices.from, S15.prices.to, EASE.inOut(seg(v, T.pressure, T.pressure + 0.9))));
+  // The count ends before the 15 → 18 bridge starts (553.9 - 1 s), so the bridge picks up 219 € exactly.
+  const price = Math.round(lerp(S15.prices.from, S15.prices.to, EASE.inOut(seg(v, T.pressure, T.pressure + 0.38))));
   const rad = (a: number) => (a * Math.PI) / 180;
 
   return (
@@ -154,7 +155,7 @@ export const Scene15: React.FC = () => {
         return <div key={w} style={{ ...caps, position: 'absolute', left: align === 'left' ? x : align === 'right' ? x - 500 : x - 250, width: align === 'center' ? 500 : 500, top: y - 14 + (i === 1 ? 6 : 0), textAlign: align, fontSize: 24, color: v < T.words[i]! + 0.5 ? THEME.accent : THEME.ink, opacity: o }}>{w}</div>;
       })}
       {/* Act E: the price at the centre of the clock, pressed upwards. */}
-      <div style={{ position: 'absolute', left: CLOCK_L.cx - 300, width: 600, top: CLOCK_L.cy - 58, textAlign: 'center', opacity: priceO, transform: `scale(${0.9 + 0.1 * priceO})`, fontFamily: THEME.sans, fontWeight: 300, fontSize: 96, lineHeight: '116px', color: press > 0.5 ? THEME.accent : THEME.ink, fontVariantNumeric: 'tabular-nums' }}>{price} €</div>
+      <div style={{ position: 'absolute', left: CLOCK_L.cx - 300, width: 600, top: CLOCK_L.cy - 58, textAlign: 'center', opacity: priceO, transform: `scale(${0.9 + 0.1 * priceO})`, fontFamily: THEME.sans, fontWeight: 300, fontSize: 96, lineHeight: '116px', color: press > 0.5 ? THEME.accent : THEME.ink }}>{price} €</div>
       </div>
       <svg width={1920} height={1080} style={{ position: 'absolute', inset: 0 }}>
         {/* Karaoke subtitle: each word lights when it is said. */}
