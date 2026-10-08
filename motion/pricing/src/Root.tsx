@@ -48,6 +48,7 @@ import { AnimeCheck } from './scenes/AnimeCheck';
 import { IconCheck } from './scenes/IconCheck';
 import { FontCheck } from './scenes/FontCheck';
 import { MotionCheck } from './scenes/MotionCheck';
+import { Hook01 } from './scenes/Hook01';
 import { S20 } from './data/scene20';
 import { EPISODE_DURATION, Episode } from './scenes/Episode';
 import { VOICE_DURATION, VoiceEpisode } from './scenes/VoiceEpisode';
@@ -56,21 +57,24 @@ import { VOICE_DURATION, VoiceEpisode } from './scenes/VoiceEpisode';
 //   Instrument Serif — editorial display serif for the big titles (roman + italic for emphasis)
 //   Geist            — modern grotesque for figures and text (variable 100–900)
 //   Geist Mono       — data labels, counters, small captions (variable 100–900)
-const fonts: Array<[string, string, string, string]> = [
+//   Archivo          — extra-wide black grotesque of the reel language (variable width 62–125 %)
+const fonts: Array<[string, string, string, string, string?]> = [
   ['Instrument Serif', 'instrumentserif/InstrumentSerif-Regular.ttf', 'normal', '400'],
   ['Instrument Serif', 'instrumentserif/InstrumentSerif-Italic.ttf', 'italic', '400'],
   ['Geist', 'geist/Geist[wght].ttf', 'normal', '100 900'],
   ['Geist Mono', 'geistmono/GeistMono[wght].ttf', 'normal', '100 900'],
   ['Newsreader', 'Newsreader.woff2', 'normal', '200 800'],
   ['Inter', 'Inter.woff2', 'normal', '100 900'],
+  ['Archivo', 'archivo/Archivo[wdth,wght].ttf', 'normal', '100 900', '62% 125%'],
 ];
 const handle = delayRender('fonts');
-Promise.all(fonts.map(([family, file, style, weight]) => new FontFace(family, `url(${staticFile('fonts/' + file)})`, { style, weight }).load().then((f) => document.fonts.add(f)))).then(() => continueRender(handle));
+Promise.all(fonts.map(([family, file, style, weight, stretch]) => new FontFace(family, `url(${staticFile('fonts/' + file)})`, { style, weight, ...(stretch ? { stretch } : {}) }).load().then((f) => document.fonts.add(f)))).then(() => continueRender(handle));
 
 export const Root: React.FC = () => (
   <>
     <Folder name="Scenes">
       <Composition id="Scene01" component={Scene01} width={1920} height={1080} fps={30} durationInFrames={S01.duration} />
+      <Composition id="Hook01" component={Hook01} width={1920} height={1080} fps={30} durationInFrames={S01.duration} />
       <Composition id="Scene02" component={Scene02} width={1920} height={1080} fps={30} durationInFrames={S02.duration} />
       <Composition id="Scene03" component={Scene03} width={1920} height={1080} fps={30} durationInFrames={S03.duration} />
       <Composition id="Scene04" component={Scene04} width={1920} height={1080} fps={30} durationInFrames={S04.duration} />

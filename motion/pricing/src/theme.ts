@@ -12,6 +12,7 @@ export const THEME = {
   serif: "'Instrument Serif', Geist, Georgia, serif", // Geist supplies the glyphs Instrument Serif lacks (→)
   sans: 'Geist, Inter, Helvetica, Arial, sans-serif',
   mono: "'Geist Mono', ui-monospace, monospace",
+  wide: "Archivo, Geist, Helvetica, sans-serif", // reel language: weight 900, font-stretch 125 %
 } as const;
 
 export const EASE = {

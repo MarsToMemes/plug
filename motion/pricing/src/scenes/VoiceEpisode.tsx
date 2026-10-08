@@ -4,6 +4,8 @@ import { Audio } from '@remotion/media';
 import { AbsoluteFill, Freeze, Sequence, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
 import { THEME, clamp01, seg } from '../theme';
 import { BRIDGE, SCENES } from './Episode';
+import { Hook01 } from './Hook01';
+import { S01 } from '../data/scene01';
 import { BRIDGE_FOR } from './bridges2';
 import { Scene19 } from './Scene19';
 import { S19 } from '../data/scene19';
@@ -20,7 +22,7 @@ import { TextQA } from '../layout/TextQA';
  */
 const FPS = 30;
 const P = VOICE.passages;
-const comp = (key: string) => (key === '19' ? { C: Scene19, d: S19.duration } : key === '20' ? { C: Scene20, d: S20.duration } : SCENES[Number(key) - 1]!);
+const comp = (key: string) => (key === '01' ? { C: Hook01, d: S01.duration } : key === '19' ? { C: Scene19, d: S19.duration } : key === '20' ? { C: Scene20, d: S20.duration } : SCENES[Number(key) - 1]!);
 const starts = P.map((p) => Math.round(p.start * FPS));
 const ends = starts.map((s, i) => (i + 1 < starts.length ? starts[i + 1]! : Math.round(VOICE.end * FPS)));
 export const VOICE_DURATION = ends[ends.length - 1]!;

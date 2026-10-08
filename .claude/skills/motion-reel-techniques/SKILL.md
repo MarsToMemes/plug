@@ -146,3 +146,19 @@ Hold ≈ 1 s with the symbol slowly rotating and particles settling.
   chapter openers and key reveals, not for every shot, unless the whole film adopts it.
 - Tempo first: choose a BPM that matches the music, then put every key on beats.
 - Keep the composition engine and the QA (`scripts/qa.mjs`) for every shot.
+
+## 5. Implemented blocks (motion/pricing)
+
+- `src/reel/beat.ts` — tempo grid: `beat(n)`, `hit(wordSecond)` (snaps a word to the nearest half
+  beat within 0.13 s, otherwise keeps the word: the voice always wins). "Subtle Shifts" = 120 BPM,
+  first beat 0.42 s.
+- `src/reel/Hud.tsx` — the monitor frame (§2), ink colour per ground, live captions.
+- `src/reel/Word.tsx` — measured big word, letter by letter: entries `slamR`, `slamL`, `drop`,
+  `rise`, `linear`, `type`, `pop`; directional motion blur from each letter's real velocity (SVG
+  filter); `breathe` (T3, letters re-packed so the word keeps its width); `collapse` (T4, letters →
+  dots); `exit`. `layoutWord()` gives the validated layout (fit to the safe width, optical centre).
+- `src/reel/fx.tsx` — `Seed` (T1), `Iris` + `irisRadius` (T2), `Odometer` (rolling digits),
+  `Wall` (T10 multiplied word), `wipeMask` (soft diagonal wipe).
+- First use: `src/scenes/Hook01.tsx` (the episode's first 27.3 s, on the voice and on the beat).
+- Font: Archivo variable (`public/fonts/archivo`, OFL), set at weight 900 and `font-stretch: 125%`
+  (`THEME.wide`, `measure()` font `'wide'`).
