@@ -71,15 +71,15 @@ GRID_CUTS = (44.2, 65.6, 90.4, 131.4, 310.8, 352.4, 386.7, 416.9, 440.8)
 for k, c in enumerate(GRID_CUTS):
     cue(c - 1.16, 'whoosh_long', -21, rate=(0.94, 1.0, 1.05)[k % 3])
 
-# 01  hook (src/scenes/Hook01.tsx): every event is on the music grid (120 BPM, half beats from 0.42 s)
-cue(4.42, 'impact_soft', -21)                      # 287 € slams in
-cue(6.17, 'ui_click', -17)                         # the app closes: the figures collapse into dots
-cue(9.17, 'ui_click', -18, rate=1.12)              # opened again: time stops
-roll(10.17, 3, db=-17)                             # 287 -> 341, the digits roll
-cue(13.42, 'price_rise', -15)                      # 476 € rises
-for t in (15.92, 17.67, 19.67):                    # avion / siège / trajet, one word per beat
-    cue(t, 'digital_tick', -19)
-cue(25.42, 'impact_soft', -16)                     # "qui décide"
+# 01  (built on the voice)
+cue(4.4, 'impact_soft', -21)                       # 287 € appears
+cue(6.3, 'ui_click', -17)                          # the app closes
+cue(9.2, 'ui_click', -18, rate=1.12)               # opened again
+cue(10.22, 'price_rise', -16)                      # 287 -> 341
+cue(13.34, 'price_rise', -15)                      # 341 -> 476
+for t in (16.0, 17.7, 19.7):                       # même avion / siège / trajet
+    cue(t - 0.1, 'digital_tick', -19)
+cue(24.4, 'impact_soft', -16)                      # "qui décide de ce prix ?"
 
 # 02
 cue(42.8, 'clock_pulse', -21, snap=True)           # date d'expiration
