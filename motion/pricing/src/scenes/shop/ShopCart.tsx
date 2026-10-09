@@ -98,7 +98,7 @@ const Photo: React.FC<{ it: Item; w: number; h: number; radius: number }> = ({ i
 );
 
 /** Odometer: every digit rolls; a digit carries only while the one to its right goes 9 → 0. */
-const Odometer: React.FC<{ cents: number; size: number }> = ({ cents, size }) => {
+export const Odometer: React.FC<{ cents: number; size: number }> = ({ cents, size }) => {
   const H = size * 1.1, W = size * 0.62;
   const col = (p: number, key: string) => {
     const w = cents / 10 ** p, d = Math.floor(w) % 10;
