@@ -52,6 +52,7 @@ import { Hook01 } from './scenes/Hook01';
 import { ShopScroll, SHOP } from './scenes/shop/ShopScroll';
 import { ShopGrid, GRID } from './scenes/shop/ShopGrid';
 import { ShopPrice, PRICE } from './scenes/shop/ShopPrice';
+import { ShopTimer, TIMER } from './scenes/shop/ShopTimer';
 import { SPARK_FROM, SPARK_TO, SparkCurve } from './scenes/SparkCurve';
 import { S20 } from './data/scene20';
 import { EPISODE_DURATION, Episode } from './scenes/Episode';
@@ -79,6 +80,7 @@ export const Root: React.FC = () => (
     <Folder name="Scenes">
       <Composition id="Scene01" component={Scene01} width={1920} height={1080} fps={30} durationInFrames={S01.duration} />
       <Composition id="SparkCurve" component={SparkCurve} width={1920} height={1080} fps={30} durationInFrames={Math.round((SPARK_TO - SPARK_FROM) * 30)} />
+      <Composition id="ShopTimer" component={ShopTimer} width={1920} height={1080} fps={TIMER.fps} durationInFrames={Math.round(TIMER.fps * TIMER.seconds)} />
       <Composition id="ShopPrice" component={ShopPrice} width={1920} height={1080} fps={PRICE.fps} durationInFrames={Math.round(PRICE.fps * PRICE.seconds)} />
       <Composition id="ShopGrid" component={ShopGrid} width={1920} height={1080} fps={GRID.fps} durationInFrames={Math.round(GRID.fps * GRID.seconds)} />
       <Composition id="ShopScroll" component={ShopScroll} width={1920} height={1080} fps={SHOP.fps} durationInFrames={SHOP.fps * SHOP.seconds} />
