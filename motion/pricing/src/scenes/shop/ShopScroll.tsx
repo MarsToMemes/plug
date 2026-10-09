@@ -1,7 +1,8 @@
 import React from 'react';
 import { AbsoluteFill, useCurrentFrame, useVideoConfig } from 'remotion';
-import { THEME, rng } from '../../theme';
-import { Garment, KINDS, type Kind } from './garments';
+import { THEME } from '../../theme';
+import { Garment } from './garments';
+import { NAMES, product, euro } from './products';
 
 /**
  * ShopScroll — a fast-fashion app scrolled faster and faster, then a camera dive into one product.
@@ -25,18 +26,6 @@ const CARD = { w: 186, img: 248, text: 60, gap: 8, side: 10 };
 const PITCH = CARD.img + CARD.text + CARD.gap;
 const gridTop = (collapse: number) => STATUS + HEADER + SEARCH * (1 - collapse) + TABS;
 const GRID_BOTTOM = SH - NAV;
-
-// ---------------------------------------------------------------- products (deterministic)
-const NAMES: Record<Kind, string> = { tee: 'T-shirt oversize', dress: 'Robe midi plissée', hoodie: 'Sweat à capuche', jeans: 'Jean large taille haute', skirt: 'Jupe satinée', jacket: 'Veste cropped', cami: 'Top à fines bretelles', shorts: 'Short en lin', sweater: 'Pull maille côtelée', bag: 'Sac bandoulière' };
-const BG = ['#EEE8E0', '#E4E8EB', '#F0E5E6', '#E5E9E1', '#F2EDE4', '#E8E3ED', '#ECE9E2'];
-const INK = ['#1F1F22', '#C2453A', '#D9C8B0', '#6B7F99', '#B4876A', '#3D4C40', '#D7A3AD', '#8A2F3A', '#2F4B7C', '#F4F1EA', '#E4B33E'];
-type Product = { kind: Kind; bg: string; color: string; price: number; was: number; sold: number };
-function product(k: number): Product {
-  const r = rng(9100 + k * 31);
-  const kind = KINDS[Math.floor(r() * KINDS.length)]!, price = [3.49, 4.99, 5.49, 6.99, 7.99, 8.49, 9.99, 11.99, 12.49, 14.99][Math.floor(r() * 10)]!;
-  return { kind, bg: BG[Math.floor(r() * BG.length)]!, color: INK[Math.floor(r() * INK.length)]!, price, was: Math.round(price * (2 + r() * 1.6)) - 0.01, sold: 1 + Math.floor(r() * 99) };
-}
-const euro = (v: number) => `${v.toFixed(2).replace('.', ',')} €`;
 
 // ---------------------------------------------------------------- the velocity curve
 const STEPS = [{ t: 0.45, v: 230 }, { t: 1.3, v: 520 }, { t: 2.05, v: 980 }, { t: 2.7, v: 1750 }, { t: 3.25, v: 2900 }, { t: 3.7, v: 4300 }, { t: 4.1, v: 6200 }];
