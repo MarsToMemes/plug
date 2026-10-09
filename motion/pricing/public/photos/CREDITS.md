@@ -26,3 +26,9 @@ Toutes viennent de Wikimedia Commons, sous une licence qui autorise l'usage comm
 - Crowd near Wembley Stadium - geograph.org.uk - 3869538.jpg — Richard Humphrey, CC BY-SA 2.0 (https://commons.wikimedia.org/wiki/File:Crowd_near_Wembley_Stadium_-_geograph.org.uk_-_3869538.jpg)
 - EduWiki 2014, Edinburgh - Morning Sessions, presenters and audience 03.jpg — Brian McNeil, CC BY 3.0 (https://commons.wikimedia.org/wiki/File:EduWiki_2014,_Edinburgh_-_Morning_Sessions,_presenters_and_audience_03.jpg)
 - Flight Board at Departures Area by Security Check-In at Taiwan Taoyuan International Airport.jpg — midnightbreakfastcafe, CC BY 2.0 (https://commons.wikimedia.org/wiki/File:Flight_Board_at_Departures_Area_by_Security_Check-In_at_Taiwan_Taoyuan_International_Airport.jpg)
+
+## Animation « ShopHand » (public/shop/)
+
+| fichier | usage | auteur | licence | source |
+|---|---|---|---|---|
+| shop/hand-phone.jpg (+ hand-phone-soft.jpg, masques dérivés) | plan main + téléphone | NeONBRAND (Unsplash) | CC0 | https://commons.wikimedia.org/wiki/File:Smartphone_in_Hand_(Unsplash).jpg |

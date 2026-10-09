@@ -19,7 +19,7 @@ if (mode === 'stills') {
     console.log('range', a, b);
   }
 } else {
-  await renderMedia({ serveUrl, composition, codec: 'h264', crf: 14, outputLocation: out, browserExecutable, concurrency: 3,
+  await renderMedia({ serveUrl, composition, codec: 'h264', crf: 14, outputLocation: out, browserExecutable, concurrency: Number(process.env.CONCURRENCY ?? 3),
     onProgress: ({ progress }) => { if (Math.round(progress * 100) % 10 === 0) process.stdout.write(`\r${Math.round(progress * 100)}%`); } });
   console.log('\ndone', out);
 }
