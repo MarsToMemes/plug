@@ -61,6 +61,7 @@ import { ShopHand, HAND } from './scenes/shop/ShopHand';
 import { ShopOutro, OUTRO } from './scenes/shop/ShopOutro';
 import { ShopReward, REWARD } from './scenes/shop/ShopReward';
 import { ShopGoal, GOAL, GOAL_DEFAULTS } from './scenes/shop/ShopGoal';
+import { ShopPick, PICK } from './scenes/shop/ShopPick';
 import { SPARK_FROM, SPARK_TO, SparkCurve } from './scenes/SparkCurve';
 import { S20 } from './data/scene20';
 import { EPISODE_DURATION, Episode } from './scenes/Episode';
@@ -88,6 +89,7 @@ export const Root: React.FC = () => (
     <Folder name="Scenes">
       <Composition id="Scene01" component={Scene01} width={1920} height={1080} fps={30} durationInFrames={S01.duration} />
       <Composition id="SparkCurve" component={SparkCurve} width={1920} height={1080} fps={30} durationInFrames={Math.round((SPARK_TO - SPARK_FROM) * 30)} />
+      <Composition id="ShopPick" component={ShopPick} width={1920} height={1080} fps={PICK.fps} durationInFrames={PICK.fps * PICK.seconds} />
       {/* Amounts, threshold, conditions, source: props to fill from a real offer (Studio > props). */}
       <Composition id="ShopGoal" component={ShopGoal} width={1920} height={1080} fps={GOAL.fps} durationInFrames={GOAL.fps * GOAL.seconds} defaultProps={GOAL_DEFAULTS} />
       <Composition id="ShopReward" component={ShopReward} width={1920} height={1080} fps={REWARD.fps} durationInFrames={REWARD.fps * REWARD.seconds} />
