@@ -219,7 +219,7 @@ export const ShopHand: React.FC = () => {
   const frame = useCurrentFrame(), { fps } = useVideoConfig();
   const t = frame / fps, u = t / T;
   // Camera: a slow push towards the screen + a periodic handheld drift (period T, so the loop holds).
-  const s = 1.3 + 0.06 * u;
+  const s = 1.3 + 0.04 * u; // the only thing that does not loop: kept small, and reset during a flick (cut on action)
   const w = (k: number, ph: number) => Math.sin(2 * Math.PI * k * u + ph);
   const jx = 3.2 * w(2, 0.3) + 1.6 * w(3, 1.9) + 0.8 * w(7, 4.1), jy = 2.6 * w(2, 2.2) + 1.4 * w(5, 0.7), rot = 0.12 * w(3, 1.2) + 0.05 * w(5, 3.3);
   const focus = { x: 957, y: 632 };
