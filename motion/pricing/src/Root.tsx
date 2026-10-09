@@ -59,6 +59,7 @@ import { ShopCart, CART } from './scenes/shop/ShopCart';
 import { ShopThreshold, THRESHOLD } from './scenes/shop/ShopThreshold';
 import { ShopHand, HAND } from './scenes/shop/ShopHand';
 import { ShopOutro, OUTRO } from './scenes/shop/ShopOutro';
+import { ShopReward, REWARD } from './scenes/shop/ShopReward';
 import { SPARK_FROM, SPARK_TO, SparkCurve } from './scenes/SparkCurve';
 import { S20 } from './data/scene20';
 import { EPISODE_DURATION, Episode } from './scenes/Episode';
@@ -86,6 +87,7 @@ export const Root: React.FC = () => (
     <Folder name="Scenes">
       <Composition id="Scene01" component={Scene01} width={1920} height={1080} fps={30} durationInFrames={S01.duration} />
       <Composition id="SparkCurve" component={SparkCurve} width={1920} height={1080} fps={30} durationInFrames={Math.round((SPARK_TO - SPARK_FROM) * 30)} />
+      <Composition id="ShopReward" component={ShopReward} width={1920} height={1080} fps={REWARD.fps} durationInFrames={REWARD.fps * REWARD.seconds} />
       <Composition id="ShopOutro" component={ShopOutro} width={1920} height={1080} fps={OUTRO.fps} durationInFrames={Math.round(OUTRO.fps * OUTRO.seconds)} />
       <Composition id="ShopHand" component={ShopHand} width={1920} height={1080} fps={HAND.fps} durationInFrames={HAND.fps * HAND.seconds} />
       <Composition id="ShopThreshold" component={ShopThreshold} width={1920} height={1080} fps={THRESHOLD.fps} durationInFrames={Math.round(THRESHOLD.fps * THRESHOLD.seconds)} />
