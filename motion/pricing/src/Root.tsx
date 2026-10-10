@@ -64,6 +64,7 @@ import { ShopGoal, GOAL, GOAL_DEFAULTS } from './scenes/shop/ShopGoal';
 import { ShopPick, PICK } from './scenes/shop/ShopPick';
 import { ShopChain, CHAIN } from './scenes/shop/ShopChain';
 import { ShopOne, ONE } from './scenes/shop/ShopOne';
+import { LeakOpening, LEAK_DEFAULTS, LEAK_FPS, type LeakProps } from './scenes/leak/LeakOpening';
 import { SPARK_FROM, SPARK_TO, SparkCurve } from './scenes/SparkCurve';
 import { S20 } from './data/scene20';
 import { EPISODE_DURATION, Episode } from './scenes/Episode';
@@ -91,6 +92,9 @@ export const Root: React.FC = () => (
     <Folder name="Scenes">
       <Composition id="Scene01" component={Scene01} width={1920} height={1080} fps={30} durationInFrames={S01.duration} />
       <Composition id="SparkCurve" component={SparkCurve} width={1920} height={1080} fps={30} durationInFrames={Math.round((SPARK_TO - SPARK_FROM) * 30)} />
+      {/* Plug Leak opening: every cue is a prop (seconds) — set them on the voice / music in Studio > props. */}
+      <Composition id="LeakOpening" component={LeakOpening} width={1920} height={1080} fps={LEAK_FPS} durationInFrames={Math.round(LEAK_DEFAULTS.timing.end * LEAK_FPS)} defaultProps={LEAK_DEFAULTS}
+        calculateMetadata={({ props }: { props: LeakProps }) => ({ durationInFrames: Math.round((props.timing?.end ?? LEAK_DEFAULTS.timing.end) * LEAK_FPS) })} />
       <Composition id="ShopOne" component={ShopOne} width={1920} height={1080} fps={ONE.fps} durationInFrames={Math.round(ONE.fps * ONE.seconds)} />
       <Composition id="ShopChain" component={ShopChain} width={1920} height={1080} fps={CHAIN.fps} durationInFrames={CHAIN.fps * CHAIN.seconds} />
       <Composition id="ShopPick" component={ShopPick} width={1920} height={1080} fps={PICK.fps} durationInFrames={PICK.fps * PICK.seconds} />
