@@ -41,3 +41,13 @@ Toutes viennent de Wikimedia Commons, sous une licence qui autorise l'usage comm
 | shop/Geist-ExtraBold-static.ttf | le « 1 € » extrudé | Geist (Vercel), instance fixe graisse 800 | OFL (shop/Geist-OFL.txt) | public/fonts/geist |
 
 - Fidget spinner (Yellow) 2026 (01).jpg — Gpkp, CC BY-SA 4.0 (https://commons.wikimedia.org/wiki/File:Fidget_spinner_(Yellow)_2026_(01).jpg). CC BY-SA : l'image modifiée (détourée) reste sous CC BY-SA 4.0.
+
+## Animation « LeakAutopsy » (public/autopsy/)
+
+| fichier | usage | auteur | licence | source |
+|---|---|---|---|---|
+| autopsy/product.png (détouré) | le produit dans son étui | Gpkp | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Fidget_spinner_(Yellow)_2026_(02).jpg |
+| autopsy/macro-emballage.jpg (recadrage) | gros plan emballage | Gpkp | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Fidget_spinner_(Yellow)_2026_(02).jpg |
+| autopsy/macro-matiere.jpg, macro-assemblage.jpg (recadrages) | gros plans matière, assemblage | Gpkp | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Fidget_spinner_(Yellow)_2026_(01).jpg |
+
+Étiquette : aucune photo de l'étiquette de ce produit n'existe sous licence libre ; la fenêtre affiche un emplacement à remplir (prop `macros[3].src`).

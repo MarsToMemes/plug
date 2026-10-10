@@ -65,6 +65,7 @@ import { ShopPick, PICK } from './scenes/shop/ShopPick';
 import { ShopChain, CHAIN } from './scenes/shop/ShopChain';
 import { ShopOne, ONE } from './scenes/shop/ShopOne';
 import { LeakOpening, LEAK_DEFAULTS, LEAK_FPS, type LeakProps } from './scenes/leak/LeakOpening';
+import { LeakAutopsy, AUTOPSY_DEFAULTS, AUTOPSY_FPS, type AutopsyProps } from './scenes/leak/LeakAutopsy';
 import { SPARK_FROM, SPARK_TO, SparkCurve } from './scenes/SparkCurve';
 import { S20 } from './data/scene20';
 import { EPISODE_DURATION, Episode } from './scenes/Episode';
@@ -92,6 +93,9 @@ export const Root: React.FC = () => (
     <Folder name="Scenes">
       <Composition id="Scene01" component={Scene01} width={1920} height={1080} fps={30} durationInFrames={S01.duration} />
       <Composition id="SparkCurve" component={SparkCurve} width={1920} height={1080} fps={30} durationInFrames={Math.round((SPARK_TO - SPARK_FROM) * 30)} />
+      {/* Plug Leak « autopsie d'un euro »: images, zones, words and cues are props. */}
+      <Composition id="LeakAutopsy" component={LeakAutopsy} width={1920} height={1080} fps={AUTOPSY_FPS} durationInFrames={Math.round(AUTOPSY_DEFAULTS.timing.end * AUTOPSY_FPS)} defaultProps={AUTOPSY_DEFAULTS}
+        calculateMetadata={({ props }: { props: AutopsyProps }) => ({ durationInFrames: Math.round((props.timing?.end ?? AUTOPSY_DEFAULTS.timing.end) * AUTOPSY_FPS) })} />
       {/* Plug Leak opening: every cue is a prop (seconds) — set them on the voice / music in Studio > props. */}
       <Composition id="LeakOpening" component={LeakOpening} width={1920} height={1080} fps={LEAK_FPS} durationInFrames={Math.round(LEAK_DEFAULTS.timing.end * LEAK_FPS)} defaultProps={LEAK_DEFAULTS}
         calculateMetadata={({ props }: { props: LeakProps }) => ({ durationInFrames: Math.round((props.timing?.end ?? LEAK_DEFAULTS.timing.end) * LEAK_FPS) })} />
