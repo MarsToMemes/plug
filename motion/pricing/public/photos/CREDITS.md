@@ -32,3 +32,13 @@ Toutes viennent de Wikimedia Commons, sous une licence qui autorise l'usage comm
 | fichier | usage | auteur | licence | source |
 |---|---|---|---|---|
 | shop/hand-phone.jpg (+ hand-phone-soft.jpg, masques dérivés) | plan main + téléphone | NeONBRAND (Unsplash) | CC0 | https://commons.wikimedia.org/wiki/File:Smartphone_in_Hand_(Unsplash).jpg |
+
+## Animation « ShopOne » (public/shop/)
+
+| fichier | usage | auteur | licence | source |
+|---|---|---|---|---|
+| shop/spinner.png (détouré) | le gadget | Gpkp | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Fidget_spinner_(Yellow)_2026_(01).jpg |
+| shop/factory.mp4, shop/factory/*.jpg (extrait 22–31 s) | la machine (préformes chauffées) | vidéaste Pexels — nom à vérifier sur la page | licence Pexels (usage libre, crédit non obligatoire) | https://www.pexels.com/video/plastic-bottle-factory-4177966/ |
+| shop/Geist-ExtraBold-static.ttf | le « 1 € » extrudé | Geist (Vercel), instance fixe graisse 800 | OFL (shop/Geist-OFL.txt) | public/fonts/geist |
+
+- Fidget spinner (Yellow) 2026 (01).jpg — Gpkp, CC BY-SA 4.0 (https://commons.wikimedia.org/wiki/File:Fidget_spinner_(Yellow)_2026_(01).jpg). CC BY-SA : l'image modifiée (détourée) reste sous CC BY-SA 4.0.

@@ -4,11 +4,13 @@ import { renderMedia, renderStill, selectComposition } from '@remotion/renderer'
 import path from 'node:path';
 const [, , out, mode, list] = process.argv;
 const browserExecutable = '/opt/pw-browsers/chromium_headless_shell-1194/chrome-linux/headless_shell';
+// GL=angle|swangle|swiftshader|egl : WebGL for three.js scenes (default: Remotion's choice)
+const chromiumOptions = process.env.GL ? { gl: process.env.GL } : {};
 const serveUrl = await bundle({ entryPoint: path.resolve('src/index.ts'), publicDir: path.resolve('public') });
-const composition = await selectComposition({ serveUrl, id: process.env.COMP ?? 'Plate01', browserExecutable });
+const composition = await selectComposition({ serveUrl, id: process.env.COMP ?? 'Plate01', browserExecutable, chromiumOptions });
 if (mode === 'stills') {
   for (const f of list.split(',').map(Number)) {
-    await renderStill({ serveUrl, composition, frame: f, output: `${out}/f${String(f).padStart(4, '0')}.png`, browserExecutable });
+    await renderStill({ serveUrl, composition, frame: f, output: `${out}/f${String(f).padStart(4, '0')}.png`, browserExecutable, chromiumOptions });
     console.log('still', f);
   }
 } else if (process.env.RANGES) {
@@ -19,7 +21,7 @@ if (mode === 'stills') {
     console.log('range', a, b);
   }
 } else {
-  await renderMedia({ serveUrl, composition, codec: 'h264', crf: 14, outputLocation: out, browserExecutable, concurrency: Number(process.env.CONCURRENCY ?? 3),
+  await renderMedia({ serveUrl, composition, codec: 'h264', crf: 14, outputLocation: out, browserExecutable, chromiumOptions, concurrency: Number(process.env.CONCURRENCY ?? 3),
     onProgress: ({ progress }) => { if (Math.round(progress * 100) % 10 === 0) process.stdout.write(`\r${Math.round(progress * 100)}%`); } });
   console.log('\ndone', out);
 }
