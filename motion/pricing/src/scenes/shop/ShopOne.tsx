@@ -1,5 +1,5 @@
 import React from 'react';
-import { AbsoluteFill, Img, OffthreadVideo, Sequence, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
+import { AbsoluteFill, Img, staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
 import { THEME } from '../../theme';
 import { mix } from './products';
 
@@ -14,14 +14,15 @@ import { mix } from './products';
  *          The slab is a stack of glyph planes (Geist ExtraBold outlines): real thickness, real sides.
  * 2.5–4    lateral travelling: the gadget slides by in the foreground, the slab shows its mass.
  * 4–6      the « 1 » comes apart into its layers (surface, contour, depth, shadow — an exploded view),
- *          then a slit opens down its stem: inside, real footage of a machine heating plastic preforms,
+ *          then a slit opens down its stem: inside, a machine heating plastic preforms (drawn, no footage),
  *          whose glow lights the slit's walls.
- * 6–8      the camera goes through the slit, into the factory.
+ * 6–8      the camera goes through the slit, into the machine: the preforms run on a chain through the
+ *          heaters, cold on the left, incandescent on the right.
  *
  * Light: one directional key from the left (LIGHT): the slab's face is graded along it, the gadget's
  * shadow falls on the « € », the slab's shadow on the back wall.
- * Media: spinner « Fidget spinner (Yellow) », Gpkp, CC BY-SA 4.0 (Wikimedia Commons); machine footage
- * from Pexels (Pexels licence). Credits in public/photos/CREDITS.md.
+ * Media: spinner « Fidget spinner (Yellow) », Gpkp, CC BY-SA 4.0 (Wikimedia Commons). Credits in
+ * public/photos/CREDITS.md. Everything else is drawn.
  */
 export const ONE = { fps: 60, seconds: 8.5 };
 
@@ -42,7 +43,6 @@ const LIGHT = { x: 0.9, y: 0.16 }; // shadow shift per unit of depth (light from
 
 // ---------------------------------------------------------------- timing
 const SLAM = [1.5, 2.4] as const, PAN = [2.6, 4.0] as const, LAYERS = [4.0, 4.6] as const, RESTACK = [4.85, 5.3] as const, SLIT = [4.9, 5.85] as const, DIVE = [5.9, 7.2] as const;
-const VIDEO_T0 = 4.9;
 const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const lerp = (a: number, b: number, u: number) => a + (b - a) * u;
 const bez = (a: number, b: number, c: number, d: number) => (u: number) => {
@@ -101,6 +101,77 @@ const DUST = Array.from({ length: 90 }, (_, i) => {
   const r = (k: number) => mix(7300 + i * 7 + k) / 4294967296;
   return { x: lerp(-3200, 2400, r(0)), y: lerp(-1300, 1300, r(1)), z: lerp(500, 3000, r(2)), r: lerp(1.2, 3.4, r(3)), ph: r(4) * 6.28, sp: lerp(6, 18, r(5)) };
 });
+
+// ---------------------------------------------------------------- the machine (screen space, drawn)
+const SLOTS = [-3, -2, -1, 0, 1, 2, 3].map((i) => 960 + i * 330), PITCH = 165, SPEED = 120, BASE = 760;
+/** Heat of a preform at x: it builds up slot after slot (cold on the left, incandescent on the right). */
+const heatAt = (x: number) => {
+  const near = Math.max(...SLOTS.map((sx) => Math.exp(-(((x - sx) / 80) ** 2))));
+  return clamp(0.15 + 0.55 * clamp((x - 300) / 1300) + 0.45 * near * (0.4 + 0.6 * clamp((x - 500) / 1000)));
+};
+const Preform: React.FC<{ x: number; h: number; id: number }> = ({ x, h, id }) => {
+  const body = mixHex('#2a1408', '#ff7a2a', clamp((h - 0.2) * 1.4)), core = h < 0.75 ? mixHex('#4a230e', '#ff9a50', clamp((h - 0.3) / 0.45)) : mixHex('#ff9a50', '#fff1cc', (h - 0.75) / 0.25);
+  const neck = mixHex('#3a1c0c', '#a0461a', clamp(h - 0.3)); // the neck stays cooler: it is shielded from the heaters
+  return (
+    <g transform={`translate(${x} ${BASE})`}>
+      {/* Body: a test tube, glowing from the inside as it heats. */}
+      <defs><linearGradient id={`pf${id}`} x1="0" x2="1">
+        <stop offset="0" stopColor={body} /><stop offset="0.45" stopColor={core} /><stop offset="1" stopColor={body} />
+      </linearGradient></defs>
+      {h > 0.55 && <ellipse cx={0} cy={-210} rx={70} ry={190} fill="#ff8a3a" opacity={(h - 0.55) * 0.9} filter="url(#mGlow)" />}
+      <path d="M -36 -96 L -36 -330 A 36 36 0 0 1 36 -330 L 36 -96 Z" fill={`url(#pf${id})`} />
+      {/* A hollow tube: the inner wall shows through the plastic. */}
+      <path d="M -22 -96 L -22 -322 A 22 22 0 0 1 22 -322 L 22 -96" fill="none" stroke="#120804" strokeOpacity={0.35 - 0.2 * h} strokeWidth={3} />
+      <path d="M -29 -112 L -29 -322" stroke="#fff6e0" strokeOpacity={0.12 + 0.35 * h} strokeWidth={4} strokeLinecap="round" />
+      {/* Neck, same plastic: support ring, thread, open mouth (held upside down on the chain). */}
+      <rect x={-54} y={-96} width={108} height={13} rx={5} fill={neck} />
+      <rect x={-41} y={-83} width={82} height={66} rx={4} fill={neck} />
+      {[0, 1, 2].map((k) => <path key={k} d={`M -43 ${-72 + k * 18} L 43 ${-78 + k * 18}`} stroke="#c8703a" strokeOpacity={0.45} strokeWidth={5} strokeLinecap="round" />)}
+      <rect x={-41} y={-17} width={82} height={17} fill="#1a110c" />
+    </g>
+  );
+};
+/** The heating line, filling 1920 × 1080 at scale 1. Driven by t only. */
+const Machine: React.FC<{ t: number }> = ({ t }) => {
+  const shift = (t * SPEED) % PITCH;
+  const pre: React.ReactNode[] = [];
+  for (let k = -5; k < 2320 / PITCH + 3; k++) { const x = k * PITCH + shift; pre.push(<Preform key={k} x={x} h={heatAt(x)} id={k + 2} />); }
+  const flick = (i: number) => 0.92 + 0.08 * Math.sin(t * 23 + i * 1.7) * Math.sin(t * 7.3 + i);
+  return (
+    <svg width={1920} height={1080} style={{ position: 'absolute', inset: 0, overflow: 'visible' }}>
+      <defs>
+        <filter id="mGlow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="28" /></filter>
+        <linearGradient id="panel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#1c130e" /><stop offset="0.6" stopColor="#120c09" /><stop offset="1" stopColor="#080504" /></linearGradient>
+        <linearGradient id="lamp" x1="0" x2="1"><stop offset="0" stopColor="#7a2a0c" /><stop offset="0.5" stopColor="#ffb060" /><stop offset="1" stopColor="#7a2a0c" /></linearGradient>
+      </defs>
+      <rect x={-400} width={2720} height={1080} fill="url(#panel)" />
+      {/* Heaters: tall slots in the panel, lamp tubes and coils behind the preforms. */}
+      {SLOTS.map((sx, i) => (
+        <g key={i}>
+          <rect x={sx - 95} y={250} width={190} height={460} rx={95} fill="#0a0605" />
+          <g opacity={flick(i)}>
+            {[-48, 0, 48].map((dx) => <rect key={dx} x={sx + dx - 9} y={300} width={18} height={360} rx={9} fill="url(#lamp)" />)}
+            {Array.from({ length: 9 }, (_, k) => <rect key={k} x={sx - 80} y={300 + k * 44} width={160} height={3} fill="#ffcf8a" opacity={0.35} />)}
+            <ellipse cx={sx} cy={480} rx={150} ry={260} fill="#ff7a2a" opacity={0.35} filter="url(#mGlow)" />
+          </g>
+          <rect x={sx - 95} y={250} width={190} height={460} rx={95} fill="none" stroke="#3a2a22" strokeWidth={6} />
+        </g>
+      ))}
+      {/* Rivets and a seam on the panel. */}
+      {Array.from({ length: 34 }, (_, k) => <circle key={k} cx={-360 + k * 80} cy={210} r={5} fill="#2e231d" />)}
+      <rect x={-400} y={190} width={2720} height={2} fill="#2a1f19" />
+      {pre}
+      {/* The chain that carries them. */}
+      <rect x={-400} y={BASE} width={2720} height={56} fill="#1a1411" />
+      {Array.from({ length: Math.ceil(2720 / 55) + 2 }, (_, k) => <rect key={k} x={k * 55 - 455 + ((t * SPEED) % 55)} y={BASE + 10} width={40} height={36} rx={8} fill="#332823" stroke="#4a3b33" strokeWidth={2} />)}
+      <rect x={-400} y={BASE + 56} width={2720} height={1080 - BASE - 56} fill="#0a0706" />
+      {Array.from({ length: 9 }, (_, k) => <rect key={k} x={-180 + k * 330} y={BASE + 90} width={14} height={300} fill="#17110e" />)}
+      {/* Heat on the right of the line. */}
+      <rect x={-400} width={2720} height={1080} fill="url(#heatSide)" />
+      <defs><linearGradient id="heatSide" x1="0" x2="1"><stop offset="0" stopColor="#000" stopOpacity="0.35" /><stop offset="0.5" stopColor="#000" stopOpacity="0" /><stop offset="1" stopColor="#ff7a2a" stopOpacity="0.08" /></linearGradient></defs>
+    </svg>
+  );
+};
 
 export const ShopOne: React.FC = () => {
   const frame = useCurrentFrame(), { fps } = useVideoConfig();
@@ -181,9 +252,9 @@ export const ShopOne: React.FC = () => {
     return <circle key={i} cx={p.x} cy={p.y} r={r} fill="#ffc48a" opacity={lit * (big ? 0.25 : 0.8) * clamp(2 - p.s * 0.35) * clamp(t / 0.8)} />;
   });
 
-  // ---- the footage: fixed to the screen, framed on the preforms; pushed a little during the dive
+  // ---- the machine: fixed to the screen, a hot slot centred in the slit; pushed a little during the dive
   const dv = dive(seg(t, DIVE)), tail = clamp((t - DIVE[1]) / (ONE.seconds - DIVE[1]));
-  const vs = lerp(1.5, 1.7, dv) + 0.05 * tail, vx = lerp(-390, -262, dv), vy = lerp(280, 362, dv);
+  const vs = lerp(1.45, 1.12, dv) * (1 + 0.05 * tail), vx = lerp(-330 * 1.45, -165 * 1.12, dv), vy = lerp(40, 20, dv);
   const veil = 1 - clamp((dv - 0.45) / 0.45);
 
   // ---- layer labels (exploded view)
@@ -216,17 +287,15 @@ export const ShopOne: React.FC = () => {
       </svg>
 
       {/* The machine, seen through the slit. */}
-      <Sequence from={Math.round(VIDEO_T0 * fps)} layout="none">
-        {open && (
+      {open && (
           <AbsoluteFill style={{ clipPath: through ? undefined : `inset(${rect.t}px ${1920 - rect.r}px ${1080 - rect.b}px ${rect.l}px)` }}>
             <AbsoluteFill style={{ transform: `translate(${vx}px, ${vy}px) scale(${vs})`, transformOrigin: '50% 50%' }}>
-              <OffthreadVideo src={staticFile('shop/factory.mp4')} muted style={{ width: '100%', height: '100%', filter: 'brightness(0.72) contrast(1.2) saturate(1.05) sepia(0.2)' }} />
+              <Machine t={t} />
             </AbsoluteFill>
-            {/* Deep inside, the footage is a glow: the dark closes in around it until the camera is through. */}
+            {/* Deep inside, the machine is a glow: the dark closes in around it until the camera is through. */}
             <AbsoluteFill style={{ background: `radial-gradient(ellipse 40% 60% at ${centre.x}px 45%, rgba(6,4,3,0) 0%, rgba(6,4,3,${0.55 * veil}) 70%, rgba(6,4,3,${0.9 * veil}) 100%)` }} />
           </AbsoluteFill>
         )}
-      </Sequence>
 
       {/* The slab. */}
       <svg width={1920} height={1080} style={{ position: 'absolute', inset: 0, opacity: appear, filter: rush > 0.3 ? `blur(${rush}px)` : undefined }}>
