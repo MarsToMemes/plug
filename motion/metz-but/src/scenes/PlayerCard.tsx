@@ -2,6 +2,7 @@ import React from 'react';
 import {AbsoluteFill, Easing, Img, interpolate, staticFile, useCurrentFrame} from 'remotion';
 import {ZoomEcho} from '../fx/ZoomEcho';
 import {C, clamp, fontFamily} from '../theme';
+import {PlayerDecor} from './PlayerDecor';
 import {PlayerPlaceholder} from './PlayerPlaceholder';
 
 // Prénom + nom en chrome ivoire, reflet doré, tracking qui se resserre (f108–130).
@@ -9,7 +10,7 @@ const ChromeName: React.FC<{firstName: string; lastName: string; t: number}> = (
 	const p = interpolate(t, [0, 22], [0, 1], {...clamp, easing: Easing.out(Easing.cubic)});
 	const fill = interpolate(t, [6, 20], [0, 1], clamp);
 	const flicker = t < 0 ? 0 : t === 1 ? 0.4 : 1;
-	const nameSize = Math.min(118, 1000 / (lastName.length * 0.98));
+	const nameSize = Math.min(118, 1000 / (lastName.length * 1.3)); // Michroma : ~1,2 em par capitale
 	return (
 		<svg viewBox="0 0 1080 1080" width={1080} height={1080} style={{position: 'absolute', inset: 0, opacity: flicker}}>
 			<defs>
@@ -32,9 +33,9 @@ const ChromeName: React.FC<{firstName: string; lastName: string; t: number}> = (
 			</defs>
 			<g filter="url(#name-glow)">
 				<text
-					transform="translate(540 790) skewX(-12) translate(-540 -790)"
+					transform="translate(540 850) skewX(-12) translate(-540 -850)"
 					x={540}
-					y={790}
+					y={850}
 					textAnchor="middle"
 					dominantBaseline="central"
 					fontFamily={fontFamily}
@@ -49,9 +50,9 @@ const ChromeName: React.FC<{firstName: string; lastName: string; t: number}> = (
 					{firstName}
 				</text>
 				<text
-					transform="translate(540 885) skewX(-12) translate(-540 -885)"
+					transform="translate(540 935) skewX(-12) translate(-540 -935)"
 					x={540}
-					y={885}
+					y={935}
 					textAnchor="middle"
 					dominantBaseline="central"
 					fontFamily={fontFamily}
@@ -100,12 +101,16 @@ export const PlayerCard: React.FC<{
 			<AbsoluteFill style={{transformOrigin: origin, scale: String(scale)}}>
 				<ZoomEcho strength={zoomBlur} origin={origin}>
 					{playerPhoto ? (
-						<Img src={staticFile(playerPhoto)} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+						<AbsoluteFill>
+							<PlayerDecor />
+							{/* joueur détouré (PNG transparent, carré) */}
+							<Img src={staticFile(playerPhoto)} style={{position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover'}} />
+						</AbsoluteFill>
 					) : (
 						<PlayerPlaceholder crest={crestPoint} />
 					)}
 					{/* assombrit le bas pour la lisibilité du nom */}
-					<AbsoluteFill style={{background: 'linear-gradient(180deg, transparent 55%, rgba(16,16,16,0.75) 100%)'}} />
+					<AbsoluteFill style={{background: 'linear-gradient(180deg, transparent 52%, rgba(16,16,16,0.55) 72%, rgba(16,16,16,0.92) 100%)'}} />
 					<ChromeName firstName={firstName} lastName={lastName} t={frame - 20} />
 				</ZoomEcho>
 			</AbsoluteFill>

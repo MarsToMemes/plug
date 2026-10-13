@@ -1,11 +1,9 @@
 import React from 'react';
-import {AbsoluteFill, Easing, interpolate, useCurrentFrame} from 'remotion';
+import {AbsoluteFill, Easing, Img, interpolate, interpolateColors, staticFile, useCurrentFrame} from 'remotion';
 import {BrushBg} from '../fx/BrushBg';
 import {Grain} from '../fx/Grain';
-import {C, clamp, fontFamily} from '../theme';
+import {C, clamp} from '../theme';
 
-// Forme d'emblème PROVISOIRE (bouclier neutre). À remplacer par la forme tirée de l'écusson SVG officiel fourni par le club.
-export const PLACEHOLDER_MARK = 'M-100 -120 H100 V20 C100 90 40 125 0 140 C-40 125 -100 90 -100 20 Z';
 
 const Mark: React.FC<{d: string; color: string; opacity?: number; rotate?: number}> = ({d, color, opacity = 1, rotate = 0}) => (
 	<svg viewBox="-540 -540 1080 1080" width={1080} height={1080} style={{position: 'absolute', inset: 0, opacity}}>
@@ -13,8 +11,8 @@ const Mark: React.FC<{d: string; color: string; opacity?: number; rotate?: numbe
 	</svg>
 );
 
-// Scène 9 (f260–299) : l'emblème géant rétrécit avec flou en rotation, se pose, puis le nom du club s'écrit.
-export const Outro: React.FC<{markPath: string; clubName: string}> = ({markPath, clubName}) => {
+// Scène 9 (f260–299) : l'emblème géant rétrécit avec flou en rotation, se pose en s'éclairant, puis le logotype apparaît.
+export const Outro: React.FC<{markPath: string; clubLogotype: string}> = ({markPath, clubLogotype}) => {
 	const frame = useCurrentFrame(); // 0 = f260
 	const scale = interpolate(frame, [0, 6, 9, 20], [14, 12, 1.6, 0.9], {...clamp, easing: Easing.out(Easing.cubic)});
 	const settle = interpolate(frame, [20, 26], [0.9, 1], {...clamp, easing: Easing.out(Easing.back(1.4))});
@@ -23,6 +21,7 @@ export const Outro: React.FC<{markPath: string; clubName: string}> = ({markPath,
 	const finalScale = frame < 20 ? scale : settle;
 	const lift = interpolate(frame, [22, 30], [0, -70], {...clamp, easing: Easing.inOut(Easing.cubic)});
 	const textP = interpolate(frame, [25, 34], [0, 1], {...clamp, easing: Easing.out(Easing.cubic)});
+	const markColor = interpolateColors(frame, [20, 26], [C.grenatAlt, C.ivory]);
 
 	return (
 		<AbsoluteFill>
@@ -33,7 +32,7 @@ export const Outro: React.FC<{markPath: string; clubName: string}> = ({markPath,
 							<Mark key={k} d={markPath} color={C.grenatAlt} opacity={0.18} rotate={rotation + (k * spin) / 3} />
 						))
 					: null}
-				<Mark d={markPath} color={C.grenatAlt} rotate={rotation} />
+				<Mark d={markPath} color={markColor} rotate={rotation} />
 			</AbsoluteFill>
 			{/* filet doré + nom du club */}
 			<div
@@ -47,22 +46,18 @@ export const Outro: React.FC<{markPath: string; clubName: string}> = ({markPath,
 					background: C.gold,
 				}}
 			/>
-			<div
+			<Img
+				src={staticFile(clubLogotype)}
 				style={{
 					position: 'absolute',
 					left: '50%',
-					top: 740,
+					top: 745,
+					width: 300,
 					translate: '-50% -50%',
-					fontFamily,
-					fontSize: 56,
-					color: C.ivory,
-					whiteSpace: 'nowrap',
-					letterSpacing: `${interpolate(textP, [0, 1], [0.8, 0.2])}em`,
 					opacity: textP,
+					scale: String(interpolate(textP, [0, 1], [1.15, 1])),
 				}}
-			>
-				{clubName}
-			</div>
+			/>
 			<Grain id="outro" opacity={0.08} />
 		</AbsoluteFill>
 	);

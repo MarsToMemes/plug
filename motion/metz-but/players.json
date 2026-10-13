@@ -1,10 +1,10 @@
 [
   {
-    "id": "exemple",
-    "firstName": "PRÉNOM",
-    "lastName": "BUTEUR",
-    "number": "10",
-    "playerPhoto": null,
-    "crestPoint": {"x": 0.42, "y": 0.62}
+    "id": "jessy-deminguet",
+    "firstName": "JESSY",
+    "lastName": "DEMINGUET",
+    "number": "8",
+    "playerPhoto": "joueurs/jessy-deminguet.png",
+    "crestPoint": {"x": 0.64, "y": 0.56}
   }
 ]

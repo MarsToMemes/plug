@@ -28,6 +28,13 @@
 - **Contraste** : si le club n'a qu'une couleur (ex. grenat + blanc), l'accent néon doit rester
   froid et lumineux, sinon les scènes 4, 6 et 8 deviennent ternes. Proposer 2 options à l'utilisateur
   et lui laisser trancher (c'est un choix de marque).
+- **Détourage des photos joueurs** (dans le scratchpad, venv dédié) : `rembg` modèle `u2net_human_seg`
+  (le plus propre sur un buste ; `isnet-general-use` garde des morceaux de décor). Si la photo vient d'un visuel
+  déjà composé (texte derrière le joueur), les doigts qui touchent le texte sont mal détourés : refaire ces zones
+  seulement par **clé de peau** — alpha = clamp((r − b − 6)/16) × clamp((luminance − 45)/50) — puis garder la seule
+  composante connexe du doigt et rogner 1 px du contour. Recadrer au-dessus de tout texte incrusté (nom…).
+  Contrôler en gros plan sur fond vert **et** sur fond grenat avant d'intégrer. Le PNG transparent va dans
+  `public/joueurs/`, le décor est dessiné par le code (`PlayerDecor`), `crestPoint` = écusson du maillot sur le PNG.
 - **Photo** : c'est 50 % du rendu (5 s sur 10). Une photo prise au téléphone ou mal détourée ruine
   la carte, quelle que soit la qualité de l'animation. Le dire à l'utilisateur si la photo ne convient pas.
 
@@ -50,6 +57,7 @@ Projet : `motion/metz-but/` (props dans `players.json`, rendu par joueur avec `n
   - halo montant de la scène 4 en rouge secondaire (pas de bleu).
 - Police provisoire : Michroma (OFL, fichier local `public/fonts/`), penchée de −12°. Le fichier woff2 du CDN Google
   ne contient qu'un sous-ensemble : utiliser le TTF complet.
-- Emblème final provisoire : bouclier neutre ; à remplacer par la forme tirée de l'écusson SVG officiel. Fin propre à Metz :
-  l'emblème rétrécit avec flou en rotation, se pose, remonte, puis filet or + « FC METZ » qui se resserre.
-- Encore à fournir : écusson SVG, photos des joueurs, liste prénom/nom/numéro, logo sponsor éventuel.
+- Emblème final : croix de Lorraine vectorisée depuis le logo fourni (`src/club.ts`), grenat pendant la rotation puis
+  blanc cassé quand elle se pose ; filet or + logotype « Fc Metz » extrait du logo (`public/club/fc-metz-logotype.png`).
+  La même croix sert de filigrane derrière le joueur.
+- Joueurs faits : Jessy Deminguet (n° 8). Encore à fournir : les autres joueurs, logo sponsor éventuel.

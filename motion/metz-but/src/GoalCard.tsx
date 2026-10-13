@@ -4,7 +4,8 @@ import {z} from 'zod';
 import {ClubWord} from './scenes/ClubWord';
 import {GoalWord} from './scenes/GoalWord';
 import {NumberScene} from './scenes/NumberScene';
-import {Outro, PLACEHOLDER_MARK} from './scenes/Outro';
+import {CROSS_PATH} from './club';
+import {Outro} from './scenes/Outro';
 import {PlayerCard} from './scenes/PlayerCard';
 
 export const goalCardSchema = z.object({
@@ -13,7 +14,7 @@ export const goalCardSchema = z.object({
 	number: z.string(),
 	firstName: z.string(),
 	lastName: z.string(),
-	clubName: z.string(),
+	clubLogotype: z.string(),
 	playerPhoto: z.string().nullable(),
 	crestPoint: z.object({x: z.number().min(0).max(1), y: z.number().min(0).max(1)}),
 	markPath: z.string(),
@@ -25,13 +26,13 @@ export type GoalCardProps = z.infer<typeof goalCardSchema>;
 export const defaultGoalCardProps: GoalCardProps = {
 	clubWord: 'METZ',
 	goalWord: 'BUUUT',
-	number: '10',
-	firstName: 'PRÉNOM',
-	lastName: 'BUTEUR',
-	clubName: 'FC METZ',
-	playerPhoto: null,
-	crestPoint: {x: 0.42, y: 0.62},
-	markPath: PLACEHOLDER_MARK,
+	number: '8',
+	firstName: 'JESSY',
+	lastName: 'DEMINGUET',
+	clubLogotype: 'club/fc-metz-logotype.png',
+	playerPhoto: 'joueurs/jessy-deminguet.png',
+	crestPoint: {x: 0.64, y: 0.56},
+	markPath: CROSS_PATH,
 	sponsorLogo: null,
 };
 
@@ -67,7 +68,7 @@ export const GoalCard: React.FC<GoalCardProps> = (props) => {
 				/>
 			</Sequence>
 			<Sequence name="Emblème" from={260} durationInFrames={40} premountFor={fps}>
-				<Outro markPath={props.markPath} clubName={props.clubName} />
+				<Outro markPath={props.markPath} clubLogotype={props.clubLogotype} />
 			</Sequence>
 			{props.sponsorLogo ? <SponsorTab logo={props.sponsorLogo} /> : null}
 		</AbsoluteFill>
