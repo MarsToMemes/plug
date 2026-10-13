@@ -26,7 +26,7 @@ export type GoalCardProps = z.infer<typeof goalCardSchema>;
 
 export const defaultGoalCardProps: GoalCardProps = {
 	clubWord: 'METZ',
-	goalWord: 'BUUUT',
+	goalWord: 'BUUUUT',
 	number: '8',
 	firstName: 'JESSY',
 	lastName: 'DEMINGUET',

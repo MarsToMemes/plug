@@ -16,9 +16,11 @@ export const C = {
 export const fontFamily = 'Michroma';
 loadFont({family: fontFamily, url: staticFile('fonts/Michroma-Regular.ttf'), weight: '400'});
 
-// Police grasse (Unbounded, licence OFL, variable 200–900) pour le mot club, le numéro et le nom.
+// Police grasse (Unbounded Black, licence OFL) pour le mot club, le numéro et le nom. Instance fixe tirée de la police
+// variable avec les chevauchements fusionnés (fonttools varLib.instancer --remove-overlaps) : sinon les contours SVG
+// dessinent des traits à l'intérieur des lettres.
 export const fontHeavy = 'Unbounded';
-loadFont({family: fontHeavy, url: staticFile('fonts/Unbounded-Variable.ttf'), weight: '200 900'});
+loadFont({family: fontHeavy, url: staticFile('fonts/Unbounded-Black.ttf'), weight: '900'});
 export const SKEW = 'skewX(-12deg)';
 
 export const clamp = {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'} as const;
