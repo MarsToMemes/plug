@@ -15,6 +15,6 @@ export const RemotionRoot: React.FC = () => (
 		height={1080}
 		defaultProps={defaultGoalCardProps}
 	/>
-	<Still id="MatieresMETZ" component={TypoMaterials} width={1080} height={2520} />
+	<Still id="MatieresMETZ" component={TypoMaterials} width={1080} height={1760} />
 	</>
 );
