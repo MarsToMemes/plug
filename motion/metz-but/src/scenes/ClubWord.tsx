@@ -3,6 +3,7 @@ import {AbsoluteFill, Easing, interpolate, useCurrentFrame} from 'remotion';
 import {Grain} from '../fx/Grain';
 import {BrushBg} from '../fx/BrushBg';
 import {GemWord, Glint} from './GemWord';
+import {ScaledLetters} from './ScaledLetters';
 import {C, clamp} from '../theme';
 
 export const CLUB_ROWS = [175, 540, 905];
@@ -19,7 +20,7 @@ const GLINTS = [
 	{x: 900, y: 170, at: 19, size: 26},
 ];
 
-export const ClubWord: React.FC<{word: string}> = ({word}) => {
+export const ClubWord: React.FC<{word: string; material?: 'grenat' | 'ecailles'}> = ({word, material = 'grenat'}) => {
 	const frame = useCurrentFrame();
 	const brightness =
 		frame < 15
@@ -35,7 +36,11 @@ export const ClubWord: React.FC<{word: string}> = ({word}) => {
 			<BrushBg durationInFrames={22} />
 			<AbsoluteFill style={{opacity: 0.55, background: C.black}} />
 			<AbsoluteFill style={{scale: String(punch)}}>
-				{CLUB_ROWS.map((y, r) => (
+				{material === 'ecailles'
+					? CLUB_ROWS.map((y, r) => (
+							<ScaledLetters key={y} y={y} row={r} dx={interpolate(frame, [0, 21], ROW_DRIFT[r], clamp)} brightness={1 + (brightness - 1) * 0.45} />
+						))
+					: CLUB_ROWS.map((y, r) => (
 					<GemWord
 						key={y}
 						id={`club-${r}`}

@@ -74,4 +74,9 @@ Projet : `motion/metz-but/` (props dans `players.json`, rendu par joueur avec `n
   texte par `GemWord`, avec liseré de lumière, ombre interne et halo. La vidéo démarre directement dessus (miniature
   forte) ; un reflet balaie les facettes, puis la pierre s'allume sur le drop (f15) avec des éclats (`Glint`).
   Lignes METZ et BUUUUT entièrement dans le cadre en hauteur (l'utilisateur a pris le rognage haut/bas pour un bug).
+- **Leçon matière (retour utilisateur)** : une texture plaquée dans une silhouette + halo + liseré clair fait « LED »,
+  pas premium. Le rendu crédible vient d'une lettre traitée comme un **objet** : biseau, bords irréguliers, épaisseur
+  (flanc sombre), matière qui suit le relief et passe sur les arêtes, une seule lumière, ombre portée, aucun contour.
+  Référence donnée : lettres sculptées dans la roche. Mise en œuvre : `tools/lettres3d.py` (écailles du Graoully,
+  image RGBA par ligne, graines différentes), prop `clubMaterial: 'ecailles'` ; `'grenat'` = ancienne méthode plaquée.
 - Joueurs faits : Jessy Deminguet (n° 8). Encore à fournir : les autres joueurs, logo sponsor éventuel.

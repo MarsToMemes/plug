@@ -11,6 +11,7 @@ import {SoundTrack} from './SoundTrack';
 
 export const goalCardSchema = z.object({
 	clubWord: z.string(),
+	clubMaterial: z.enum(['grenat', 'ecailles']),
 	goalWord: z.string(),
 	number: z.string(),
 	firstName: z.string(),
@@ -26,6 +27,7 @@ export type GoalCardProps = z.infer<typeof goalCardSchema>;
 
 export const defaultGoalCardProps: GoalCardProps = {
 	clubWord: 'METZ',
+	clubMaterial: 'grenat',
 	goalWord: 'BUUUUT',
 	number: '8',
 	firstName: 'JESSY',
@@ -52,7 +54,7 @@ export const GoalCard: React.FC<GoalCardProps> = (props) => {
 	return (
 		<AbsoluteFill style={{backgroundColor: '#101010'}}>
 			<Sequence name="Mot club" from={0} durationInFrames={22} premountFor={fps}>
-				<ClubWord word={props.clubWord} />
+				<ClubWord word={props.clubWord} material={props.clubMaterial} />
 			</Sequence>
 			<Sequence name="BUUUT" from={22} durationInFrames={34} premountFor={fps}>
 				<GoalWord clubWord={props.clubWord} goalWord={props.goalWord} />
