@@ -31,22 +31,25 @@
 - **Photo** : c'est 50 % du rendu (5 s sur 10). Une photo prise au téléphone ou mal détourée ruine
   la carte, quelle que soit la qualité de l'animation. Le dire à l'utilisateur si la photo ne convient pas.
 
-## Fiche FC Metz (Ligue 2)
+## Fiche FC Metz (Ligue 2) — choix validés
 
-À valider avec l'utilisateur avant de coder : les valeurs ci-dessous sont des propositions, pas la charte officielle.
+Projet : `motion/metz-but/` (props dans `players.json`, rendu par joueur avec `node render-all.mjs`).
 
-- `clubWord` : **« METZ »** (4 lettres comme la référence). Autres choix : « FCM », « GRENATS » (7 lettres, plus petit).
-- `goalWord` : **« BUT »** (3 lettres : la grille des 5 lignes est moins dense ; compenser par une taille plus grande,
-  largeur ≈ 850 px conservée) ou « BUUUT » pour garder la longueur.
-- `palette.primary` : grenat. Valeur approchée `#8a1538`, `primaryDark` `#3d0716`, `bgDark` `#120206`.
-  **À remplacer par les codes de la charte du club.**
-- `palette.accent` — deux options à présenter :
-  1. **Blanc-glace** (`#e8f1ff`, glow `#9fc2ff`) : reste dans les couleurs du club (grenat et blanc), plus sobre.
-  2. **Bleu électrique** (`#2a5cff`, alt `#8a5cff`) : le contraste maximal de la référence, mais le bleu
-     n'appartient pas à l'identité du FC Metz.
-- `palette.night` : version très sombre et désaturée du primaire (`#0b0306`) si accent blanc-glace ;
-  bleu nuit `#04133e` si accent bleu.
-- `outroMark` : forme tirée de l'écusson officiel fourni par le club (fichier SVG). Ne pas redessiner l'écusson de mémoire.
-- `sponsorLogo` : uniquement le logo fourni par le club pour ce type de publication.
-- Assets à demander : écusson SVG, photo(s) joueur détourée(s) haute définition, codes couleur, police officielle
-  éventuelle, logo sponsor maillot ou partenaire réseaux sociaux.
+- `clubWord` **« METZ »**, `goalWord` **« BUUUT »**.
+- Palette de travail fournie par l'utilisateur (pas la charte certifiée ; privilégier des codes officiels vérifiables s'ils apparaissent) :
+  grenat `#74070B`, grenat profond `#3B0509`, rouge grenat secondaire `#9B1C2C`, or `#D4AF37`,
+  blanc cassé `#F5F2ED`, noir profond `#101010`, gris `#777777`.
+- Règles de l'utilisateur : le grenat domine et identifie le club ; grenat profond et noir pour les fonds ;
+  blanc cassé pour le contraste et la lisibilité ; **l'or avec parcimonie** (mots, filets, contours, transitions) ;
+  le rouge secondaire pour les variations et les couches ; contraste suffisant sur mobile.
+- Traduction dans la carte :
+  - mot club plein en `#9B1C2C` qui s'assombrit ; fonds `#101010` / grenat profond, pinceaux en grenat ;
+  - **néon en blanc cassé** (contour + halo blanc cassé, second halo or très léger) : c'est l'accent froid du style ;
+  - or seulement : flash de 3 frames dans le glitch, début du dégradé du contour du numéro, ligne de reflet du nom chrome,
+    filet sous le nom du club à la fin ;
+  - halo montant de la scène 4 en rouge secondaire (pas de bleu).
+- Police provisoire : Michroma (OFL, fichier local `public/fonts/`), penchée de −12°. Le fichier woff2 du CDN Google
+  ne contient qu'un sous-ensemble : utiliser le TTF complet.
+- Emblème final provisoire : bouclier neutre ; à remplacer par la forme tirée de l'écusson SVG officiel. Fin propre à Metz :
+  l'emblème rétrécit avec flou en rotation, se pose, remonte, puis filet or + « FC METZ » qui se resserre.
+- Encore à fournir : écusson SVG, photos des joueurs, liste prénom/nom/numéro, logo sponsor éventuel.

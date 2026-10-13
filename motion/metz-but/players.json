@@ -1,0 +1,10 @@
+[
+  {
+    "id": "exemple",
+    "firstName": "PRÉNOM",
+    "lastName": "BUTEUR",
+    "number": "10",
+    "playerPhoto": null,
+    "crestPoint": {"x": 0.42, "y": 0.62}
+  }
+]
