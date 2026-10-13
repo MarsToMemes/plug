@@ -72,7 +72,7 @@ Projet : `motion/metz-but/` (props dans `players.json`, rendu par joueur avec `n
 - Mot club en **grenat taillé** (choix de l'utilisateur, en écho au surnom « Les Grenats » et aux vitraux de la
   cathédrale) : texture de gemme calculée par `tools/gemme.py` (grandes facettes : densité 34000), découpée dans le
   texte par `GemWord`, avec liseré de lumière, ombre interne et halo. La vidéo démarre directement dessus (miniature
-  forte) ; un reflet balaie les facettes, puis la pierre s'allume sur le drop (f15) avec des éclats (`Glint`).
+  forte) ; un reflet balaie les facettes, puis la pierre s'allume sur le drop (f15). Pas d'éclats en étoile (retirés à la demande de l'utilisateur).
   Lignes METZ et BUUUUT entièrement dans le cadre en hauteur (l'utilisateur a pris le rognage haut/bas pour un bug).
 - **Leçon matière (retour utilisateur)** : une texture plaquée dans une silhouette + halo + liseré clair fait « LED »,
   pas premium. Le rendu crédible vient d'une lettre traitée comme un **objet** : biseau, bords irréguliers, épaisseur

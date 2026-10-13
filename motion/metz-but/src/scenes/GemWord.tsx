@@ -88,14 +88,3 @@ export const GemWord: React.FC<{
 		</svg>
 	);
 };
-
-// Éclat en étoile à 4 branches (scintillement sur une facette).
-export const Glint: React.FC<{x: number; y: number; size: number; opacity: number}> = ({x, y, size, opacity}) =>
-	opacity <= 0.01 ? null : (
-		<svg viewBox="0 0 1080 1080" width={1080} height={1080} style={{position: 'absolute', inset: 0, opacity, mixBlendMode: 'screen'}}>
-			<g transform={`translate(${x} ${y}) scale(${size})`}>
-				<path d="M0 -1 L0.09 -0.09 L1 0 L0.09 0.09 L0 1 L-0.09 0.09 L-1 0 L-0.09 -0.09 Z" fill="#fff6f0" />
-				<circle r="0.16" fill="#ffffff" />
-			</g>
-		</svg>
-	);

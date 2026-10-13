@@ -2,7 +2,7 @@ import React from 'react';
 import {AbsoluteFill, Easing, interpolate, useCurrentFrame} from 'remotion';
 import {Grain} from '../fx/Grain';
 import {BrushBg} from '../fx/BrushBg';
-import {GemWord, Glint} from './GemWord';
+import {GemWord} from './GemWord';
 import {ScaledLetters} from './ScaledLetters';
 import {C, clamp} from '../theme';
 
@@ -10,15 +10,9 @@ export const CLUB_ROWS = [175, 540, 905];
 export const CLUB_FONT_SIZE = 300;
 
 // Scènes 1 et 2 : « METZ » ×3 en grenat taillé dès la première image (miniature forte). Un reflet balaie
-// les facettes, puis sur le drop de la musique (f15) la pierre s'allume : à-coup, éclats, second reflet.
+// les facettes, puis sur le drop de la musique (f15) la pierre s'allume : à-coup et second reflet (les éclats en étoile ont été retirés).
 const ROW_TEX_X = [-200, -120, -260]; // décalage de la texture : les trois lignes ne sont pas identiques
 const ROW_DRIFT: [number, number][] = [[-30, 10], [30, -10], [-20, 15]];
-const GLINTS = [
-	{x: 250, y: 140, at: 15, size: 34},
-	{x: 760, y: 520, at: 16, size: 42},
-	{x: 480, y: 880, at: 17, size: 30},
-	{x: 900, y: 170, at: 19, size: 26},
-];
 
 export const ClubWord: React.FC<{word: string; material?: 'grenat' | 'ecailles'}> = ({word, material = 'grenat'}) => {
 	const frame = useCurrentFrame();
@@ -52,15 +46,6 @@ export const ClubWord: React.FC<{word: string; material?: 'grenat' | 'ecailles'}
 						brightness={brightness}
 						sweepX={sweepX + r * 120}
 						glow={frame >= 15 ? 0.75 : 0.5}
-					/>
-				))}
-				{GLINTS.map((g) => (
-					<Glint
-						key={`${g.x}-${g.y}`}
-						x={g.x}
-						y={g.y}
-						size={g.size * interpolate(frame, [g.at, g.at + 2, g.at + 5], [0.2, 1, 0.3], clamp)}
-						opacity={interpolate(frame, [g.at, g.at + 1, g.at + 5], [0, 1, 0], clamp)}
 					/>
 				))}
 			</AbsoluteFill>
