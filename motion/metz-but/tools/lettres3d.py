@@ -48,7 +48,7 @@ solid = gaussian_filter(solid, 0.7)
 dist = distance_transform_edt(solid > 0.5)
 
 # --- écailles en tuiles sur toute la surface -----------------------------------------------
-SW, SH = 104.0, 136.0
+SW, SH = 70.0, 92.0  # écailles fines : plus nombreuses dans chaque lettre, meilleure lisibilité
 ROW = SH * 0.42
 label = np.full((H, W), -1, np.int32)
 dome = np.zeros((H, W), np.float32)
@@ -89,15 +89,17 @@ def plates(spacing, seed):
     return np.exp(-(((dd[:, 1] - dd[:, 0]).reshape(H, W)) / 1.1) ** 2)
 
 
-wrinkle = 0.45 * ridges(4.5, 21) + 0.4 * ridges(10, 22) + 0.3 * plates(22, 23)
+wrinkle = 0.4 * ridges(3.2, 21) + 0.35 * ridges(7, 22) + 0.3 * plates(15, 23)
 grain = noise(1.4, 7) * 0.6 + noise(3, 8) * 0.4
 
 # --- relief total : biseau de la lettre + écailles + cuir --------------------------------------
 BEVEL = 34.0
 bevel = np.clip(dist / BEVEL, 0, 1)
 bevel = 1 - (1 - bevel) ** 2.2  # arrondi rapide puis plateau
-height = bevel * 55.0 + dome * 34.0 * (0.35 + 0.65 * bevel) - wrinkle * 1.2 + grain * 0.25
-height += np.exp(-(edge_d / 0.03) ** 2) * 2.2 * bevel
+# écailles peu bombées (plaque plate au centre, bord net) : moins « gonflé »
+plate = np.clip(dome, 0, 1) ** 0.45
+height = bevel * 55.0 + plate * 13.0 * (0.35 + 0.65 * bevel) - wrinkle * 1.0 + grain * 0.25
+height += np.exp(-(edge_d / 0.05) ** 2) * 1.6 * bevel
 height *= solid
 
 gy, gx = np.gradient(gaussian_filter(height, 0.8))
@@ -110,25 +112,27 @@ diff = np.clip((N * L).sum(2), 0, 1)
 spec = np.clip((N * Hh).sum(2), 0, 1) ** 26
 fill = np.clip((N * np.array([0.5, 0.2, 0.84])).sum(2), 0, 1) ** 2
 
-sx, sy = 9, 16
+sx, sy = 6, 11
 zs = np.full_like(zmap, -1e9)
 zs[sy:, sx:] = zmap[:-sy, :-sx]
 shadow = gaussian_filter(((zs > zmap) & (label >= 0)).astype(np.float32), 5)
 ao = (1 - 0.9 * shadow) * (0.2 + 0.8 * np.clip(edge_d * 7, 0, 1) ** 0.6)
 ao *= 0.55 + 0.45 * bevel  # les bords de la lettre reçoivent moins de lumière ambiante
 
-per_scale = rng.uniform(-1.0, 1.0, n + 1)[label]
-patches = noise(90, 11) * 0.45 + noise(16, 12) * 0.4 + noise(3, 13) * 0.3
-t = 0.18 + 0.8 * per_scale + patches * 0.45 + 0.25 * dome - wrinkle * 0.6
-red = np.clip((t - 0.1) / 0.5, 0, 1)
-red = red * red * (3 - 2 * red)
-charcoal = np.array([0.032, 0.031, 0.036])
-grenat = np.array([0.44, 0.018, 0.04])
-albedo = charcoal * (1 - red[..., None]) + grenat * red[..., None]
-albedo *= (1 - 0.45 * wrinkle)[..., None]
-
-front = albedo * (0.03 + 1.9 * diff[..., None] ** 1.3 + 0.2 * fill[..., None]) * ao[..., None]
-front += (spec * 0.36 * (0.35 + 0.65 * (1 - red)) * ao)[..., None] * np.array([0.85, 0.86, 0.95])
+# couleur : toutes les écailles en grenat (nuances par écaille), patine noire qui s'accumule dans les creux :
+# sous le bord des écailles du dessus, dans les rides du cuir, et en quelques zones usées
+shade_k = rng.uniform(0.75, 1.15, n + 1)[label]
+patches = noise(110, 11) * 0.5 + noise(20, 12) * 0.35 + noise(3, 13) * 0.25
+crevice = np.clip(1 - edge_d * 5, 0, 1) ** 1.5
+black = np.clip(0.95 * shadow + 0.65 * crevice + 0.8 * wrinkle + 0.38 * patches - 0.05, 0, 1)
+black = black * black * (3 - 2 * black)
+red = 1 - black
+charcoal = np.array([0.028, 0.026, 0.03])
+grenat = np.array([0.33, 0.012, 0.03])
+albedo = charcoal * black[..., None] + grenat * (red * shade_k)[..., None]
+front = albedo * (0.05 + 1.85 * diff[..., None] ** 1.2 + 0.25 * fill[..., None]) * ao[..., None]
+# cuir légèrement ciré : brillant discret, un peu plus marqué sur la patine noire
+front += (spec * 0.3 * (0.45 + 0.55 * black) * ao)[..., None] * np.array([0.9, 0.88, 0.92])
 
 # --- épaisseur : flanc visible en bas à droite (extrusion), teinte sombre et lisse -----------
 DEPTH = 22
