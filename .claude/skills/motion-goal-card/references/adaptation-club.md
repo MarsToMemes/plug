@@ -79,4 +79,8 @@ Projet : `motion/metz-but/` (props dans `players.json`, rendu par joueur avec `n
   (flanc sombre), matière qui suit le relief et passe sur les arêtes, une seule lumière, ombre portée, aucun contour.
   Référence donnée : lettres sculptées dans la roche. Mise en œuvre : `tools/lettres3d.py` (écailles du Graoully,
   image RGBA par ligne, graines différentes), prop `clubMaterial: 'ecailles'` ; `'grenat'` = ancienne méthode plaquée.
+- **Choix validé : `clubMaterial: 'grenat-relief'`** (défaut) — grenat taillé traité en objet par `tools/gemme3d.py` :
+  face facettée (texture `gemme.py` recalculée à la taille du mot), chanfrein qui accroche la lumière, flanc, ombre
+  portée, aucun halo ni liseré. Autres options gardées pour comparaison : `'ecailles'`, `'vitrail'` (`tools/vitrail3d.py` :
+  verre grenat serti de plombs en relief).
 - Joueurs faits : Jessy Deminguet (n° 8). Encore à fournir : les autres joueurs, logo sponsor éventuel.

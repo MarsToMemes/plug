@@ -11,7 +11,8 @@ import {SoundTrack} from './SoundTrack';
 
 export const goalCardSchema = z.object({
 	clubWord: z.string(),
-	clubMaterial: z.enum(['grenat', 'ecailles']),
+	// 'grenat-relief' = choix validé ; 'grenat' = ancienne texture plaquée (effet « LED », à ne plus utiliser)
+	clubMaterial: z.enum(['grenat-relief', 'grenat', 'ecailles', 'vitrail']),
 	goalWord: z.string(),
 	number: z.string(),
 	firstName: z.string(),
@@ -27,7 +28,7 @@ export type GoalCardProps = z.infer<typeof goalCardSchema>;
 
 export const defaultGoalCardProps: GoalCardProps = {
 	clubWord: 'METZ',
-	clubMaterial: 'grenat',
+	clubMaterial: 'grenat-relief',
 	goalWord: 'BUUUUT',
 	number: '8',
 	firstName: 'JESSY',

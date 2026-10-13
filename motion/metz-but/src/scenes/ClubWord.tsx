@@ -3,7 +3,7 @@ import {AbsoluteFill, Easing, interpolate, useCurrentFrame} from 'remotion';
 import {Grain} from '../fx/Grain';
 import {BrushBg} from '../fx/BrushBg';
 import {GemWord} from './GemWord';
-import {ScaledLetters} from './ScaledLetters';
+import {ObjectMaterial, ScaledLetters} from './ScaledLetters';
 import {C, clamp} from '../theme';
 
 export const CLUB_ROWS = [175, 540, 905];
@@ -14,7 +14,7 @@ export const CLUB_FONT_SIZE = 300;
 const ROW_TEX_X = [-200, -120, -260]; // décalage de la texture : les trois lignes ne sont pas identiques
 const ROW_DRIFT: [number, number][] = [[-30, 10], [30, -10], [-20, 15]];
 
-export const ClubWord: React.FC<{word: string; material?: 'grenat' | 'ecailles'}> = ({word, material = 'grenat'}) => {
+export const ClubWord: React.FC<{word: string; material?: 'grenat' | ObjectMaterial}> = ({word, material = 'grenat-relief'}) => {
 	const frame = useCurrentFrame();
 	const brightness =
 		frame < 15
@@ -30,9 +30,9 @@ export const ClubWord: React.FC<{word: string; material?: 'grenat' | 'ecailles'}
 			<BrushBg durationInFrames={22} />
 			<AbsoluteFill style={{opacity: 0.55, background: C.black}} />
 			<AbsoluteFill style={{scale: String(punch)}}>
-				{material === 'ecailles'
+				{material !== 'grenat'
 					? CLUB_ROWS.map((y, r) => (
-							<ScaledLetters key={y} y={y} row={r} dx={interpolate(frame, [0, 21], ROW_DRIFT[r], clamp)} brightness={1 + (brightness - 1) * 0.45} />
+							<ScaledLetters key={y} y={y} row={r} material={material} dx={interpolate(frame, [0, 21], ROW_DRIFT[r], clamp)} brightness={1 + (brightness - 1) * 0.45} />
 						))
 					: CLUB_ROWS.map((y, r) => (
 					<GemWord
