@@ -5,7 +5,7 @@
   "scripts": {
     "studio": "remotion studio src/index.ts",
     "still": "remotion still src/index.ts",
-    "render": "remotion render src/index.ts GoalCard out/goal-card.mp4"
+    "render": "remotion render src/index.ts GoalCard out/goal-card.mp4 --timeout=120000"
   },
   "dependencies": {
     "@remotion/cli": "4.0.534",

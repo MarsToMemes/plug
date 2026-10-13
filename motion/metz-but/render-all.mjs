@@ -13,7 +13,7 @@ for (const {id, ...props} of players) {
 	console.log(`→ ${id}`);
 	execFileSync(
 		'npx',
-		['remotion', 'render', 'src/index.ts', 'GoalCard', `out/${id}.mp4`, `--props=${JSON.stringify(props)}`, ...extra],
+		['remotion', 'render', 'src/index.ts', 'GoalCard', `out/${id}.mp4`, `--props=${JSON.stringify(props)}`, '--timeout=120000', ...extra],
 		{stdio: 'inherit'},
 	);
 }
