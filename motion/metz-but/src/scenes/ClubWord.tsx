@@ -2,7 +2,7 @@ import React from 'react';
 import {AbsoluteFill, interpolate, interpolateColors, useCurrentFrame} from 'remotion';
 import {Grain} from '../fx/Grain';
 import {BrushBg} from '../fx/BrushBg';
-import {C, SKEW, clamp, fontFamily} from '../theme';
+import {C, SKEW, clamp, fontHeavy} from '../theme';
 
 export const CLUB_ROWS = [110, 540, 970];
 export const CLUB_FONT_SIZE = 300;
@@ -27,12 +27,12 @@ export const ClubRow: React.FC<{
 				translate: `calc(-50% + ${dx}px) -50%`,
 				transform: SKEW,
 				whiteSpace: 'nowrap',
-				fontFamily,
+				fontFamily: fontHeavy,
+				fontWeight: 900,
 				fontSize: CLUB_FONT_SIZE,
 				lineHeight: 1,
 				color,
-				WebkitTextStroke: `18px ${color}`,
-				letterSpacing: '-0.02em',
+				letterSpacing: '-0.01em',
 			}}
 		>
 			{letters.map((l, i) => {

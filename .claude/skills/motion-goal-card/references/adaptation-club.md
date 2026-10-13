@@ -55,7 +55,14 @@ Projet : `motion/metz-but/` (props dans `players.json`, rendu par joueur avec `n
   - or seulement : flash de 3 frames dans le glitch, début du dégradé du contour du numéro, ligne de reflet du nom chrome,
     rien sur la fin (le filet or sous le logotype a été retiré) ;
   - halo montant de la scène 4 en rouge secondaire (pas de bleu).
-- Police provisoire : Michroma (OFL, fichier local `public/fonts/`), penchée de −12°. Le fichier woff2 du CDN Google
+- Polices (OFL, fichiers locaux `public/fonts/`) : **Unbounded Black (900)** pour « METZ », le numéro et le nom
+  (la puissance du style vient d'une police très grasse) ; Michroma, penchée de −12°, reste pour les néons « BUUUT ».
+- Son (`src/SoundTrack.tsx`, rendu avec `Html5Audio` : `<Audio>` de `@remotion/media` fait expirer le rendu à f89) :
+  musique fournie par l'utilisateur (Epidemic Sound, `public/music/`), découpée pour que son drop tombe sur la coupe
+  « METZ » plein cadre (f15) — repérer le drop par l'énergie RMS (saut le plus fort après une accalmie) ;
+  effets synthétisés par `tools/sfx.py` (souffles, impacts, glitch, scintillement) calés sur chaque coupe.
+  Cible de mixage : −14 LUFS intégrés, aucun échantillon saturé (mesurer avec `ebur128`).
+- Ancienne police provisoire : Michroma seule (OFL, fichier local `public/fonts/`), penchée de −12°. Le fichier woff2 du CDN Google
   ne contient qu'un sous-ensemble : utiliser le TTF complet.
 - Emblème final : croix de Lorraine vectorisée depuis le logo fourni (`src/club.ts`), grenat pendant la rotation puis
   blanc cassé quand elle se pose ; puis logotype « Fc Metz » extrait du logo (`public/club/fc-metz-logotype.png`), sans filet (retiré à la demande de l’utilisateur).

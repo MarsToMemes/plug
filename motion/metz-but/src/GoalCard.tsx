@@ -7,6 +7,7 @@ import {NumberScene} from './scenes/NumberScene';
 import {CROSS_PATH} from './club';
 import {Outro} from './scenes/Outro';
 import {PlayerCard} from './scenes/PlayerCard';
+import {SoundTrack} from './SoundTrack';
 
 export const goalCardSchema = z.object({
 	clubWord: z.string(),
@@ -71,6 +72,7 @@ export const GoalCard: React.FC<GoalCardProps> = (props) => {
 				<Outro markPath={props.markPath} clubLogotype={props.clubLogotype} />
 			</Sequence>
 			{props.sponsorLogo ? <SponsorTab logo={props.sponsorLogo} /> : null}
+			<SoundTrack />
 		</AbsoluteFill>
 	);
 };

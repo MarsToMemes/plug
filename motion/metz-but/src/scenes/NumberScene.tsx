@@ -4,7 +4,7 @@ import {BrushBg} from '../fx/BrushBg';
 import {Echoes} from '../fx/Echoes';
 import {Grain} from '../fx/Grain';
 import {ZoomEcho} from '../fx/ZoomEcho';
-import {C, clamp, fontFamily} from '../theme';
+import {C, clamp, fontHeavy} from '../theme';
 import {GoalRows} from './GoalWord';
 
 const ZOOM_ORIGIN = '60% 45%';
@@ -47,8 +47,9 @@ const NeonNumber: React.FC<{value: string}> = ({value}) => (
 				y={540}
 				textAnchor="middle"
 				dominantBaseline="central"
-				fontFamily={fontFamily}
-				fontSize={400}
+				fontFamily={fontHeavy}
+				fontWeight={900}
+				fontSize={420}
 				fill={C.grenatDeep}
 				fillOpacity={0.85}
 				filter="url(#num-texture)"
@@ -60,8 +61,9 @@ const NeonNumber: React.FC<{value: string}> = ({value}) => (
 				y={540}
 				textAnchor="middle"
 				dominantBaseline="central"
-				fontFamily={fontFamily}
-				fontSize={400}
+				fontFamily={fontHeavy}
+				fontWeight={900}
+				fontSize={420}
 				fill="none"
 				stroke="url(#num-stroke)"
 				strokeWidth={6}

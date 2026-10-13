@@ -1,7 +1,7 @@
 import React from 'react';
 import {AbsoluteFill, Easing, Img, interpolate, staticFile, useCurrentFrame} from 'remotion';
 import {ZoomEcho} from '../fx/ZoomEcho';
-import {C, clamp, fontFamily} from '../theme';
+import {C, clamp, fontHeavy} from '../theme';
 import {PlayerDecor} from './PlayerDecor';
 import {PlayerPlaceholder} from './PlayerPlaceholder';
 
@@ -10,7 +10,7 @@ const ChromeName: React.FC<{firstName: string; lastName: string; t: number}> = (
 	const p = interpolate(t, [0, 22], [0, 1], {...clamp, easing: Easing.out(Easing.cubic)});
 	const fill = interpolate(t, [6, 20], [0, 1], clamp);
 	const flicker = t < 0 ? 0 : t === 1 ? 0.4 : 1;
-	const nameSize = Math.min(118, 1000 / (lastName.length * 1.3)); // Michroma : ~1,2 em par capitale
+	const nameSize = Math.min(130, 1000 / (lastName.length * 1.08)); // Unbounded Black : ~1 em par capitale
 	return (
 		<svg viewBox="0 0 1080 1080" width={1080} height={1080} style={{position: 'absolute', inset: 0, opacity: flicker}}>
 			<defs>
@@ -38,7 +38,8 @@ const ChromeName: React.FC<{firstName: string; lastName: string; t: number}> = (
 					y={850}
 					textAnchor="middle"
 					dominantBaseline="central"
-					fontFamily={fontFamily}
+					fontFamily={fontHeavy}
+					fontWeight={900}
 					fontSize={44}
 					letterSpacing={interpolate(p, [0, 1], [1.2, 0.15]) * 44}
 					fill="url(#chrome)"
@@ -55,7 +56,8 @@ const ChromeName: React.FC<{firstName: string; lastName: string; t: number}> = (
 					y={935}
 					textAnchor="middle"
 					dominantBaseline="central"
-					fontFamily={fontFamily}
+					fontFamily={fontHeavy}
+					fontWeight={900}
 					fontSize={nameSize}
 					letterSpacing={interpolate(p, [0, 1], [0.6, 0.04]) * nameSize}
 					fill="url(#chrome)"
@@ -115,7 +117,7 @@ export const PlayerCard: React.FC<{
 				</ZoomEcho>
 			</AbsoluteFill>
 			{/* fontFamily référencée ici pour que la police soit chargée avant le premier rendu du nom */}
-			<span style={{fontFamily, position: 'absolute', opacity: 0}}>.</span>
+			<span style={{fontFamily: fontHeavy, fontWeight: 900, position: 'absolute', opacity: 0}}>.</span>
 		</AbsoluteFill>
 	);
 };

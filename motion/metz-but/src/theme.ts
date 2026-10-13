@@ -12,9 +12,13 @@ export const C = {
 	grey: '#777777',
 } as const;
 
-// Police provisoire (Michroma, licence OFL, fichier local) : large et carrée, sans italique, d'où le skew appliqué partout.
+// Police des néons (Michroma, licence OFL, fichier local) : large et carrée, sans italique, d'où le skew appliqué partout.
 export const fontFamily = 'Michroma';
 loadFont({family: fontFamily, url: staticFile('fonts/Michroma-Regular.ttf'), weight: '400'});
+
+// Police grasse (Unbounded, licence OFL, variable 200–900) pour le mot club, le numéro et le nom.
+export const fontHeavy = 'Unbounded';
+loadFont({family: fontHeavy, url: staticFile('fonts/Unbounded-Variable.ttf'), weight: '200 900'});
 export const SKEW = 'skewX(-12deg)';
 
 export const clamp = {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'} as const;
