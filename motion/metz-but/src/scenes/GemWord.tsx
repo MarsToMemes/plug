@@ -4,7 +4,7 @@ import {fontHeavy} from '../theme';
 
 export const GEM_TEXTURE = 'matieres/grenat-gemme-large.png';
 
-// Mot en grenat taillé : texture de gemme (tools/gemme.py) découpée dans le texte, liseré de lumière
+// Mot en matière (grenat taillé par défaut, ou écailles) : texture calculée (tools/gemme.py, tools/ecailles.py) découpée dans le texte, liseré de lumière
 // sur les bords, ombre interne, halo rouge, et un reflet qui balaie les facettes (sweepX, en px).
 export const GemWord: React.FC<{
 	id: string;
@@ -16,7 +16,10 @@ export const GemWord: React.FC<{
 	brightness?: number;
 	sweepX?: number;
 	glow?: number;
-}> = ({id, word, y, fontSize, dx = 0, texX = -160, brightness = 1, sweepX, glow = 0.55}) => {
+	texture?: string;
+	texAspect?: number; // largeur / hauteur du fichier de texture
+	texScale?: number; // hauteur de la texture en multiples de fontSize
+}> = ({id, word, y, fontSize, dx = 0, texX = -160, brightness = 1, sweepX, glow = 0.55, texture = GEM_TEXTURE, texAspect = 3.25, texScale = 1.4}) => {
 	const tf = `translate(${540 + dx} ${y}) skewX(-12) translate(${-540 - dx} ${-y})`;
 	const text = (props: React.SVGProps<SVGTextElement>) => (
 		<text
@@ -34,7 +37,7 @@ export const GemWord: React.FC<{
 			{word}
 		</text>
 	);
-	const texH = fontSize * 1.4;
+	const texH = fontSize * texScale;
 	return (
 		<svg viewBox="0 0 1080 1080" width={1080} height={1080} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
 			<defs>
@@ -65,7 +68,7 @@ export const GemWord: React.FC<{
 			{text({fill: '#000', filter: `url(#${id}-glow)`})}
 			<g clipPath={`url(#${id}-clip)`}>
 				<g style={{filter: brightness === 1 ? undefined : `brightness(${brightness})`}}>
-					<image href={staticFile(GEM_TEXTURE)} x={texX} y={y - texH / 2} width={texH * 3.25} height={texH} preserveAspectRatio="none" />
+					<image href={staticFile(texture)} x={texX} y={y - texH / 2} width={texH * texAspect} height={texH} preserveAspectRatio="none" />
 				</g>
 				{sweepX === undefined ? null : (
 					<rect
