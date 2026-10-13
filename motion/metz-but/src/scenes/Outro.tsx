@@ -34,18 +34,7 @@ export const Outro: React.FC<{markPath: string; clubLogotype: string}> = ({markP
 					: null}
 				<Mark d={markPath} color={markColor} rotate={rotation} />
 			</AbsoluteFill>
-			{/* filet doré + nom du club */}
-			<div
-				style={{
-					position: 'absolute',
-					left: '50%',
-					top: 680,
-					width: interpolate(textP, [0, 1], [0, 360]),
-					height: 3,
-					translate: '-50% 0px',
-					background: C.gold,
-				}}
-			/>
+			{/* logotype du club */}
 			<Img
 				src={staticFile(clubLogotype)}
 				style={{

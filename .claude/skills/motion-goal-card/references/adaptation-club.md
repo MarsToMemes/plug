@@ -53,11 +53,11 @@ Projet : `motion/metz-but/` (props dans `players.json`, rendu par joueur avec `n
   - mot club plein en `#9B1C2C` qui s'assombrit ; fonds `#101010` / grenat profond, pinceaux en grenat ;
   - **néon en blanc cassé** (contour + halo blanc cassé, second halo or très léger) : c'est l'accent froid du style ;
   - or seulement : flash de 3 frames dans le glitch, début du dégradé du contour du numéro, ligne de reflet du nom chrome,
-    filet sous le nom du club à la fin ;
+    rien sur la fin (le filet or sous le logotype a été retiré) ;
   - halo montant de la scène 4 en rouge secondaire (pas de bleu).
 - Police provisoire : Michroma (OFL, fichier local `public/fonts/`), penchée de −12°. Le fichier woff2 du CDN Google
   ne contient qu'un sous-ensemble : utiliser le TTF complet.
 - Emblème final : croix de Lorraine vectorisée depuis le logo fourni (`src/club.ts`), grenat pendant la rotation puis
-  blanc cassé quand elle se pose ; filet or + logotype « Fc Metz » extrait du logo (`public/club/fc-metz-logotype.png`).
+  blanc cassé quand elle se pose ; puis logotype « Fc Metz » extrait du logo (`public/club/fc-metz-logotype.png`), sans filet (retiré à la demande de l’utilisateur).
   La même croix sert de filigrane derrière le joueur.
 - Joueurs faits : Jessy Deminguet (n° 8). Encore à fournir : les autres joueurs, logo sponsor éventuel.
