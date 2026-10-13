@@ -69,4 +69,9 @@ Projet : `motion/metz-but/` (props dans `players.json`, rendu par joueur avec `n
 - Emblème final : croix de Lorraine vectorisée depuis le logo fourni (`src/club.ts`), grenat pendant la rotation puis
   blanc cassé quand elle se pose ; puis logotype « Fc Metz » extrait du logo (`public/club/fc-metz-logotype.png`), sans filet (retiré à la demande de l’utilisateur).
   La même croix sert de filigrane derrière le joueur.
+- Mot club en **grenat taillé** (choix de l'utilisateur, en écho au surnom « Les Grenats » et aux vitraux de la
+  cathédrale) : texture de gemme calculée par `tools/gemme.py` (grandes facettes : densité 34000), découpée dans le
+  texte par `GemWord`, avec liseré de lumière, ombre interne et halo. La vidéo démarre directement dessus (miniature
+  forte) ; un reflet balaie les facettes, puis la pierre s'allume sur le drop (f15) avec des éclats (`Glint`).
+  Lignes METZ et BUUUUT entièrement dans le cadre en hauteur (l'utilisateur a pris le rognage haut/bas pour un bug).
 - Joueurs faits : Jessy Deminguet (n° 8). Encore à fournir : les autres joueurs, logo sponsor éventuel.

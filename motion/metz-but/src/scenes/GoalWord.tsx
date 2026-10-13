@@ -3,9 +3,10 @@ import {AbsoluteFill, Easing, interpolate, random, useCurrentFrame} from 'remoti
 import {Echoes} from '../fx/Echoes';
 import {Grain} from '../fx/Grain';
 import {C, SKEW, clamp, fontFamily} from '../theme';
-import {CLUB_ROWS, ClubRow} from './ClubWord';
+import {CLUB_FONT_SIZE, CLUB_ROWS} from './ClubWord';
+import {GemWord} from './GemWord';
 
-export const GOAL_ROWS = [45, 260, 475, 690, 905];
+export const GOAL_ROWS = [130, 335, 540, 745, 950]; // 5 lignes entières dans le cadre
 const GOAL_FONT_SIZE = 150;
 
 // MOT_BUT ×5 en contour, alignés à gauche. glow = 0 contour terne, 1 néon.
@@ -84,8 +85,8 @@ export const GoalWord: React.FC<{clubWord: string; goalWord: string}> = ({clubWo
 	if (frame < 5) {
 		const oldLayer = (
 			<AbsoluteFill style={{background: C.black}}>
-				{CLUB_ROWS.map((y) => (
-					<ClubRow key={y} word={clubWord} y={y} dx={-10} color="#4a0508" />
+				{CLUB_ROWS.map((y, r) => (
+					<GemWord key={y} id={`club-old-${r}`} word={clubWord} y={y} fontSize={CLUB_FONT_SIZE} texX={-160 - r * 60} brightness={0.55} glow={0.3} />
 				))}
 			</AbsoluteFill>
 		);
@@ -98,8 +99,8 @@ export const GoalWord: React.FC<{clubWord: string; goalWord: string}> = ({clubWo
 					from={oldLayer}
 					to={<AbsoluteFill style={{background: night}}>{rows}</AbsoluteFill>}
 				/>
-				{/* flash doré très bref : seul usage de l'or dans la transition */}
-				<AbsoluteFill style={{background: C.gold, mixBlendMode: 'screen', opacity: interpolate(frame, [1, 2, 4], [0, 0.18, 0], clamp)}} />
+				{/* pulsation grenat très brève (un flash or ou blanc délavait l'image en kaki ou en gris) */}
+				<AbsoluteFill style={{background: C.grenatAlt, mixBlendMode: 'screen', opacity: interpolate(frame, [1, 2, 4], [0, 0.22, 0], clamp)}} />
 				<Grain id="goal-glitch" opacity={0.12} />
 			</AbsoluteFill>
 		);
