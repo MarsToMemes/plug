@@ -60,3 +60,18 @@ même timing, chaque scène recadrée autour de son centre d'intérêt (visage, 
 - `OffthreadVideo` multiples (traînée stroboscopique) : rendu lent ; préparer le rush 3 en 1080p court.
 - Les flashs surexposés et la lumière qui brûle doivent rester courts (≤ 5 images) : risque photosensible.
 - Ne reprendre ni le logo, ni le slogan, ni les rushes, ni la musique de la référence.
+
+## Fiche Olympique de Marseille (premier projet : `motion/om-cinema/`, version photos)
+
+- Joueur : Keyliane Abdallah, n° 48, attaquant. Trois photos : séance studio (célébration « dodo », fond orange
+  remplacé), célébration en match, action en match (fond rouge sombre flou).
+- Répartition : action → rush 1 (haut du corps) et plan final (corps entier, copies fantômes) ; célébration → BUT ;
+  studio → gros plan visage. Détourage `u2net_human_seg` propre d'emblée sur les trois (isnet rend le maillot blanc
+  transparent sur fond orange : à éviter).
+- Palette : bleu du logo fourni `#0E68AC` (« Bleu Marseille ») à la place de l'orange, bleu clair `#2B8FD8` pour la
+  bande claire, or `#D8B73B` seulement pour les points. Numéro qui irradie : cœur blanc glacé `#EAF6FF`, halo bleu.
+  Les tribunes rouges des photos passent au bleu par un calque `color` sur le fond seul.
+- Slogan : « DROIT / AU / BUT » (devise du club) — la ligne 2 « BUT » répond au mot du temps 4.
+- Ville : pas de photo accessible (Wikimedia limité) → silhouette SVG (Fort Saint-Jean, Mucem, la Major, mâts,
+  Notre-Dame-de-la-Garde, tour CMA CGM). À remplacer par de vraies photos si le club en fournit.
+- Musique : le compte Epidemic connecté n'autorise pas le téléchargement ; morceau déjà fourni par l'utilisateur.
