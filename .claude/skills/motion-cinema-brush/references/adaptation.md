@@ -15,9 +15,20 @@ templates (photos). À demander :
 Formats acceptés : MP4/MOV 1080p minimum, 25–60 i/s (à convertir en 30 i/s, ralentis en 50/60 i/s idéalement).
 
 **Repli si seulement des photos** (à dire clairement à l'utilisateur, le rendu perd beaucoup) :
-- rushes 1 et 2 → photos avec lente poussée + flou de profondeur animé (effet « Ken Burns ») ;
-- rush 3 → la traînée stroboscopique est impossible avec une photo fixe : remplacer par une photo d'action détourée
-  avec 4 copies décalées en x (opacité décroissante) — c'est une imitation, pas le même effet.
+- Principe : **parallaxe 2,5D** plutôt qu'un simple zoom. Détourer le joueur (`u2net_human_seg`), reboucher le fond
+  derrière lui (remplissage flou normalisé, cf. `motion-glitch-grid`), puis animer deux calques : fond qui pousse
+  lentement (×1,00 → ×1,06) et joueur qui pousse plus vite (×1,00 → ×1,12) avec un léger décalage. Ça donne une
+  impression de mouvement de caméra ; un zoom à plat sur la photo entière fait diaporama.
+- rush 1 → parallaxe + flou de profondeur animé sur le fond seul (14 → 6 px), joueur légèrement flou puis net ;
+- rush 2 (visage) → poussée très lente + **balayage de lumière** (dégradé crème en `screen` qui traverse le visage,
+  puis le gel orange en diagonale prévu f163–166) : c'est ce qui remplace le changement de lumière du rush ;
+- rush 3 → la traînée stroboscopique est impossible avec une photo fixe : photo d'action détourée qui glisse de
+  gauche à droite (≈ 120 px sur 3 s) avec 4–5 copies décalées en x, opacité décroissante, teintées orange — c'est une
+  imitation, pas le même effet (le corps ne change pas de posture entre les copies) ;
+- photos à demander : portrait / visage de face (HD), action **sur fond sombre ou uni** (sinon le détourage et le
+  fond rebouché se voient), buste ou entrée sur la pelouse pour le rush 1, et une photo de célébration pour « BUT ».
+- Ne pas générer de fausse vidéo du joueur par IA (image → vidéo) sans l'accord explicite du club : c'est l'image
+  d'une personne réelle, et les déformations du visage se voient.
 
 ## Autres assets
 
