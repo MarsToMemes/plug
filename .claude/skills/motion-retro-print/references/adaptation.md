@@ -64,3 +64,7 @@
 - Écusson raster (webp) : version couleur pour la pastille, silhouette (`ecusson-mono.png`, tout sauf le blanc) teintée
   par `mask-image` pour le filigrane ton sur ton.
 - Mot centré : taille de police = min(560, 2150 / nombre de lettres) pour garder ≈ 880 px de large.
+- Détourage : `u2net_human_seg` gardait le fond sombre de la tribune sous le lobe de l'oreille (fond foncé + cheveux
+  foncés au même endroit). Correction par clé de peau dans la zone, **limitée au bord** (≤ 4 px de la transparence)
+  côté oreille dont l'intérieur est ombré, sinon la clé perce le creux de l'oreille ; ne pas faire monter la zone
+  dans les cheveux. Toujours vérifier les deux oreilles en gros plan (×3) sur les deux couleurs de fond.
