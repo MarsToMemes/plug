@@ -11,12 +11,14 @@ import {P} from './theme';
 
 export {cinemaGoalSchema, defaultCinemaGoalProps} from './props';
 
-// Musique : « Eagle » (Raccy, Epidemic Sound, fournie par l'utilisateur). Le drop (106,35 s), juste après un creux,
-// tombe sur la coupe du slogan (f15) : trimBefore = (106,35 − 0,5) s × 30 i/s.
-const MUSIC_TRIM = 3176;
+// Musique : « Stadium Rocker » (Taelimb, Epidemic Sound, fournie par l'utilisateur). Le coup qui suit le blanc de
+// 97,7–98,25 s (98,35 s) tombe sur la coupe du slogan (f15) : le logo s'assemble dans le blanc, sous l'aspiration.
+// trimBefore = (98,35 − 0,5) s × 30 i/s.
+const MUSIC_TRIM = 2936;
 
 // Effets synthétisés (repris de motion/metz-but/tools/sfx.py), en appoint sous la musique.
 const SFX: [string, number, number][] = [
+	['aspiration', 3, 0.35],
 	['whoosh-lettres', 13, 0.3],
 	['impact-but', 62, 0.35],
 	['impact-numero', 91, 0.3],
@@ -47,9 +49,9 @@ export const CinemaGoal: React.FC<CinemaGoalProps> = (p) => {
 				</Sequence>
 			))}
 			<Audio
-				src={staticFile('music/eagle-raccy.mp3')}
+				src={staticFile('music/stadium-rocker-taelimb.mp3')}
 				trimBefore={MUSIC_TRIM}
-				volume={(fr) => interpolate(fr, [0, durationInFrames - 20, durationInFrames - 1], [0.45, 0.45, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})}
+				volume={(fr) => interpolate(fr, [0, durationInFrames - 20, durationInFrames - 1], [0.41, 0.41, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})}
 			/>
 			{SFX.map(([name, at, vol], i) => (
 				<Sequence key={i} name={`SFX ${name}`} from={at} layout="none">

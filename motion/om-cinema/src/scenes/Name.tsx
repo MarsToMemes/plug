@@ -9,7 +9,7 @@ const SloganBlock: React.FC<{p: CinemaGoalProps; size: number; style?: React.CSS
 	return (
 		<div style={{position: 'absolute', ...style}}>
 			<div style={{...t, fontSize: size}}>{p.slogan.top}</div>
-			<div style={{...t, fontSize: size * 0.4, marginLeft: size * 0.9, color: P.gold}}>{p.slogan.link}</div>
+			<div style={{...t, fontSize: size * 0.57}}>{p.slogan.link}</div>
 			<div style={{...t, fontSize: size}}>{p.slogan.bottom}</div>
 		</div>
 	);

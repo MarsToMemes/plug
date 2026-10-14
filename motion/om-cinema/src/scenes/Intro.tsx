@@ -91,7 +91,7 @@ export const LogoBuild: React.FC<{p: CinemaGoalProps}> = ({p}) => {
 };
 
 // Ligne du slogan qui entre de la gauche avec flou de mouvement.
-const SloganLine: React.FC<{text: string; f: number; start: number; y: number; id: string}> = ({text, f, start, y, id}) => {
+const SloganLine: React.FC<{text: string; f: number; start: number; y: number; id: string; size?: number}> = ({text, f, start, y, id, size = 300}) => {
 	const pos = (t: number) => interpolate(t, [start, start + 9], [-700, 0], {...clamp, easing: Easing.out(Easing.cubic)});
 	const x = pos(f);
 	const v = Math.abs(x - pos(f - 1));
@@ -103,15 +103,15 @@ const SloganLine: React.FC<{text: string; f: number; start: number; y: number; i
 		fontFamily: FONT.blackItalic,
 		fontStyle: 'italic',
 		fontWeight: 900,
-		fontSize: 330,
+		fontSize: size,
 		lineHeight: 1,
-		letterSpacing: 4,
+		letterSpacing: size / 80,
 	};
 	return (
 		<HBlur id={id} amount={v * 0.35} style={{translate: `${x}px 0`, opacity: f < start ? 0 : 1}}>
 			{/* ombre noire décalée + contour */}
-			<div style={{...style, color: '#000', translate: '-14px 14px', WebkitTextStroke: '10px #000'}}>{text}</div>
-			<div style={{...style, color: P.white, WebkitTextStroke: '2px #000'}}>{text}</div>
+			<div style={{...style, color: '#000', translate: `${-size * 0.043}px ${size * 0.043}px`, WebkitTextStroke: `${size * 0.03}px #000`}}>{text}</div>
+			<div style={{...style, color: P.white, WebkitTextStroke: `${Math.max(1.5, size * 0.006)}px #000`}}>{text}</div>
 		</HBlur>
 	);
 };
@@ -138,7 +138,6 @@ export const LogoRow: React.FC<{f: number; start: number; y: number; size?: numb
 export const Slogan: React.FC<{p: CinemaGoalProps; from: number}> = ({p, from}) => {
 	const f = useCurrentFrame() + from;
 	const band = interpolate(f, [30, 35], [-1900, 110], {...clamp, easing: Easing.out(Easing.cubic)});
-	const linkIn = interpolate(f, [25, 29], [0, 1], {...clamp, easing: Easing.out(Easing.back(2))});
 	return (
 		<AbsoluteFill style={{background: P.club}}>
 			<Topo opacity={0.16} drift={-f} />
@@ -150,26 +149,10 @@ export const Slogan: React.FC<{p: CinemaGoalProps; from: number}> = ({p, from}) 
 				<AbsoluteFill style={{background: `linear-gradient(transparent 50%, ${P.club}55)`}} />
 			</div>
 			<Brush x={1810 - 640} y={540 - 130} w={1280} h={260} color={P.ink} variant={2} rotate={90} />
-			<SloganLine text={p.slogan.top} f={f} start={15} y={150} id="sl1" />
-			<SloganLine text={p.slogan.bottom} f={f} start={17} y={430} id="sl2" />
-			<div
-				style={{
-					position: 'absolute',
-					left: 920,
-					top: 400,
-					fontFamily: FONT.blackItalic,
-					fontStyle: 'italic',
-					fontWeight: 900,
-					fontSize: 110,
-					color: P.white,
-					WebkitTextStroke: '6px #000',
-					paintOrder: 'stroke',
-					scale: `${linkIn}`,
-					opacity: linkIn > 0.01 ? 1 : 0,
-				}}
-			>
-				{p.slogan.link}
-			</div>
+			{/* trois lignes, même police : DROIT / AU / BUT ; le petit mot entre avec les deux autres */}
+			<SloganLine text={p.slogan.top} f={f} start={15} y={180} id="sl1" />
+			<SloganLine text={p.slogan.link} f={f} start={16} y={460} id="sl2" size={170} />
+			<SloganLine text={p.slogan.bottom} f={f} start={17} y={610} id="sl3" />
 			{f >= 30 && (
 				<Brush x={band} y={470 - 130} w={1700} h={260} color="#050608" variant={1}>
 					<LogoRow f={f} start={31} y={130} x0={60} />

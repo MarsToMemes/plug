@@ -12,5 +12,7 @@ Style `motion-cinema-brush` (référence : annonce de but des Flyers). Compositi
   sur le col du maillot (accents).
 - Slogan : « Droit au but », devise historique du club.
 - Ville : silhouette de Marseille dessinée en SVG (`Skyline` dans `src/fx.tsx`) faute de photo de la ville.
-- Musique : « Eagle » (Raccy, Epidemic Sound), drop à 106,35 s calé sur la coupe du slogan (f15), `trimBefore` 3176,
-  volume 0,45 → −14,1 LUFS, crête −2,9 dBTP.
+- Musique : « Stadium Rocker » (Taelimb, Epidemic Sound, fournie). Le coup qui suit le blanc de 97,7–98,25 s tombe
+  sur la coupe du slogan (f15) : `trimBefore` 2936 ; le logo s'assemble dans le blanc, sous une aspiration (SFX).
+  Volume 0,41 → −14,1 LUFS, crête −3,9 dBTP.
+- Slogan en trois lignes de la même police : DROIT / AU / BUT (AU plus petit, aligné à gauche, entre les deux).

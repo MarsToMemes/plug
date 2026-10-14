@@ -74,4 +74,8 @@ même timing, chaque scène recadrée autour de son centre d'intérêt (visage, 
 - Slogan : « DROIT / AU / BUT » (devise du club) — la ligne 2 « BUT » répond au mot du temps 4.
 - Ville : pas de photo accessible (Wikimedia limité) → silhouette SVG (Fort Saint-Jean, Mucem, la Major, mâts,
   Notre-Dame-de-la-Garde, tour CMA CGM). À remplacer par de vraies photos si le club en fournit.
-- Musique : le compte Epidemic connecté n'autorise pas le téléchargement ; morceau déjà fourni par l'utilisateur.
+- Musique : le compte Epidemic connecté n'autorise pas le téléchargement ; morceau choisi par l'utilisateur :
+  « Stadium Rocker » (Taelimb), coup après un blanc calé sur f15 (`trimBefore` 2936).
+- Retour utilisateur : le petit mot de liaison doit être **entre** les deux lignes, dans la **même police** (italique
+  grasse à ombre noire, entrée avec flou), pas posé à droite en plus petit et plus fin. Même règle dans le bloc slogan
+  du temps 8 et du plan final.

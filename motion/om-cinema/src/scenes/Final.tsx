@@ -128,7 +128,7 @@ export const FinalScene: React.FC<{p: CinemaGoalProps; from: number}> = ({p, fro
 			>
 				<Logo size={46} color={P.white} kind="plein" />
 				<div style={{fontFamily: FONT.blackItalic, fontStyle: 'italic', fontWeight: 900, fontSize: 46, letterSpacing: 3, color: P.white}}>
-					{p.slogan.top} <span style={{color: P.gold, fontSize: 30}}>{p.slogan.link}</span> {p.slogan.bottom}
+					{p.slogan.top} {p.slogan.link} {p.slogan.bottom}
 				</div>
 			</div>
 			<AbsoluteFill style={{background: P.glow, mixBlendMode: 'screen', opacity: flash}} />
