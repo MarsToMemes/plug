@@ -45,3 +45,17 @@
 - La photo d'action en noir et blanc doit être nette et contrastée ; une photo floue ou en contre-jour y est très visible.
 - La boucle exige f186 = f0 au pixel près : comparer les deux images par différence avant de livrer.
 - Ne recopier ni l'aile, ni le logotype, ni la police, ni les photos de la référence.
+
+## Fiche Clermont Foot 63 (premier projet : `motion/clermont-glitch/`)
+
+- Joueur : Florian Bianchini, n° 7 (un seul chiffre : une seule case de rouleau). `goalWord` « BUT » (grille à 3 colonnes).
+- Palette : rouge `#C4053F`, bleu `#0C2C65` relevés sur l'écusson fourni ; le bleu tient le rôle du « noir » (cases,
+  lettres sombres, lignes) et un bleu très foncé `#061A3D` celui des fonds noirs.
+- Une seule photo (studio, fond uni) : déclinée en portrait (recadrage du détourage), noir et blanc (photo d'origine
+  recadrée sous les logos incrustés), buste détouré. Le fond uni rend le détourage `u2net_human_seg` propre d'emblée.
+- Emblème : le **cavalier** extrait de l'écusson (plus grande composante bleue de la zone centrale) — l'écusson entier
+  mettait son « 63 » sur le logotype. Motif de la carte : bandes rouge/blanc/bleu du maillot en courbes, placées
+  **sous** le nom (y ≥ 900). Décor bas du logotype : chaîne des Puys dessinée en SVG.
+- Piège : un `clipPath: inset(...)` sur un élément centré par `translate(-50%)` se calcule sur sa propre boîte, pas sur
+  le cadre — pour une coupe en coordonnées du cadre, mettre le clip sur un `AbsoluteFill` parent.
+- Boucle vérifiée : différence f0 / f186 nulle.
