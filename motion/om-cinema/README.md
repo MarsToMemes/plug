@@ -14,5 +14,8 @@ Style `motion-cinema-brush` (référence : annonce de but des Flyers). Compositi
 - Ville : silhouette de Marseille dessinée en SVG (`Skyline` dans `src/fx.tsx`) faute de photo de la ville.
 - Musique : « Stadium Rocker » (Taelimb, Epidemic Sound, fournie). Le coup qui suit le blanc de 97,7–98,25 s tombe
   sur la coupe du slogan (f15) : `trimBefore` 2936 ; le logo s'assemble dans le blanc, sous une aspiration (SFX).
-  Volume 0,41 → −14,1 LUFS, crête −3,9 dBTP.
+  Volume 0,41.
+- Bruitages (seulement ceux qui s'entendent) : whoosh Epidemic sur les volets f40, les entailles f128 et le nom f168 ;
+  flash photo Epidemic sur les flashs f112 et f193 ; aspiration (blanc de la musique) et impacts BUT / plan final
+  synthétisés. Mixage : −14,0 LUFS, crête −2,0 dBTP. Bruitages Epidemic réutilisables : `motion/bruitages-epidemic/`.
 - Slogan en trois lignes de la même police : DROIT / AU / BUT (AU plus petit, aligné à gauche, entre les deux).

@@ -79,3 +79,6 @@ même timing, chaque scène recadrée autour de son centre d'intérêt (visage, 
 - Retour utilisateur : le petit mot de liaison doit être **entre** les deux lignes, dans la **même police** (italique
   grasse à ombre noire, entrée avec flou), pas posé à droite en plus petit et plus fin. Même règle dans le bloc slogan
   du temps 8 et du plan final.
+- Bruitages : l'utilisateur veut **seulement ceux qui servent** (audibles sous la musique), pas un son sur chaque
+  coupe. Whoosh et flash photo Epidemic dans `motion/bruitages-epidemic/` (repères dans son README) ; les sons
+  synthétisés faibles (scintillement, petits whooshes) étaient couverts par la batterie et ont été retirés.

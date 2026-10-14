@@ -16,15 +16,20 @@ export {cinemaGoalSchema, defaultCinemaGoalProps} from './props';
 // trimBefore = (98,35 − 0,5) s × 30 i/s.
 const MUSIC_TRIM = 2936;
 
-// Effets synthétisés (repris de motion/metz-but/tools/sfx.py), en appoint sous la musique.
-const SFX: [string, number, number][] = [
-	['aspiration', 3, 0.35],
-	['whoosh-lettres', 13, 0.3],
-	['impact-but', 62, 0.35],
-	['impact-numero', 91, 0.3],
-	['scintillement', 105, 0.25],
-	['whoosh-sortie', 165, 0.3],
-	['impact-final', 188, 0.35],
+// Bruitages, seulement là où ils s'entendent sous la musique :
+// - Epidemic Sound (fournis par l'utilisateur) : whoosh (le fichier en contient 3, un par passage, sommet ≈ 0,5 s
+//   après son début) sur les volets, les entailles et le panoramique du nom ; flash photo sur les deux flashs.
+// - synthétisés (motion/metz-but/tools/sfx.py) : aspiration dans le blanc de la musique, impacts du BUT et du plan final.
+// [fichier, image du coup, volume, début dans le fichier (s), durée (images)]
+const SFX: [string, number, number, number, number][] = [
+	['aspiration.wav', 3, 0.35, 0, 12],
+	['es-whoosh-classic.mp3', 40, 0.7, 0, 34],
+	['impact-but.wav', 62, 0.35, 0, 66],
+	['es-camera-flash.mp3', 112, 0.55, 0, 60],
+	['es-whoosh-classic.mp3', 128, 0.7, 1.35, 34],
+	['es-whoosh-classic.mp3', 168, 0.7, 2.87, 40],
+	['impact-final.wav', 188, 0.35, 0, 78],
+	['es-camera-flash.mp3', 193, 0.45, 0, 60],
 ];
 
 const SCENES: [string, number, number, React.FC<{p: CinemaGoalProps; from: number}>][] = [
@@ -53,11 +58,15 @@ export const CinemaGoal: React.FC<CinemaGoalProps> = (p) => {
 				trimBefore={MUSIC_TRIM}
 				volume={(fr) => interpolate(fr, [0, durationInFrames - 20, durationInFrames - 1], [0.41, 0.41, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})}
 			/>
-			{SFX.map(([name, at, vol], i) => (
-				<Sequence key={i} name={`SFX ${name}`} from={at} layout="none">
-					<Audio src={staticFile(`sfx/${name}.wav`)} volume={vol} />
-				</Sequence>
-			))}
+			{SFX.map(([file, hit, vol, start, dur], i) => {
+				// le sommet d'un whoosh arrive ≈ 15 images après son début ; flash et impacts frappent tout de suite
+				const lead = file.includes('whoosh') ? 15 : file.includes('flash') ? 2 : 0;
+				return (
+					<Sequence key={i} name={`SFX ${file}`} from={hit - lead} durationInFrames={dur} layout="none">
+						<Audio src={staticFile(`sfx/${file}`)} volume={vol} trimBefore={Math.round(start * fps)} />
+					</Sequence>
+				);
+			})}
 		</AbsoluteFill>
 	);
 };
