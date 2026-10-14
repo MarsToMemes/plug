@@ -19,7 +19,7 @@ export const ActionBW: React.FC<{offset: number; photo: string; number: string; 
 	return (
 		<AbsoluteFill style={{background: P.ink}}>
 			<div style={{position: 'absolute', left: 0, right: 0, top: framed ? 90 : 0, bottom: framed ? 150 : 0, overflow: 'hidden'}}>
-				<Img src={staticFile(photo)} style={{width: '100%', height: '100%', objectFit: 'cover', scale: String(zoom), translate: `${interpolate(f, [76, 89], [0, -20], clamp)}px 0px`, filter: 'grayscale(1) contrast(1.1)'}} />
+				<Img src={staticFile(photo)} style={{width: '100%', height: '100%', objectFit: 'cover', objectPosition: '50% 0%', scale: String(zoom), translate: `${interpolate(f, [76, 89], [0, -20], clamp)}px 0px`, filter: 'grayscale(1) contrast(1.1)'}} />
 			</div>
 			{framed ? (
 				<>

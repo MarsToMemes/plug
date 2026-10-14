@@ -32,8 +32,8 @@ export const defaultGlitchGoalProps: GlitchGoalProps = {
 	lastName: 'BIANCHINI',
 	number: '7',
 	role: 'CLERMONT FOOT 63',
-	portrait: 'joueurs/bianchini-portrait.png',
-	actionPhoto: 'joueurs/bianchini-nb.jpg',
+	portrait: 'joueurs/bianchini-portrait-serre.jpg',
+	actionPhoto: 'joueurs/bianchini-action-nb.jpg',
 	cardPhoto: 'joueurs/bianchini-buste.png',
 };
 
@@ -49,10 +49,10 @@ const FirstMosaicBase: React.FC<{p: GlitchGoalProps}> = ({p}) => {
 	);
 };
 
-// Musique fournie par l'utilisateur (Epidemic Sound, sous sa licence) : la courte accalmie du morceau (≈ 105,5 s)
-// tombe sur la fin de la carte logotype, et la reprise (106,10 s) sur la première lettre qui claque (f17).
-// trimBefore = 105,375 s × 24 i/s.
-const MUSIC_TRIM = 2529;
+// Musique fournie par l'utilisateur (Epidemic Sound, sous sa licence) : la montée du morceau (40,3–41,1 s) passe sous
+// la carte logotype et la mosaïque, et le coup qui la termine (41,17 s) tombe sur la première lettre qui claque (f17).
+// trimBefore = 40,458 s × 24 i/s.
+const MUSIC_TRIM = 971;
 
 // Effets synthétisés (repris de motion/metz-but/tools/sfx.py), en appoint sous la musique.
 const SFX: [string, number, number][] = [
@@ -124,9 +124,9 @@ export const GlitchGoal: React.FC<GlitchGoalProps> = (p) => {
 				<LogoCard offset={167} city={p.cityWord} club={p.clubWord} />
 			</Sequence>
 			<Audio
-				src={staticFile('music/eagle-raccy.mp3')}
+				src={staticFile('music/jackhammer-cushy.mp3')}
 				trimBefore={MUSIC_TRIM}
-				volume={(fr) => interpolate(fr, [0, 175, 186], [0.47, 0.47, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})}
+				volume={(fr) => interpolate(fr, [0, 175, 186], [0.4, 0.4, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})}
 			/>
 			{SFX.map(([name, at, vol], i) => (
 				<Sequence key={i} name={`SFX ${name}`} from={at} layout="none">

@@ -59,6 +59,11 @@
 - Piège : un `clipPath: inset(...)` sur un élément centré par `translate(-50%)` se calcule sur sa propre boîte, pas sur
   le cadre — pour une coupe en coordonnées du cadre, mettre le clip sur un `AbsoluteFill` parent.
 - Boucle vérifiée : différence f0 / f186 nulle.
-- Musique (fournie) : « Eagle » (Epidemic Sound). Accalmie courte (≈ 105,5 s) sous la carte logotype, reprise (106,10 s)
-  sur la première lettre qui claque f17 : `trimBefore` = 2529 images à 24 i/s. Fondu sur les 11 dernières images
-  (la musique ne boucle pas, seule l'image boucle).
+- Musique (fournie, remplacée une fois) : « Jackhammer » (Epidemic Sound). Montée de 40,3 à 41,1 s sous la carte
+  logotype et la mosaïque, coup final (41,17 s) sur la première lettre qui claque f17 : `trimBefore` = 971 images à
+  24 i/s. Volume 0,4 → ≈ −14 LUFS. Fondu sur les 11 dernières images (seule l'image boucle).
+- Photos supplémentaires fournies : portrait devant la fresque du club (recadré carré sur le visage, grille de mots) et
+  photo d'action en match (noir et blanc). Celle-ci portait un **trait de pinceau blanc et un logo incrustés** : effacés
+  par remplissage flou normalisé (gaussienne sur les pixels sains) dans une zone **qui exclut l'épaule et le col** —
+  une zone trop large ronge le maillot. Cadrage `objectPosition: 50% 0%` pour garder la tête dans la bande 1080×840.
+- Boucle : f0 et f186 identiques en image fixe ; dans le MP4, ≈ 700 pixels diffèrent de > 8 niveaux (bruit de compression).
