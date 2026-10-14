@@ -64,6 +64,9 @@
 - Écusson raster (webp) : version couleur pour la pastille, silhouette (`ecusson-mono.png`, tout sauf le blanc) teintée
   par `mask-image` pour le filigrane ton sur ton.
 - Mot centré : taille de police = min(560, 2150 / nombre de lettres) pour garder ≈ 880 px de large.
+- Musique (fournie) : « Limitless » (Epidemic Sound). Départ sur un gros coup du morceau (125,2 s), son accalmie
+  tombe sous la fin de la scène 2 et la reprise (127,69 s) sur la coupe du numéro f75. Méthode : énergie RMS par pas de
+  50 ms, chercher un trou court suivi d'une reprise et le caler sur une coupe forte (f40, f75 ou f110).
 - Détourage : `u2net_human_seg` gardait le fond sombre de la tribune sous le lobe de l'oreille (fond foncé + cheveux
   foncés au même endroit). Correction par clé de peau dans la zone, **limitée au bord** (≤ 4 px de la transparence)
   côté oreille dont l'intérieur est ombré, sinon la clé perce le creux de l'oreille ; ne pas faire monter la zone

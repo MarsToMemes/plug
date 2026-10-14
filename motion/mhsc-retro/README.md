@@ -13,4 +13,4 @@ npm run render     # out/retro-goal.mp4
   À remplacer par les codes de la charte officielle s'ils sont fournis.
 - Polices libres (OFL) dans `public/fonts/` : Bungee, Big Shoulders Display Black, Barlow Condensed, Kaushan Script.
 - Le MHSC n'a pas de logo-script : la scène 3 écrit « Paillade » dans une police manuscrite libre.
-- Son : effets synthétisés (repris de `motion/metz-but/tools/sfx.py`), pas encore de musique.
+- Son : musique fournie par l'utilisateur (Epidemic Sound, `public/music/`), reprise après l'accalmie calée sur la coupe du numéro (f75) ; effets synthétisés en appoint. Mixage ≈ −14 LUFS.

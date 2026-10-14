@@ -1,5 +1,5 @@
 import React from 'react';
-import {AbsoluteFill, Html5Audio as Audio, Sequence, staticFile, useVideoConfig} from 'remotion';
+import {AbsoluteFill, Html5Audio as Audio, Sequence, interpolate, staticFile, useVideoConfig} from 'remotion';
 import {z} from 'zod';
 import {CrestWord} from './scenes/CrestWord';
 import {Marquee} from './scenes/Marquee';
@@ -36,18 +36,19 @@ export const defaultRetroGoalProps: RetroGoalProps = {
 	palette: MHSC,
 };
 
-// Effets synthétisés (copiés de motion/metz-but/tools/sfx.py), calés sur les coupes et les flashs.
+// Musique fournie par l'utilisateur (Epidemic Sound, sous sa licence) : on démarre sur le gros coup de 125,2 s ;
+// l'accalmie du morceau (127,35–127,65 s) tombe sur la fin de la scène 2 et la reprise (127,69 s) sur la coupe
+// du numéro (f75). trimBefore = 125,2 s × 30 i/s.
+const MUSIC_TRIM = 3756;
+
+// Effets synthétisés (copiés de motion/metz-but/tools/sfx.py), en appoint sous la musique, calés sur les coupes.
 const SFX: [string, number, number][] = [
-	['whoosh-lettres', 0, 0.5],
-	['glitch', 10, 0.4],
-	['impact-metz', 18, 0.6],
-	['whoosh-sortie', 36, 0.5],
-	['impact-but', 40, 0.8],
-	['impact-numero', 75, 0.75],
-	['glitch', 76, 0.35],
-	['whoosh-sortie', 107, 0.5],
-	['impact-final', 110, 0.8],
-	['atterrissage', 116, 0.6],
+	['glitch', 10, 0.25],
+	['impact-but', 40, 0.5],
+	['impact-numero', 75, 0.5],
+	['whoosh-sortie', 107, 0.35],
+	['impact-final', 110, 0.5],
+	['atterrissage', 116, 0.4],
 ];
 
 export const RetroGoal: React.FC<RetroGoalProps> = (p) => {
@@ -75,6 +76,11 @@ export const RetroGoal: React.FC<RetroGoalProps> = (p) => {
 					P={p.palette}
 				/>
 			</Sequence>
+			<Audio
+				src={staticFile('music/limitless-lonely-robot.mp3')}
+				trimBefore={MUSIC_TRIM}
+				volume={(fr) => interpolate(fr, [0, 255, 270], [0.55, 0.55, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})}
+			/>
 			{SFX.map(([name, at, vol], i) => (
 				<Sequence key={i} name={`SFX ${name}`} from={at} layout="none">
 					<Audio src={staticFile(`sfx/${name}.wav`)} volume={vol} />
