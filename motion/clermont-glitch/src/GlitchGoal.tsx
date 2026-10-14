@@ -1,5 +1,5 @@
 import React from 'react';
-import {AbsoluteFill, Html5Audio as Audio, Sequence, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
+import {AbsoluteFill, Html5Audio as Audio, Sequence, interpolate, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
 import {z} from 'zod';
 import {ActionBW} from './scenes/ActionBW';
 import {Letters} from './scenes/Letters';
@@ -49,19 +49,20 @@ const FirstMosaicBase: React.FC<{p: GlitchGoalProps}> = ({p}) => {
 	);
 };
 
-// Effets synthétisés (repris de motion/metz-but/tools/sfx.py) : impacts sur les coupes, glitch sur les mosaïques.
+// Musique fournie par l'utilisateur (Epidemic Sound, sous sa licence) : la courte accalmie du morceau (≈ 105,5 s)
+// tombe sur la fin de la carte logotype, et la reprise (106,10 s) sur la première lettre qui claque (f17).
+// trimBefore = 105,375 s × 24 i/s.
+const MUSIC_TRIM = 2529;
+
+// Effets synthétisés (repris de motion/metz-but/tools/sfx.py), en appoint sous la musique.
 const SFX: [string, number, number][] = [
-	['glitch', 8, 0.4],
-	['impact-but', 17, 0.6],
-	['impact-numero', 20, 0.45],
-	['impact-but', 36, 0.55],
-	['impact-numero', 57, 0.5],
-	['atterrissage', 68, 0.45],
-	['impact-final', 76, 0.55],
-	['glitch', 89, 0.35],
-	['impact-but', 99, 0.55],
-	['whoosh-sortie', 155, 0.4],
-	['glitch', 159, 0.35],
+	['glitch', 8, 0.25],
+	['impact-but', 36, 0.35],
+	['impact-numero', 57, 0.35],
+	['impact-final', 76, 0.35],
+	['glitch', 89, 0.22],
+	['impact-but', 99, 0.35],
+	['glitch', 159, 0.22],
 ];
 
 export const GlitchGoal: React.FC<GlitchGoalProps> = (p) => {
@@ -122,6 +123,11 @@ export const GlitchGoal: React.FC<GlitchGoalProps> = (p) => {
 			<Sequence name="8 · Logotype (boucle)" from={167} durationInFrames={20} premountFor={fps}>
 				<LogoCard offset={167} city={p.cityWord} club={p.clubWord} />
 			</Sequence>
+			<Audio
+				src={staticFile('music/eagle-raccy.mp3')}
+				trimBefore={MUSIC_TRIM}
+				volume={(fr) => interpolate(fr, [0, 175, 186], [0.47, 0.47, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})}
+			/>
 			{SFX.map(([name, at, vol], i) => (
 				<Sequence key={i} name={`SFX ${name}`} from={at} layout="none">
 					<Audio src={staticFile(`sfx/${name}.wav`)} volume={vol} />

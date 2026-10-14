@@ -14,4 +14,5 @@ npm run render     # out/glitch-goal.mp4
 - Une seule photo fournie : déclinée en portrait serré, version noir et blanc et buste détouré.
 - Motif du club : le cavalier de l'écusson (carte logotype) et les bandes rouge/bleu du maillot (carte joueur) ;
   la chaîne des Puys est dessinée par le code.
-- Polices libres (OFL) : Chakra Petch Bold, Saira Semi Condensed. Son : effets synthétisés, pas encore de musique.
+- Polices libres (OFL) : Chakra Petch Bold, Saira Semi Condensed.
+- Son : « Eagle » (Epidemic Sound, fourni), reprise du morceau calée sur la première lettre qui claque (f17), effets synthétisés en appoint, ≈ −14 LUFS.

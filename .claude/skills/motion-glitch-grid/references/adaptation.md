@@ -59,3 +59,6 @@
 - Piège : un `clipPath: inset(...)` sur un élément centré par `translate(-50%)` se calcule sur sa propre boîte, pas sur
   le cadre — pour une coupe en coordonnées du cadre, mettre le clip sur un `AbsoluteFill` parent.
 - Boucle vérifiée : différence f0 / f186 nulle.
+- Musique (fournie) : « Eagle » (Epidemic Sound). Accalmie courte (≈ 105,5 s) sous la carte logotype, reprise (106,10 s)
+  sur la première lettre qui claque f17 : `trimBefore` = 2529 images à 24 i/s. Fondu sur les 11 dernières images
+  (la musique ne boucle pas, seule l'image boucle).
