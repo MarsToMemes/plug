@@ -54,3 +54,13 @@
 - Le stroboscope de la photo (f116–118) ne fonctionne que si la photo est nette et bien détourée ; avec une photo
   médiocre, préférer une apparition par coupe simple.
 - Ne pas recopier les éléments de marque de la référence (lettrage manuscrit, écusson, police, sponsor maillot).
+
+## Fiche Montpellier HSC (premier projet : `motion/mhsc-retro/`)
+
+- Joueur : Théo Sainte-Luce, n° 17. `goalWord` « BUUUT ».
+- Palette : orange `#F06600` et bleu `#00377B` relevés sur l'écusson fourni (pas de charte officielle trouvée en ligne),
+  vieillis en CHAUD `#E2621F`, SOMBRE `#102B5E`, CRÈME `#EFE5CF`.
+- Pas de logo-script : « Paillade » (surnom historique) en Kaushan Script, révélé par un bord penché qui avance.
+- Écusson raster (webp) : version couleur pour la pastille, silhouette (`ecusson-mono.png`, tout sauf le blanc) teintée
+  par `mask-image` pour le filigrane ton sur ton.
+- Mot centré : taille de police = min(560, 2150 / nombre de lettres) pour garder ≈ 880 px de large.

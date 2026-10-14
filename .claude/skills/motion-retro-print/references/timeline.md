@@ -44,9 +44,9 @@ du buteur, NUM = numéro.
 ## Scène 2 — Mot centré sur écusson (f40–74)
 
 - **f40 coupe** : fond SOMBRE uni, écusson du club en filigrane ton sur ton (≈ 85 % de la largeur, centré,
-  opacité ≈ 30 %, légèrement plus clair que le fond), petits textes CRÈME « VILLE » au-dessus (y ≈ 500) et « CLUB »
-  en dessous (y ≈ 830), hauteur ≈ 16 px.
-- **Apparition lettre par lettre**, centrée (x ≈ 600, y ≈ 650) :
+  opacité ≈ 30 %, légèrement plus clair que le fond), petits textes CRÈME « VILLE » au-dessus (y ≈ 250) et « CLUB »
+  en dessous (y ≈ 960), hauteur ≈ 16 px — bien à l'écart du mot (corrigé après un premier essai où le mot les cachait).
+- **Apparition lettre par lettre**, centrée (x ≈ 600, mot de y ≈ 390 à 780) :
   f41 : 2ᵉ lettre seule, CRÈME, fond **CHAUD** ;
   f42 : 2ᵉ + 3ᵉ lettres en CHAUD, fond SOMBRE ;
   f43 : mot complet, une lettre en SOMBRE, les autres CRÈME, fond CHAUD ;
