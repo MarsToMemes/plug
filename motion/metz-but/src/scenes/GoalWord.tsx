@@ -3,9 +3,9 @@ import {AbsoluteFill, Easing, interpolate, random, useCurrentFrame} from 'remoti
 import {Echoes} from '../fx/Echoes';
 import {Grain} from '../fx/Grain';
 import {C, SKEW, clamp, fontFamily} from '../theme';
-import {CLUB_FONT_SIZE, CLUB_ROWS} from './ClubWord';
+import {CLUB_FONT_SIZE, CLUB_ROWS, ClubMaterial, FlatWord} from './ClubWord';
 import {GemWord} from './GemWord';
-import {ObjectMaterial, ScaledLetters} from './ScaledLetters';
+import {ScaledLetters} from './ScaledLetters';
 
 export const GOAL_ROWS = [130, 335, 540, 745, 950]; // 5 lignes entières dans le cadre
 const GOAL_FONT_SIZE = 150;
@@ -71,7 +71,7 @@ const SliceGlitch: React.FC<{frame: number; progress: number; amplitude: number;
 };
 
 // Scènes 3 à 5 (f22–55) : glitch, BUUUT en contour qui se résorbe, néon, sortie en smear.
-export const GoalWord: React.FC<{clubWord: string; goalWord: string; clubMaterial: 'grenat' | ObjectMaterial}> = ({
+export const GoalWord: React.FC<{clubWord: string; goalWord: string; clubMaterial: ClubMaterial}> = ({
 	clubWord,
 	goalWord,
 	clubMaterial,
@@ -92,7 +92,9 @@ export const GoalWord: React.FC<{clubWord: string; goalWord: string; clubMateria
 			<AbsoluteFill style={{background: C.black}}>
 				{/* l'ancien mot, dans la même matière que les scènes 1–2, assombri */}
 				{CLUB_ROWS.map((y, r) =>
-					clubMaterial === 'grenat' ? (
+					clubMaterial === 'aplat' ? (
+						<FlatWord key={y} word={clubWord} y={y} dx={-10} color="#4a0508" />
+					) : clubMaterial === 'grenat' ? (
 						<GemWord key={y} id={`club-old-${r}`} word={clubWord} y={y} fontSize={CLUB_FONT_SIZE} texX={-160 - r * 60} brightness={0.55} glow={0.3} />
 					) : (
 						<ScaledLetters key={y} y={y} row={r} material={clubMaterial} brightness={0.55} />

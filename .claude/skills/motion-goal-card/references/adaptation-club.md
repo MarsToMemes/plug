@@ -79,7 +79,10 @@ Projet : `motion/metz-but/` (props dans `players.json`, rendu par joueur avec `n
   (flanc sombre), matière qui suit le relief et passe sur les arêtes, une seule lumière, ombre portée, aucun contour.
   Référence donnée : lettres sculptées dans la roche. Mise en œuvre : `tools/lettres3d.py` (écailles du Graoully,
   image RGBA par ligne, graines différentes), prop `clubMaterial: 'ecailles'` ; `'grenat'` = ancienne méthode plaquée.
-- **Choix final de l'utilisateur : `clubMaterial: 'ecailles'`** (défaut, le dragon). Version améliorée de
+- **Choix final de l'utilisateur : `clubMaterial: 'aplat'`** (défaut) — après tous les essais de matière, « METZ » sans
+  matière : aplat grenat vif `#9B1C2C` en Unbounded Black penchée, éclat sur le drop (f15). Les matières ci-dessous
+  restent disponibles mais l'utilisateur les a jugées moins belles que l'aplat.
+- Matière `'ecailles'` (le dragon). Version améliorée de
   `tools/lettres3d.py` : écailles fines (70×92 px sur une police de 600), peu bombées, toutes grenat avec une patine
   noire dans les creux (sous les écailles du dessus, rides du cuir, zones usées) — l'alternance noir/rouge rendait
   les lettres illisibles. Contrôlé lisible à 360 px de large.
