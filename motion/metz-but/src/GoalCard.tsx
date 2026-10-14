@@ -58,7 +58,7 @@ export const GoalCard: React.FC<GoalCardProps> = (props) => {
 				<ClubWord word={props.clubWord} material={props.clubMaterial} />
 			</Sequence>
 			<Sequence name="BUUUT" from={22} durationInFrames={34} premountFor={fps}>
-				<GoalWord clubWord={props.clubWord} goalWord={props.goalWord} />
+				<GoalWord clubWord={props.clubWord} goalWord={props.goalWord} clubMaterial={props.clubMaterial} />
 			</Sequence>
 			<Sequence name="Numéro" from={56} durationInFrames={37} premountFor={fps}>
 				<NumberScene goalWord={props.goalWord} number={props.number} />

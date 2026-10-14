@@ -5,6 +5,7 @@ import {Grain} from '../fx/Grain';
 import {C, SKEW, clamp, fontFamily} from '../theme';
 import {CLUB_FONT_SIZE, CLUB_ROWS} from './ClubWord';
 import {GemWord} from './GemWord';
+import {ObjectMaterial, ScaledLetters} from './ScaledLetters';
 
 export const GOAL_ROWS = [130, 335, 540, 745, 950]; // 5 lignes entières dans le cadre
 const GOAL_FONT_SIZE = 150;
@@ -70,7 +71,11 @@ const SliceGlitch: React.FC<{frame: number; progress: number; amplitude: number;
 };
 
 // Scènes 3 à 5 (f22–55) : glitch, BUUUT en contour qui se résorbe, néon, sortie en smear.
-export const GoalWord: React.FC<{clubWord: string; goalWord: string}> = ({clubWord, goalWord}) => {
+export const GoalWord: React.FC<{clubWord: string; goalWord: string; clubMaterial: 'grenat' | ObjectMaterial}> = ({
+	clubWord,
+	goalWord,
+	clubMaterial,
+}) => {
 	const frame = useCurrentFrame(); // 0 = f22
 	const night = `radial-gradient(circle at 40% 60%, #1c0508 0%, #0b0204 65%, ${C.black} 100%)`;
 
@@ -85,9 +90,14 @@ export const GoalWord: React.FC<{clubWord: string; goalWord: string}> = ({clubWo
 	if (frame < 5) {
 		const oldLayer = (
 			<AbsoluteFill style={{background: C.black}}>
-				{CLUB_ROWS.map((y, r) => (
-					<GemWord key={y} id={`club-old-${r}`} word={clubWord} y={y} fontSize={CLUB_FONT_SIZE} texX={-160 - r * 60} brightness={0.55} glow={0.3} />
-				))}
+				{/* l'ancien mot, dans la même matière que les scènes 1–2, assombri */}
+				{CLUB_ROWS.map((y, r) =>
+					clubMaterial === 'grenat' ? (
+						<GemWord key={y} id={`club-old-${r}`} word={clubWord} y={y} fontSize={CLUB_FONT_SIZE} texX={-160 - r * 60} brightness={0.55} glow={0.3} />
+					) : (
+						<ScaledLetters key={y} y={y} row={r} material={clubMaterial} brightness={0.55} />
+					),
+				)}
 			</AbsoluteFill>
 		);
 		return (

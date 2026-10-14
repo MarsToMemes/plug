@@ -83,6 +83,12 @@ Projet : `motion/metz-but/` (props dans `players.json`, rendu par joueur avec `n
   `tools/lettres3d.py` : écailles fines (70×92 px sur une police de 600), peu bombées, toutes grenat avec une patine
   noire dans les creux (sous les écailles du dessus, rides du cuir, zones usées) — l'alternance noir/rouge rendait
   les lettres illisibles. Contrôlé lisible à 360 px de large.
+  Version 3 (`tools/lettres3d.py out_dir ligne METZ graine --frames 22`) : bords nets (rares ébréchures) ; écailles
+  orientées dans le sens des traits (tenseur de structure de la distance au bord) et rangées en tuiles (espacement
+  anisotrope 1,9 r × 0,95 r, front qui avance le long du trait — un simple Poisson donne un fouillis de « bulles ») ;
+  plus petites près des bords ; bord libre cerclé de noir brillant ; **lumière animée** : 22 images WebP par ligne
+  (`public/matieres/ecailles/ligne-N-FF.webp`), lente puis balayage rasant sur le drop (f15). La transition glitch
+  reprend la même matière (`GoalWord` reçoit `clubMaterial`).
 - Option `'grenat-relief'` — grenat taillé traité en objet par `tools/gemme3d.py` :
   face facettée (texture `gemme.py` recalculée à la taille du mot), chanfrein qui accroche la lumière, flanc, ombre
   portée, aucun halo ni liseré. Autres options gardées pour comparaison : `'ecailles'`, `'vitrail'` (`tools/vitrail3d.py` :

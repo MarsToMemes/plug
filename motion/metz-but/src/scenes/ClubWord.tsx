@@ -32,7 +32,16 @@ export const ClubWord: React.FC<{word: string; material?: 'grenat' | ObjectMater
 			<AbsoluteFill style={{scale: String(punch)}}>
 				{material !== 'grenat'
 					? CLUB_ROWS.map((y, r) => (
-							<ScaledLetters key={y} y={y} row={r} material={material} dx={interpolate(frame, [0, 21], ROW_DRIFT[r], clamp)} brightness={1 + (brightness - 1) * 0.45} />
+							<ScaledLetters
+								key={y}
+								y={y}
+								row={r}
+								material={material}
+								frame={frame}
+								dx={interpolate(frame, [0, 21], ROW_DRIFT[r], clamp)}
+								// écailles : la lumière est déjà calculée image par image (balayage sur le drop)
+								brightness={material === 'ecailles' ? 1 : 1 + (brightness - 1) * 0.45}
+							/>
 						))
 					: CLUB_ROWS.map((y, r) => (
 					<GemWord
