@@ -63,3 +63,5 @@ Club à couleur claire (jaune) : bloc jaune + mot noir (pas blanc), vérifier la
   pas de voile coloré par-dessus la toile (un voile rouge rendait le bleu violet).
 - Petits logos sans fichier fourni : lion extrait du blason, médaillon nom + année de fondation, badge du département.
 - Rendu : ≈ 3 min en 1080 avec la 3D (concurrence 4).
+- Retour utilisateur : le **rectangle blanc qui glisse à droite** au début du temps 3 (copié de la référence) fait
+  « trait moche » sur le logo 3D : supprimé. Ne garder que les tracés fins.

@@ -148,9 +148,6 @@ export const Logo3D: React.FC<{p: VictoireProps; f: number}> = ({p, f}) => {
 				>
 					{p.word.slice(0, 3)}
 				</div>
-				{f >= 113 && f <= 128 && (
-					<div style={{position: 'absolute', right: interpolate(f, [113, 128], [-40, 120]), top: 180, width: 60, height: 420, background: P.white}} />
-				)}
 				{/* mot en contour translucide */}
 				<div
 					style={{
