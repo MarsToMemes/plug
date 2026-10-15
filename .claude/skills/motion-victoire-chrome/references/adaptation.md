@@ -50,3 +50,16 @@ Club à couleur claire (jaune) : bloc jaune + mot noir (pas blanc), vérifier la
   photosensible), et ne pas les étirer.
 - La boucle exige que f359 enchaîne sur f0 : vérifier par différence.
 - Ne reprendre ni le logo, ni les petits logos, ni la police, ni le texte de la référence.
+
+## Fiche Olympique lyonnais (premier projet : `motion/ol-victoire/`)
+
+- Mot : « VICTOIRE » (choix de l'utilisateur), en Archivo Black largeur normale calé par `fitText` ; nom en chrome
+  « LYON », lettres géantes « LYONNAIS », cadre « OLYMPIQUE LYONNAIS ».
+- Couleurs du logo fourni : rouge `#E5202E` (rôle du rouge), bleu `#0F23AA`, or `#C88C28` ; carbone teinté bleu nuit
+  `#05081E` au lieu du rouge sombre. Surface du logo 3D : rouge alvéolé (texture dessinée en canvas — une texture
+  chargée par `TextureLoader` sort noire car la toile n'est pas redessinée après chargement).
+- Logo 3D : vectorisation OpenCV par couleur (`RETR_CCOMP`, trous gérés), couches à hauteurs différentes ; réglages
+  qui marchent : `environmentIntensity` 0,32, ACES exposition 0,95, clearcoat ≤ 0,35 (au-delà le bleu vire au lavande),
+  pas de voile coloré par-dessus la toile (un voile rouge rendait le bleu violet).
+- Petits logos sans fichier fourni : lion extrait du blason, médaillon nom + année de fondation, badge du département.
+- Rendu : ≈ 3 min en 1080 avec la 3D (concurrence 4).
