@@ -68,3 +68,5 @@ Club à couleur claire (jaune) : bloc jaune + mot noir (pas blanc), vérifier la
 - Musique : « Stadium Rocker » (Taelimb) ; le coup qui suit le blanc de 97,5–98,1 s tombe sur la coupe f47 (carte
   sombre → bande rouge), `trimBefore` 2896 ; fondu d'entrée 4 images, de sortie f342–359 ; volume 0,42 → −14,1 LUFS.
   Vérifié dans le MP4 : plus forte attaque à l'image 47.
+- Musique finale choisie par l'utilisateur : « Unite » (Donell Mase) à la place de « Stadium Rocker » ; intro du morceau
+  sous la carte sombre, départ du rythme (image 94 du morceau) sur f47 : `trimBefore` 47, volume 0,48 → −13,9 LUFS.

@@ -16,11 +16,11 @@ const B_23 = makeBlocks('b23', 104, 113, 9, [P.red, P.white, P.night]);
 const B_34 = makeBlocks('b34', 172, 176, 7, [P.night, P.white, P.redDeep]);
 const B_56 = makeBlocks('b56', 340, 348, 9, [P.red, P.night, '#1A1B22']);
 
-// Musique : « Stadium Rocker » (Taelimb, Epidemic Sound, fournie par l'utilisateur). Le morceau se tait de 97,5 à
-// 98,1 s puis frappe à 98,10 s : ce coup tombe sur la coupe carte sombre → bande rouge (f47), le silence passe sous la
-// poussée et le lavis rouge (f37–46). trimBefore = 98,10 s × 30 − 47 = 2896.
-const MUSIC_TRIM = 2896;
-const VOLUME = 0.42;
+// Musique : « Unite » (Donell Mase, Epidemic Sound, fournie par l'utilisateur ; préférée à « Stadium Rocker »).
+// L'intro qui monte (0,6–3,1 s du morceau) passe sous la carte sombre ; le rythme démarre à l'image 94 du morceau
+// (3,13 s) et tombe sur la coupe carte sombre → bande rouge (f47). trimBefore = 94 − 47 = 47.
+const MUSIC_TRIM = 47;
+const VOLUME = 0.48;
 
 // Chaque scène est une fonction pure de l'image absolue `f` : on peut l'afficher dans une transition.
 export const VictoireChrome: React.FC<VictoireProps> = (p) => {
@@ -63,7 +63,7 @@ export const VictoireChrome: React.FC<VictoireProps> = (p) => {
 		<AbsoluteFill style={{background: '#000'}}>
 			{scene}
 			<Audio
-				src={staticFile('music/stadium-rocker-taelimb.mp3')}
+				src={staticFile('music/unite-donell-mase.mp3')}
 				trimBefore={MUSIC_TRIM}
 				volume={(fr) => interpolate(fr, [0, 4, 342, 359], [0, VOLUME, VOLUME, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})}
 			/>
