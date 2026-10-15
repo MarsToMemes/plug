@@ -37,3 +37,15 @@ nom du club. À défaut, utiliser « VICTOIRE / DE / L'OL » (le mot du milieu c
   au logo, pas au fond ; à 60 i/s, rendre d'abord en `--scale=0.5` pour vérifier.
 - La boucle est une **coupe franche** (pas un fondu) : le cadrage de f0 doit être identique à chaque passage.
 - Ne reprendre ni le logo, ni le slogan, ni les polices, ni les textures de la référence.
+
+## Fiche Olympique de Marseille (premier projet : `motion/om-pochoir/`)
+
+- Textes : MARSEILLE / VICTOIRE (les deux lignes calées sur la même largeur, 860 px), slogan « DROIT / AU / BUT ».
+- Encre : bleu ciel `#3AA8F0` (chaud : `#9AD8FF`) à la place du jaune ; le Bleu Marseille du logo (`#0E68AC`) est trop
+  sombre pour ressortir en texte sur le gris. Flash f48 : lavis `#BFE6FF`.
+- Bloc du slogan centré automatiquement (`measureText`) : [logo 300 px][DROIT] / AU (Archivo Expanded, ≤ 270 px) / BUT
+  (Anton, ≤ 520 px, dégradé blanc → gris). Plongée vers le centre de la 2ᵉ lettre du mot du milieu (« U »).
+- Textures : le bruit par agrandissement bicubique de petites grilles donne des traînées en croix dans les nuages ;
+  utiliser du bruit blanc flouté à plusieurs échelles (isotrope).
+- Lamelles : cacher le mot avant son départ (sinon les bandes, décalées hors du mot, sont visibles en haut du cadre).
+- Rendu : ≈ 3 min pour 760 images à 60 i/s (concurrence 4).
