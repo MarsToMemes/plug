@@ -75,7 +75,10 @@ même timing, chaque scène recadrée autour de son centre d'intérêt (visage, 
 - Ville : pas de photo accessible (Wikimedia limité) → silhouette SVG (Fort Saint-Jean, Mucem, la Major, mâts,
   Notre-Dame-de-la-Garde, tour CMA CGM). À remplacer par de vraies photos si le club en fournit.
 - Musique : le compte Epidemic connecté n'autorise pas le téléchargement ; morceau choisi par l'utilisateur :
-  « Stadium Rocker » (Taelimb), coup après un blanc calé sur f15 (`trimBefore` 2936).
+  « Stadium Rocker » (Taelimb), coup après un blanc (98,10 s) calé sur f15 (`trimBefore` 2928).
+- Piège d'analyse : mesurer l'énergie par **image vidéo** (`hop = sr / fps`, en flottant), jamais avec un pas arrondi
+  (`int(0.01 * sr)` = 220 au lieu de 220,5 à 22 050 Hz dérive de 0,23 % : 0,2 s d'erreur à 100 s). Vérifier ensuite
+  dans le MP4 rendu que la plus forte attaque tombe sur l'image visée.
 - Retour utilisateur : le petit mot de liaison doit être **entre** les deux lignes, dans la **même police** (italique
   grasse à ombre noire, entrée avec flou), pas posé à droite en plus petit et plus fin. Même règle dans le bloc slogan
   du temps 8 et du plan final.

@@ -65,3 +65,6 @@ Club à couleur claire (jaune) : bloc jaune + mot noir (pas blanc), vérifier la
 - Rendu : ≈ 3 min en 1080 avec la 3D (concurrence 4).
 - Retour utilisateur : le **rectangle blanc qui glisse à droite** au début du temps 3 (copié de la référence) fait
   « trait moche » sur le logo 3D : supprimé. Ne garder que les tracés fins.
+- Musique : « Stadium Rocker » (Taelimb) ; le coup qui suit le blanc de 97,5–98,1 s tombe sur la coupe f47 (carte
+  sombre → bande rouge), `trimBefore` 2896 ; fondu d'entrée 4 images, de sortie f342–359 ; volume 0,42 → −14,1 LUFS.
+  Vérifié dans le MP4 : plus forte attaque à l'image 47.

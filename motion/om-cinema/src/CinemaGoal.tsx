@@ -12,9 +12,9 @@ import {P} from './theme';
 export {cinemaGoalSchema, defaultCinemaGoalProps} from './props';
 
 // Musique : « Stadium Rocker » (Taelimb, Epidemic Sound, fournie par l'utilisateur). Le coup qui suit le blanc de
-// 97,7–98,25 s (98,35 s) tombe sur la coupe du slogan (f15) : le logo s'assemble dans le blanc, sous l'aspiration.
-// trimBefore = (98,35 − 0,5) s × 30 i/s.
-const MUSIC_TRIM = 2936;
+// 97,5–98,1 s (98,10 s, image 2943 du morceau à 30 i/s) tombe sur la coupe du slogan (f15) : le logo s'assemble dans
+// le blanc, sous l'aspiration. trimBefore = 2943 − 15 = 2928.
+const MUSIC_TRIM = 2928;
 
 // Bruitages, seulement là où ils s'entendent sous la musique :
 // - Epidemic Sound (fournis par l'utilisateur) : whoosh (le fichier en contient 3, un par passage, sommet ≈ 0,5 s

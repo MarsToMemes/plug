@@ -1,7 +1,9 @@
 # OL — annonce de victoire « chrome et carbone »
 
 Style `motion-victoire-chrome` (référence : annonce de victoire des Hurricanes). Composition `VictoireChrome`,
-1080×1080, 30 i/s, 360 images (12 s), **boucle** (f359 enchaîne sur f0). Pas encore de musique.
+1080×1080, 30 i/s, 360 images (12 s), **boucle** (f359 enchaîne sur f0).
+- Musique : « Stadium Rocker » (Taelimb, Epidemic Sound, fournie) ; le coup après le blanc du morceau (98,10 s) tombe sur
+  la coupe f47, `trimBefore` 2896, volume 0,42 → −14,1 LUFS, crête −7 dBTP.
 
 - Studio : `npm run studio` · rendu : `npm run render` (ajouter `--browser-executable=...` dans le conteneur).
 - Textes (props zod, `src/props.ts`) : LYON (chrome), VICTOIRE, LYONNAIS (lettres géantes), OLYMPIQUE LYONNAIS,

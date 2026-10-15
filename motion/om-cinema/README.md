@@ -13,7 +13,7 @@ Style `motion-cinema-brush` (référence : annonce de but des Flyers). Compositi
 - Slogan : « Droit au but », devise historique du club.
 - Ville : silhouette de Marseille dessinée en SVG (`Skyline` dans `src/fx.tsx`) faute de photo de la ville.
 - Musique : « Stadium Rocker » (Taelimb, Epidemic Sound, fournie). Le coup qui suit le blanc de 97,7–98,25 s tombe
-  sur la coupe du slogan (f15) : `trimBefore` 2936 ; le logo s'assemble dans le blanc, sous une aspiration (SFX).
+  sur la coupe du slogan (f15) : `trimBefore` 2928 ; le logo s'assemble dans le blanc, sous une aspiration (SFX).
   Volume 0,41.
 - Bruitages (seulement ceux qui s'entendent) : whoosh Epidemic sur les volets f40, les entailles f128 et le nom f168 ;
   flash photo Epidemic sur les flashs f112 et f193 ; aspiration (blanc de la musique) et impacts BUT / plan final
