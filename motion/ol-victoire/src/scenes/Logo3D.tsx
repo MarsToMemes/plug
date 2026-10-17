@@ -108,7 +108,8 @@ const Floor: React.FC = () => {
 };
 
 // Temps 3 (f110–175) : logo en relief, mot en contour, nom qui s'assemble, anneau lumineux.
-export const Logo3D: React.FC<{p: VictoireProps; f: number}> = ({p, f}) => {
+// `bare` : le logo seul, sans habillage (image fixe réutilisée par d'autres projets).
+export const Logo3D: React.FC<{p: VictoireProps; f: number; bare?: boolean}> = ({p, f, bare = false}) => {
 	const wordSize = fit(p.word, F.black, 1500);
 	const lines = interpolate(f, [110, 116, 128, 132], [0, 1, 1, 0], clamp);
 	const word = interpolate(f, [132, 135], [0, 1], clamp);
@@ -131,6 +132,8 @@ export const Logo3D: React.FC<{p: VictoireProps; f: number}> = ({p, f}) => {
 					<LogoMesh />
 				</ThreeCanvas>
 				<AbsoluteFill style={{background: 'radial-gradient(ellipse at 50% 45%, transparent 50%, rgba(5,8,30,0.55) 100%)'}} />
+				{!bare && (
+				<>
 				{/* tracés blancs fins (contours de lettres) */}
 				<div
 					style={{
@@ -205,6 +208,8 @@ export const Logo3D: React.FC<{p: VictoireProps; f: number}> = ({p, f}) => {
 							boxShadow: '0 0 18px rgba(255,255,255,0.5)',
 						}}
 					/>
+				)}
+				</>
 				)}
 			</AbsoluteFill>
 			<Grain f={f} opacity={0.06} />

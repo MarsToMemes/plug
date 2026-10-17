@@ -44,3 +44,17 @@ garder **trois fonds bien distincts** pour que les coupes se voient.
   dessin progressif soit lisible.
 - Logo de l'adversaire : seulement en **silhouette** (comme la référence), jamais modifié dans sa forme.
 - Ne reprendre ni les logos, ni la photo, ni la police, ni les infos de la référence.
+
+## Fiche OL (`motion/ol-jourdematch/`)
+
+- Match : OL – OGC Nice, dimanche 18 octobre 2026, 20 h 45, Groupama Stadium, Ligue 1 7e journée (calendrier officiel
+  billetterie.ol.fr). Diffuseur non confirmé → ligne remplacée par « LIGUE 1 · 7E JOURNÉE ».
+- Couleurs : rouge OL `#E5202E` / `#C8102E`, bleu OL `#0F23AA` (silhouettes), bleu nuit `#0B1748`, gris `#D9D9D9`.
+- Polices : Anton (mot géant condensé), Archivo Expanded Black / Bold (étendue, italique simulée `skewX(-12deg)`).
+- Emblème : lion du logo vectorisé (`tools/emblem.py` → `src/emblem.json`, un seul tracé de 282 points) pour le contour
+  qui se dessine ; `lion.png` en masque pour les silhouettes (grille rouge, rangées grises, affiche).
+- Affiche : le bouclier OL en silhouette donne un rectangle rouge illisible → **lion** en silhouette derrière le nom
+  du club. Logo de Nice indisponible (téléchargement bloqué) → « NICE » en contour rouge géant derrière l'adversaire.
+- Carte : pas de photo de joueur → image du logo en relief 3D de `motion/ol-victoire` (composition `LogoRelief`,
+  image 0). À remplacer par une photo détourée dès qu'elle est fournie.
+- Muet comme la référence ; la musique viendra caler les coupes f4, f20, f41, f60, f112, f115.

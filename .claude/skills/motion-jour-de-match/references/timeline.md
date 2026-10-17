@@ -53,11 +53,11 @@ CLUB / ADVERSAIRE = noms complets ; NOM = nom court du club (« CAPS ») ; INFOS
 - Fond bleu nuit avec **grandes étoiles** à 5 branches bleu plus clair (`#1C3A66`, opacité 0,5) vues en perspective
   (2–3 étoiles, ≈ 900 px, coupées par le cadre), dégradé radial plus clair au centre.
 - f60 : CLUB / VS / ADVERSAIRE en petites capitales **étendues** blanches (≈ 34 px), serrées au centre (y ≈ 960).
-- f61–66 : les trois lignes **s'écartent** (CLUB monte à y ≈ 670, ADVERSAIRE descend à y ≈ 990, VS au milieu).
+- f61–66 : les trois lignes **s'écartent** (CLUB monte à y ≈ 780, ADVERSAIRE descend à y ≈ 1170, VS au milieu ≈ 990) ; texte ≈ 48 px (le nom du club couvre ≈ 70 % de la largeur).
 - f62–68 : **logos des deux clubs en silhouette rouge vif** (≈ 300 px) apparaissent derrière les noms (le club derrière
   CLUB, l'adversaire derrière ADVERSAIRE), par fondu + léger grossissement.
 - ★★★ verticales (petites étoiles blanches, 14 px) en haut (y ≈ 230) et en bas (y ≈ 1640), qui s'allument une par une.
-- f104 : **trait rouge** horizontal (4 px) pleine largeur à y ≈ 830 ; f106–111 il grossit en **bande** (4 → 120 px)
+- f104 : **trait rouge** horizontal (4 px) pleine largeur à y ≈ 905 (entre CLUB et VS) ; f106–111 il grossit en **bande** (4 → 120 px)
   qui recouvre VS.
 
 ## Temps 6 — Lavis rose (f112–114)
@@ -67,14 +67,14 @@ CLUB / ADVERSAIRE = noms complets ; NOM = nom court du club (« CAPS ») ; INFOS
 
 ## Temps 7 — Carte d'infos (f115–232)
 
-- Fond rouge + éclats ; **photo du joueur** dans un rectangle aux coins arrondis (≈ 40 px), x ≈ 30–1060, y ≈ 30–630,
+- Fond rouge + éclats ; **photo du joueur** dans un rectangle aux coins arrondis (≈ 40 px), x ≈ 30–1050, y ≈ 50–1060 (≈ 1020 × 1010, mesuré sur les images 125–230),
   avec une lueur / des **rayons de lumière** en haut à gauche.
 - f115–118 : la photo **arrive en négatif** (inversée, teinte rose) en grandissant depuis le centre (×0,3 → ×1) ;
   f117 couleur, f118 négatif, f119 couleur (clignotement), puis couleur ; lente poussée ×1,00 → ×1,06 jusqu'à la fin.
 - NOM (étendue italique très grasse, ≈ 260 px, **dégradé bleu** `#176AA7` → bleu nuit), x ≈ 0–1080, y ≈ 1100–1300 :
   **s'assemble** lettre par lettre (f115–130), chaque lettre d'abord en **contour** blanc / rose puis pleine.
 - « VS ADVERSAIRE » (étendue, blanc, ≈ 34 px) sous le NOM, **tapé** (≈ 1 caractère par image, f115–158).
-- Bloc INFOS (étendue, blanc, ≈ 28 px, interligne 1,3), x ≈ 60, y ≈ 1400 : date / stade / heure (tapés f116–132),
+- Bloc INFOS (étendue, blanc, ≈ 38 px, interligne 1,3), x ≈ 90, y ≈ 1450 : date / stade / heure (tapés f116–132),
   puis diffusion TV / radio (tapés f133–160) ; **★★★ verticales** rouges à gauche du bloc (f134).
 - Filet fin en bas (y ≈ 1830) et **logo partenaire** en bas à droite (≈ 120 px).
 - f221–232 : **barre blanche** horizontale à y ≈ 1000 : trait (f221) qui s'épaissit jusqu'à ≈ 200 px (f232) : début du

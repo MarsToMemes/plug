@@ -70,3 +70,18 @@ export const VictoireChrome: React.FC<VictoireProps> = (p) => {
 		</AbsoluteFill>
 	);
 };
+
+// Le logo en relief seul (sans habillage), pour une image fixe : `remotion still … LogoRelief --frame=N`.
+export const LogoRelief: React.FC<VictoireProps> = (p) => {
+	const f = useCurrentFrame();
+	const [ready, setReady] = useState(false);
+	const [handle] = useState(() => delayRender('polices'));
+	useEffect(() => {
+		fontsLoaded.then(() => {
+			setReady(true);
+			continueRender(handle);
+		});
+	}, [handle]);
+	if (!ready) return null;
+	return <Logo3D p={p} f={110 + f} bare />;
+};
