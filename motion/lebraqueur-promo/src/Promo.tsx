@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
-import {AbsoluteFill, continueRender, delayRender, interpolate, interpolateColors, random, spring, useCurrentFrame} from 'remotion';
-import {C, FONT, PLAYERS, clamp, fontsLoaded, fr, inOut, out} from './theme';
-import {At, Dark, Kinetic, Light, Pill, PlayerCard, World, cut} from './ui';
+import {AbsoluteFill, Img, continueRender, delayRender, interpolate, interpolateColors, random, spring, staticFile, useCurrentFrame} from 'remotion';
+import {C, FONT, clamp, fontsLoaded, inOut, out} from './theme';
+import {At, Dark, Kinetic, Light, Pill, World, cut} from './ui';
 
 const FPS = 30;
 type S = React.FC<{f: number}>;
@@ -13,7 +13,7 @@ const Shot: React.FC<{f: number; start: number; end: number; children: React.Rea
 
 const center: React.CSSProperties = {position: 'absolute', left: 0, right: 0, textAlign: 'center'};
 
-// 1 (0–80) : l'accroche, mot à mot, puis « ce soir ? » en grand ; étiquettes du site qui flottent en profondeur.
+// 1 (0–60, écrit sur 80) : l'accroche, mot à mot, puis « ce soir ? » en grand ; étiquettes du site qui flottent en profondeur.
 const CHIPS = [
 	{t: 'NFL · touchdowns', x: 330, y: 230, z: -260},
 	{t: 'Foot · buteurs', x: 1560, y: 300, z: -120},
@@ -54,168 +54,112 @@ const Hook: S = ({f}) => {
 	);
 };
 
-// 2 (80–160) : fond clair, la promesse, puis « joueur / par / joueur » en mots géants au milieu de cartes qui dérivent.
-const MINI = [
-	{i: 1, x: 150, y: 190, z: -200, ry: 24},
-	{i: 2, x: 1800, y: 170, z: -420, ry: -22},
-	{i: 0, x: 230, y: 960, z: -520, ry: 18},
-	{i: 3, x: 1720, y: 930, z: -120, ry: -26},
+// 2 (60–100) : fond clair, la phrase du site, puis « a sa fiche » en grand.
+const Intro2: S = ({f}) => (
+	<>
+		<Light f={f} />
+		<div style={{...center, top: 300}}>
+			<Kinetic f={f} size={96} from="#128A7C" to={C.ink} words={[{t: 'Chaque', at: 62}, {t: 'joueur', at: 66}, {t: 'classé', at: 70}]} style={{display: 'inline-block'}} />
+		</div>
+		<div style={{...center, top: 420, scale: `${interpolate(f, [76, 84], [1.3, 1], out) + Math.max(0, f - 76) * 0.002}`}}>
+			<Kinetic f={f} size={270} weight={700} from="#128A7C" to={C.ink} words={[{t: 'a', at: 76}, {t: 'sa', at: 78}, {t: 'fiche', at: 81}]} style={{display: 'inline-block'}} />
+		</div>
+	</>
+);
+
+// 3 (100–345) : la vraie fiche du site (2684 × 1860) posée dans l'espace ; la caméra s'y promène et isole chaque mesure.
+const IW = 2684;
+const IH = 1860;
+// image, cx, cy (point de la fiche au centre de l'écran), échelle, rotX, rotY
+const CAM: number[][] = [
+	[100, 1342, 930, 0.22, 42, -32],
+	[132, 1342, 930, 0.56, 8, -6],
+	[138, 1342, 930, 0.57, 7, -5],
+	[152, 700, 1540, 1.25, 5, 9],
+	[182, 720, 1560, 1.32, 4, 7],
+	[192, 640, 1690, 1.75, 3, 6],
+	[206, 660, 1690, 1.8, 3, 5],
+	[214, 960, 1690, 1.8, 3, -4],
+	[228, 980, 1690, 1.85, 3, -5],
+	[240, 1330, 900, 0.95, 12, -10],
+	[275, 1330, 900, 1.05, 9, 10],
+	[286, 2250, 400, 1.3, 4, -12],
+	[299, 2260, 410, 1.35, 4, -11],
+	[308, 2250, 890, 1.25, 4, -11],
+	[322, 2260, 900, 1.3, 4, -10],
+	[336, 1342, 930, 0.56, 6, 0],
+	[345, 1342, 930, 0.6, 4, 2],
 ];
-const GIANT = [
-	{t: 'joueur', at: 114},
-	{t: 'par', at: 127},
-	{t: 'joueur', at: 138},
+const cam = (f: number, k: number) => interpolate(f, CAM.map((c) => c[0]), CAM.map((c) => c[k]), inOut);
+// zones mises en lumière : x, y, largeur, hauteur, rayon (coordonnées de l'image), images de début et de fin
+const SPOTS = [
+	{x: 78, y: 1630, w: 162, h: 162, r: 81, a: 152, b: 185},
+	{x: 258, y: 1616, w: 192, h: 190, r: 26, a: 194, b: 211},
+	{x: 868, y: 1616, w: 196, h: 190, r: 26, a: 216, b: 231},
+	{x: 1955, y: 150, w: 686, h: 462, r: 34, a: 288, b: 303},
+	{x: 1955, y: 622, w: 686, h: 532, r: 34, a: 310, b: 326},
 ];
-const Promise2: S = ({f}) => {
-	const g = [...GIANT].reverse().find((w) => f >= w.at);
+// titres repris de la page d'accueil (« score, probabilité, minutes attendues, profil au poste, stade en 3D »)
+const CAPS = [
+	{t: 'La fiche du joueur', a: 112, b: 138},
+	{t: 'Braqueur Score', a: 150, b: 186},
+	{t: 'Chance de réussite', a: 192, b: 212},
+	{t: 'Écart avec les cotes', a: 214, b: 232},
+	{t: 'Le stade du match en 3D', a: 240, b: 278},
+	{t: 'Minutes attendues', a: 286, b: 304},
+	{t: 'Profil au poste', a: 307, b: 327},
+];
+const Fiche: S = ({f}) => {
+	const cap = CAPS.find((c) => f >= c.a && f < c.b);
 	return (
 		<>
-			<Light f={f} />
-			{f < 114 ? (
-				<div style={{...center, top: 490}}>
-					<Kinetic
-						f={f}
-						size={104}
-						from="#128A7C"
-						to={C.ink}
-						words={[{t: 'Le', at: 84}, {t: 'classement', at: 88}, {t: 'statistique', at: 94}, {t: 'du', at: 100}, {t: 'jour', at: 103}]}
-						style={{display: 'inline-block'}}
-					/>
-				</div>
-			) : (
-				<>
-					<World ry={interpolate(f, [114, 160], [7, -7])} z={interpolate(f, [114, 160], [-80, 140])}>
-						{MINI.map((m, k) => {
-							const a = interpolate(f, [114 + k * 3, 126 + k * 3], [0, 1], out);
+			<Dark f={f} glow={0.9} />
+			<AbsoluteFill style={{perspective: 2000}}>
+				<div
+					style={{
+						position: 'absolute',
+						left: 960,
+						top: 540,
+						width: IW,
+						height: IH,
+						transformOrigin: '0 0',
+						transformStyle: 'preserve-3d',
+						transform: `rotateX(${cam(f, 4)}deg) rotateY(${cam(f, 5)}deg) scale(${cam(f, 3)}) translate(${-cam(f, 1)}px, ${-cam(f, 2)}px)`,
+					}}
+				>
+					<div style={{position: 'absolute', inset: 0, borderRadius: 46, overflow: 'hidden', boxShadow: '0 80px 200px rgba(0,0,0,0.7), 0 0 160px rgba(63,216,200,0.22)', border: '2px solid rgba(63,216,200,0.25)'}}>
+						<Img src={staticFile('fiche-celebrini.webp')} style={{width: IW, height: IH, display: 'block'}} />
+						{SPOTS.map((sp, i) => {
+							const o = interpolate(f, [sp.a, sp.a + 6, sp.b - 4, sp.b], [0, 1, 1, 0], clamp);
+							if (o <= 0) return null;
+							const g = interpolate(f, [sp.a, sp.a + 8], [26, 0], out);
 							return (
-								<At key={k} x={m.x} y={m.y + (1 - a) * 120} z={m.z} ry={m.ry} s={0.62} style={{opacity: a, filter: `blur(${-m.z / 150}px)`}}>
-									<PlayerCard p={PLAYERS[m.i]} light />
-								</At>
-							);
-						})}
-					</World>
-					{g && (
-						<div
-							style={{
-								...center,
-								top: 300,
-								fontFamily: FONT,
-								fontWeight: 700,
-								fontSize: 400,
-								lineHeight: 1,
-								letterSpacing: '-0.04em',
-								scale: `${interpolate(f, [g.at, g.at + 7], [1.25, 1], out) + (f - g.at) * 0.003}`,
-								filter: f - g.at < 5 ? `blur(${(5 - (f - g.at)) * 4}px)` : undefined,
-								color: 'transparent',
-								backgroundImage: `linear-gradient(${C.ink} 35%, rgba(11,20,32,0.28))`,
-								WebkitBackgroundClip: 'text',
-								backgroundClip: 'text',
-							}}
-						>
-							{g.t}
-						</div>
-					)}
-				</>
-			)}
-		</>
-	);
-};
-
-// 3 (160–262) : les quatre sports ; la caméra glisse le long des cartes en 3D, le titre change avec la carte active.
-const T3 = [165, 188, 211, 234, 256];
-const Sports: S = ({f}) => {
-	const pos = interpolate(f, [165, 184, 188, 207, 211, 230, 234, 262], [0, 0, 1, 1, 2, 2, 3, 3], inOut);
-	const idx = Math.min(3, T3.findIndex((t, i) => f < T3[i + 1]) < 0 ? 3 : T3.findIndex((t, i) => f < T3[i + 1]));
-	const lift = interpolate(f, [250, 262], [0, 1], {...clamp});
-	const p = PLAYERS[idx];
-	return (
-		<>
-			<Dark f={f} glow={0.8} />
-			<World ry={interpolate(pos, [0, 3], [20, -20])} rx={6 + lift * 46} x={(1.5 - pos) * 400} y={60 - lift * 120} z={-30 - lift * 600}>
-				{PLAYERS.map((pl, i) => {
-					const act = Math.max(0, 1 - Math.abs(pos - i));
-					const k = interpolate(f, [162 + i * 4, 190 + i * 4], [0, 1], out);
-					const a = interpolate(f, [160 + i * 3, 172 + i * 3], [0, 1], out);
-					return (
-						<At key={i} x={960 + (i - 1.5) * 500} y={590 + (1 - a) * 200} z={act * 170 - 60} ry={(i - pos) * -9} style={{opacity: a * (0.55 + act * 0.45), filter: act < 0.5 ? `blur(${(0.5 - act) * 5}px)` : undefined}}>
-							<PlayerCard p={pl} k={k} active={act} />
-						</At>
-					);
-				})}
-			</World>
-			<div style={{...center, top: 70, opacity: 1 - lift}}>
-				<Kinetic key={idx} f={f} size={96} weight={700} words={[{t: p.title, at: T3[idx]}]} style={{display: 'inline-block'}} />
-				<Kinetic key={`s${idx}`} f={f} size={40} weight={400} from={C.teal} to={C.muted} words={[{t: p.sub, at: T3[idx] + 4}]} style={{marginTop: 4}} />
-			</div>
-		</>
-	);
-};
-
-// 4 (262–345) : le Braqueur Score ; un anneau se trace et compte, les trois mesures du site s'affichent, puis on traverse l'anneau.
-const R = 230;
-const CIRC = 2 * Math.PI * R;
-const Score: S = ({f}) => {
-	const p = PLAYERS[1];
-	const k = interpolate(f, [266, 304], [0, 1], out);
-	const zoom = interpolate(f, [333, 345], [0, 1], {...clamp, easing: (t) => t * t * t});
-	const rows = [
-		{t: 'Braqueur Score', at: 280},
-		{t: 'Chance de réussite', at: 294},
-		{t: 'Écart avec les cotes', at: 308},
-	];
-	return (
-		<AbsoluteFill style={{scale: `${1 + zoom * 16}`, transformOrigin: '590px 540px'}}>
-			<Dark f={f} />
-			<World ry={interpolate(f, [262, 345], [16, 4])} rx={interpolate(f, [262, 345], [5, 0])} z={interpolate(f, [262, 345], [240, 330])}>
-				<At x={590} y={540} z={40}>
-					<svg width={620} height={620} viewBox="-310 -310 620 620" style={{overflow: 'visible'}}>
-						<defs>
-							<linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
-								<stop offset="0" stopColor={C.accent2} />
-								<stop offset="1" stopColor={C.teal} />
-							</linearGradient>
-						</defs>
-						<circle r={R} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={30} />
-						<circle
-							r={R}
-							fill="none"
-							stroke="url(#ring)"
-							strokeWidth={30}
-							strokeLinecap="round"
-							strokeDasharray={CIRC}
-							strokeDashoffset={CIRC * (1 - (p.score / 100) * k)}
-							transform="rotate(-90)"
-							style={{filter: 'drop-shadow(0 0 24px rgba(63,216,200,0.55))'}}
-						/>
-					</svg>
-					<div style={{position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontFamily: FONT, color: C.text, opacity: 1 - zoom * 3}}>
-						<div style={{fontSize: 24, color: C.muted}}>score</div>
-						<div style={{fontSize: 168, fontWeight: 700, lineHeight: 1, letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums'}}>{fr(p.score * k)}</div>
-						<div style={{fontSize: 30, fontWeight: 600, marginTop: 6}}>{p.name}</div>
-						<div style={{fontSize: 22, color: C.muted}}>{p.match}</div>
-					</div>
-				</At>
-				<At x={1330} y={540} z={-40} style={{opacity: 1 - zoom * 3}}>
-					<div style={{width: 760}}>
-						{rows.map((r, i) => (
-							<div key={i} style={{display: 'flex', alignItems: 'center', gap: 26, margin: '34px 0'}}>
 								<div
+									key={i}
 									style={{
-										width: 18,
-										height: 18,
-										borderRadius: 9,
-										background: C.teal,
-										boxShadow: '0 0 22px rgba(63,216,200,0.8)',
-										scale: `${spring({frame: f - r.at, fps: FPS, config: {damping: 11}})}`,
+										position: 'absolute',
+										left: sp.x - g,
+										top: sp.y - g,
+										width: sp.w + g * 2,
+										height: sp.h + g * 2,
+										borderRadius: sp.r + g,
+										opacity: o,
+										border: `4px solid ${C.teal}`,
+										boxShadow: `0 0 0 5000px rgba(8,14,24,0.62), 0 0 50px rgba(63,216,200,0.75), inset 0 0 30px rgba(63,216,200,0.25)`,
 									}}
 								/>
-								<Kinetic f={f} size={66} words={r.t.split(' ').map((t, j) => ({t, at: r.at + j * 3}))} />
-							</div>
-						))}
+							);
+						})}
 					</div>
-				</At>
-			</World>
-		</AbsoluteFill>
+				</div>
+			</AbsoluteFill>
+			<AbsoluteFill style={{background: 'linear-gradient(rgba(8,14,24,0.92), rgba(8,14,24,0) 30%)', opacity: interpolate(f, [108, 116], [0, 1], clamp)}} />
+			{cap && (
+				<div style={{...center, top: 62, opacity: interpolate(f, [cap.b - 3, cap.b], [1, 0], clamp)}}>
+					<Kinetic key={cap.t} f={f} size={96} weight={700} words={cap.t.split(' ').map((t, j) => ({t, at: cap.a + j * 3}))} style={{display: 'inline-block', textShadow: '0 6px 40px rgba(8,14,24,0.9)'}} />
+				</div>
+			)}
+		</>
 	);
 };
 
@@ -299,11 +243,13 @@ const End: S = ({f}) => {
 	);
 };
 
+// Le plan 1 est écrit sur 80 images ; il est joué en 60 (×4/3).
+const Hook60: S = ({f}) => <Hook f={(f * 4) / 3} />;
+
 const SCENES: {start: number; end: number; C: S}[] = [
-	{start: 0, end: 80, C: Hook},
-	{start: 80, end: 160, C: Promise2},
-	{start: 160, end: 262, C: Sports},
-	{start: 262, end: 345, C: Score},
+	{start: 0, end: 60, C: Hook60},
+	{start: 60, end: 100, C: Intro2},
+	{start: 100, end: 345, C: Fiche},
 	{start: 345, end: 378, C: Free},
 	{start: 378, end: 450, C: End},
 ];
@@ -332,7 +278,7 @@ export const Promo: React.FC = () => {
 	}, [handle]);
 	if (!ready) return null;
 	const sc = SCENES.find((s) => f < s.end) ?? SCENES[SCENES.length - 1];
-	const dark = sc.C !== Promise2 && sc.C !== Free;
+	const dark = sc.C !== Intro2 && sc.C !== Free;
 	return (
 		<AbsoluteFill style={{background: C.bg, overflow: 'hidden'}}>
 			<Shot f={f} start={sc.start} end={sc.end === 450 ? 9999 : sc.end}>
