@@ -9,4 +9,4 @@ npm run render   # → out/lebraqueur-promo.mp4
 ```
 
 - Couleurs : `src/theme.ts`. Plans : `src/Promo.tsx`.
-- Pas de musique pour l'instant.
+- Musique : `public/musique-zoo-extrait.mp3` (Kaaris, « Zoo », extrait fourni par l'utilisateur ; droits à vérifier avant publication). Réglages : `MUSIC_TRIM`, `DROP`, `musicVolume`.

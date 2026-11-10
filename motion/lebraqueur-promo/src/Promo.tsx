@@ -1,9 +1,14 @@
 import React, {useEffect, useState} from 'react';
-import {AbsoluteFill, Img, continueRender, delayRender, interpolate, interpolateColors, random, spring, staticFile, useCurrentFrame} from 'remotion';
+import {AbsoluteFill, Html5Audio, Img, continueRender, delayRender, interpolate, interpolateColors, random, spring, staticFile, useCurrentFrame} from 'remotion';
 import {C, FONT, clamp, fontsLoaded, inOut, out} from './theme';
 import {At, Dark, Kinetic, Light, Pill, World, cut} from './ui';
 
 const FPS = 30;
+// Musique : extrait de 18 s (46 s → 64 s du morceau). L'entrée de la rythmique tombe sur l'arrivée de la fiche (image 100).
+const MUSIC_TRIM = 28;
+const DROP = 100;
+const musicVolume = (f: number) =>
+	interpolate(f, [0, 6, DROP - 3, DROP, 428, 449], [0, 1, 1, 0.56, 0.56, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
 type S = React.FC<{f: number}>;
 
 const Shot: React.FC<{f: number; start: number; end: number; children: React.ReactNode}> = ({f, start, end, children}) => {
@@ -285,6 +290,7 @@ export const Promo: React.FC = () => {
 				<sc.C f={f} />
 			</Shot>
 			{dark && <Dust f={f} />}
+			<Html5Audio src={staticFile('musique-zoo-extrait.mp3')} trimBefore={MUSIC_TRIM} volume={musicVolume} />
 		</AbsoluteFill>
 	);
 };
