@@ -41,7 +41,7 @@ Seule dépendance : `numpy`. Le rapport est écrit dans `results/etape2.md`.
    Le « second tirage » du Loto (depuis 2019, sans numéro Chance) est ignoré.
    Il manque à la FDJ les Super Loto de 02/2017 à 09/2017 et de 10/2018 à 06/2019.
 2. **Chaîne complète sur tirages synthétiques** ← fait
-3. Backtest sur les vrais tirages, réglages figés à l'avance
+3. **Backtest sur les vrais tirages, réglages figés à l'avance** ← fait (`run_step3.py`) : 0 modèle sur 7 bat le hasard
 4. Tests du hasard des tirages FDJ (fréquences, paires, dépendance entre tirages)
 
 Le deep learning du plan initial n'est pas implémenté : il demanderait PyTorch, et sur des
