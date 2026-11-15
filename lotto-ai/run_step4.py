@@ -60,7 +60,7 @@ def main():
     out = ["# Étape 4 : tests du hasard des tirages FDJ\n",
            f"{n} tirages du {d.dates[0]:%d/%m/%Y} au {d.dates[-1]:%d/%m/%Y}. Chaque test est comparé à "
            f"{N_SIMS} historiques simulés parfaitement aléatoires. Seuil (Bonferroni, {len(TESTS)} tests) : "
-           f"p < {ALPHA:.3f}".replace(".", ",") + ". ⚠ = écart significatif.\n",
+           f"p < {ALPHA:.3f}. ⚠ = écart significatif.\n".replace("0.005", "0,005"),
            "| Test | " + " | ".join(names) + " |",
            "|---|" + "---|" * len(names)]
     for test, (desc, _) in TESTS.items():
@@ -71,10 +71,10 @@ def main():
 
     dm = d.main
     overlap = np.mean([np.intersect1d(a, b).size for a, b in zip(dm[1:], dm[:-1])])
-    out.append(f"\nRepères FDJ : somme moyenne des 5 numéros {np.mean(dm.sum(1) + 5):.1f} (attendu 125,0) ; "
-               f"numéros communs avec le tirage précédent {overlap:.3f} en moyenne (attendu {25 / 49:.3f}) ; "
-               f"Chance identique au tirage suivant {np.mean(d.chance[1:] == d.chance[:-1]) * 100:.1f} % (attendu 10 %).\n"
-               .replace(".", ",", 1))
+    fr = lambda x, f: format(x, f).replace(".", ",")
+    out.append(f"\nRepères FDJ : somme moyenne des 5 numéros {fr(np.mean(dm.sum(1) + 5), '.1f')} (attendu 125,0) ; "
+               f"numéros communs avec le tirage précédent {fr(overlap, '.3f')} en moyenne (attendu {fr(25 / 49, '.3f')}) ; "
+               f"Chance identique au tirage suivant {fr(np.mean(d.chance[1:] == d.chance[:-1]) * 100, '.1f')} % (attendu 10 %).\n")
     out.append(f"_Calcul : {time.time() - t0:.0f} s._\n")
 
     text = "\n".join(out)
