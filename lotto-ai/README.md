@@ -17,6 +17,8 @@ Seule dépendance : `numpy`. Le rapport est écrit dans `results/etape2.md`.
 
 | Fichier | Rôle |
 |---|---|
+| `fetch_fdj.py` | Télécharge les archives officielles FDJ dans `data/fdj/` |
+| `lotto/fdj.py` | Lit les CSV FDJ (contrôles : numéros valides, pas de doublon contradictoire) |
 | `lotto/data.py` | Tirages synthétiques 5/49 + Chance 1/10, avec biais optionnel |
 | `lotto/features.py` | Statistiques de l'historique (fréquences, retards, associations), sans fuite du futur |
 | `lotto/models.py` | Aléatoire, chauds, froids, bayésien, associations, régression logistique, hybride |
@@ -34,7 +36,10 @@ Seule dépendance : `numpy`. Le rapport est écrit dans `results/etape2.md`.
 
 ## Étapes
 
-1. ~~Données réelles FDJ~~ (à faire : déposer le fichier de la page Statistiques FDJ)
+1. **Données réelles FDJ** ← fait : `python3 fetch_fdj.py` puis `lotto.fdj.load()`.
+   2 907 tirages 5/49 + Chance du 06/10/2008 au 14/11/2026 (2 836 Loto, 62 Super Loto, 9 Grand Loto).
+   Le « second tirage » du Loto (depuis 2019, sans numéro Chance) est ignoré.
+   Il manque à la FDJ les Super Loto de 02/2017 à 09/2017 et de 10/2018 à 06/2019.
 2. **Chaîne complète sur tirages synthétiques** ← fait
 3. Backtest sur les vrais tirages, réglages figés à l'avance
 4. Tests du hasard des tirages FDJ (fréquences, paires, dépendance entre tirages)
