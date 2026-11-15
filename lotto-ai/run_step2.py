@@ -136,7 +136,8 @@ def experiment_c(seed, n, out):
     scores = []
     runs = [(Uniform(), 1.0, None), (Hot(400), 4.0, None), (Bayes(300), 4.0, None), (Cold(), 2.0, None),
             (Logistic(), 4.0, None), (Hot(400), 40.0, "Chauds (fenêtre 400), concentré β=40"),
-            (Bayes(300), 40.0, "Bayésien (demi-vie 300), concentré β=40")]
+            (Bayes(300), 40.0, "Bayésien (demi-vie 300), concentré β=40"),
+            (Logistic(), 40.0, "Machine learning (logistique), concentré β=40")]
     for m, beta, label in runs:
         scores.append(bt.evaluate(bt.run(m, f, WARMUP, f.T, rng, beta=beta, name=label), f))
     out.append(table(scores) + "\n")

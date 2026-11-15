@@ -89,43 +89,56 @@ class Pair(Model):
 class Logistic(Model):
     """Machine learning : régression logistique « ce numéro sort-il au prochain tirage ? ».
 
-    Variables : fréquences sur 10/50/200 tirages, retard, présence au tirage précédent.
-    Réentraînée tous les `retrain_every` tirages sur les `train_window` derniers.
+    Variables : fréquences sur 10/50/200 tirages et sur tout l'historique, retard,
+    présence au tirage précédent. Variables standardisées, ajustement par Newton
+    (convergence exacte) avec pénalité L2. Réentraînée tous les `retrain_every` tirages
+    sur les `train_window` derniers (par défaut : tout l'historique disponible).
+    Les `min_history` premiers tirages ne servent pas d'exemples : leurs fréquences
+    « long terme » sont trop bruitées et écrasent les poids appris.
     """
 
-    def __init__(self, train_window=600, retrain_every=100, iters=150, lr=0.5):
-        self.train_window, self.retrain_every = train_window, retrain_every
-        self.iters, self.lr = iters, lr
+    def __init__(self, train_window=10_000, retrain_every=100, l2=1.0, newton_steps=8, min_history=200):
+        self.train_window, self.retrain_every, self.min_history = train_window, retrain_every, min_history
+        self.l2, self.newton_steps = l2, newton_steps
         self.name = "Machine learning (logistique)"
-        self.w, self.trained_at = None, None
+        self.w, self.trained_at, self._cache = None, None, {}
 
-    @staticmethod
-    def _x(f, t):
-        base = N_MAIN / K_MAIN
-        prev = f.pres[t - 1] if t > 0 else np.zeros(N_MAIN)
-        return np.column_stack([
-            f.freq(t, 10) * base - 1,
-            f.freq(t, 50) * base - 1,
-            f.freq(t, 200) * base - 1,
-            np.minimum(f.gap[t], 60) / base - 1,
-            prev,
-            np.ones(N_MAIN),
-        ])
+    def _x(self, f, t):
+        if t not in self._cache:
+            base = N_MAIN / K_MAIN
+            prev = f.pres[t - 1] if t > 0 else np.zeros(N_MAIN)
+            self._cache[t] = np.column_stack([
+                f.freq(t, 10) * base - 1,
+                f.freq(t, 50) * base - 1,
+                f.freq(t, 200) * base - 1,
+                f.freq(t, t) * base - 1,           # tout l'historique
+                np.minimum(f.gap[t], 60) / base - 1,
+                prev,
+            ])
+        return self._cache[t]
 
     def _fit(self, f, t):
-        lo = max(1, t - self.train_window)
+        lo = max(1, min(self.min_history, t - 50), t - self.train_window)
         X = np.vstack([self._x(f, s) for s in range(lo, t)])
         y = np.concatenate([f.pres[s] for s in range(lo, t)]).astype(float)
-        w = np.zeros(X.shape[1])
-        for _ in range(self.iters):
-            p = 1 / (1 + np.exp(-X @ w))
-            w -= self.lr * X.T @ (p - y) / len(y)
+        self.mu, self.sd = X.mean(0), X.std(0) + 1e-9
+        Z = np.column_stack([(X - self.mu) / self.sd, np.ones(len(X))])
+        w = np.zeros(Z.shape[1])
+        w[-1] = np.log(y.mean() / (1 - y.mean()))     # départ au taux de base
+        reg = self.l2 * np.eye(len(w))
+        reg[-1, -1] = 0                                 # on ne pénalise pas la constante
+        for _ in range(self.newton_steps):
+            p = 1 / (1 + np.exp(-Z @ w))
+            grad = Z.T @ (p - y) + reg @ w
+            hess = (Z * (p * (1 - p))[:, None]).T @ Z + reg
+            w -= np.linalg.solve(hess, grad)
         self.w, self.trained_at = w, t
 
     def main_scores(self, f, t):
         if self.w is None or t - self.trained_at >= self.retrain_every or t < self.trained_at:
             self._fit(f, t)
-        return 1 / (1 + np.exp(-self._x(f, t) @ self.w))
+        z = np.column_stack([(self._x(f, t) - self.mu) / self.sd, np.ones(N_MAIN)])
+        return 1 / (1 + np.exp(-z @ self.w))
 
     def chance_scores(self, f, t):
         return f.cfreq(t, 200) + EPS

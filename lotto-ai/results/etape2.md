@@ -13,8 +13,8 @@ Graine 42, 4000 tirages simulés (5/49 + Chance 1/10).
 | Froids (retard) | 0,5036 | -1,3 % | 0,8563 | 9,9 % |
 | Bayésien (demi-vie 100) | 0,5124 | +0,4 % | 0,2943 | 10,2 % |
 | Associations | 0,5070 | -0,6 % | 0,6355 | 9,9 % |
-| Machine learning (logistique) | 0,5086 | -0,3 % | 0,6840 | 10,1 % |
-| Hybride (poids du plan ChatGPT, sans deep learning) | 0,5162 | +1,2 % | 0,1022 | 10,3 % |
+| Machine learning (logistique) | 0,5087 | -0,3 % | 0,6661 | 10,1 % |
+| Hybride (poids du plan ChatGPT, sans deep learning) | 0,5164 | +1,2 % | 0,0900 | 10,3 % |
 
 Pour info, répartition des grilles du générateur aléatoire (0 à 5 bons numéros) : 20999, 13280, 2527, 188, 6, 0.
 
@@ -28,7 +28,7 @@ Pour info, répartition des grilles du générateur aléatoire (0 à 5 bons num�
 | Réglages « significatifs » (p < 0,05) | 0 / 79 | 12 / 79 |
 | Attendu par pur hasard | ≈ 4 / 79 | ≈ 4 / 79 |
 
-Corrélation entre l'écart en dev et l'écart en test, sur les 79 réglages : **+0,07** (proche de 0 = la performance en dev ne dit rien de la suite).
+Corrélation entre l'écart en dev et l'écart en test, sur les 79 réglages : **+0,08** (proche de 0 = la performance en dev ne dit rien de la suite).
 
 Seuil honnête quand on essaie 79 réglages (correction de Bonferroni) : p < 0,00063.
 
@@ -42,10 +42,11 @@ Les numéros 7, 13, 22 ont 30 % de chances en plus à chaque boule. Une chaîne 
 | Chauds (fenêtre 400) | 0,5191 | +1,7 % | 0,0129 | 9,9 % |
 | Bayésien (demi-vie 300) | 0,5172 | +1,4 % | 0,0308 | 9,9 % |
 | Froids (retard) | 0,5064 | -0,8 % | 0,7338 | 9,9 % |
-| Machine learning (logistique) | 0,5119 | +0,3 % | 0,3096 | 9,7 % |
+| Machine learning (logistique) | 0,5152 | +1,0 % | 0,0735 | 9,7 % |
 | Chauds (fenêtre 400), concentré β=40 | 0,5464 | +7,1 % | < 0,0001 | 9,5 % |
 | Bayésien (demi-vie 300), concentré β=40 | 0,5530 | +8,4 % | < 0,0001 | 9,5 % |
+| Machine learning (logistique), concentré β=40 | 0,5457 | +7,0 % | < 0,0001 | 9,1 % |
 
 Les 5 numéros les plus sortis dans ces tirages truqués : 13, 7, 22, 31, 10.
 
-_Calcul : 36 s._
+_Calcul : 30 s._
